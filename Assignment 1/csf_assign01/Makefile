@@ -1,22 +1,38 @@
-CC = gcc
+CXX = g++
+CXXFLAGS = -g -Wall -std=c++17
 
-# Note: we use -std=gnu11 rather than -std=c11 in order to use the
-# sigjmp_buf data type
-CFLAGS = -g -Wall -Wextra -pedantic -std=gnu11
+CC = gcc
+CFLAGS = -g -Wall -std=gnu11
+
+CXX_SRCS = bigint.cpp bigint_tests.cpp
+CXX_OBJS = $(CXX_SRCS:.cpp=.o)
+
+C_SRCS = tctest.c
+C_OBJS = $(C_SRCS:.c=.o)
+
+%.o : %.cpp
+	$(CXX) $(CXXFLAGS) -c $*.cpp -o $*.o
 
 %.o : %.c
 	$(CC) $(CFLAGS) -c $*.c -o $*.o
 
-all : fixedpoint_tests
+bigint_tests : $(CXX_OBJS) $(C_OBJS)
+	$(CXX) -o $@ $(CXX_OBJS) $(C_OBJS)
 
-fixedpoint_tests : fixedpoint.o fixedpoint_tests.o tctest.o
-	$(CC) -o $@ fixedpoint.o fixedpoint_tests.o tctest.o
-
-fixedpoint.o : fixedpoint.c fixedpoint.h
-
-fixedpoint_tests.o : fixedpoint_tests.c fixedpoint.h tctest.h
-
-tctest.o : tctest.c tctest.h
+.PHONY: solution.zip
+solution.zip :
+	rm -f $@
+	zip -9r $@ *.c *.cpp *.h README.txt
 
 clean :
-	rm -f fixedpoint_tests *.o
+	rm -f bigint_tests *.o
+
+# Generate header file dependencies
+depend :
+	$(CXX) $(CXXFLAGS) -M $(CXX_SRCS) > depend.mak
+	$(CC) $(CFLAGS) -M $(C_SRCS) >> depend.mak
+
+depend.mak :
+	touch $@
+
+include depend.mak

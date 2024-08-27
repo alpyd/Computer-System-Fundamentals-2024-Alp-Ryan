@@ -1,6 +1,6 @@
 /*
- * TCTest - a tiny unit test framework for C
- * Copyright (c) 2013,2019-2021 David H. Hovemeyer <david.hovemeyer@gmail.com>
+ * TCTest - a tiny unit test framework for C and C++
+ * Copyright (c) 2013,2019-2021,2023,2024 David H. Hovemeyer <david.hovemeyer@gmail.com>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -25,8 +25,14 @@
 #ifndef TCTEST_H
 #define TCTEST_H
 
+#ifdef __cplusplus
+#include <stdexcept>
+#include <cstdio>
+#include <cstring>
+#else
 #include <stdio.h>
 #include <string.h>
+#endif
 #include <setjmp.h>
 #include <signal.h>
 
@@ -34,11 +40,25 @@
 extern "C" {
 #endif
 
+#ifdef __GNUC__
+#  define TCTEST_PRINTF_FORMAT_ATTR __attribute__ ((format (printf, 1, 2)))
+#else
+#  define TCTEST_PRINTF_FORMAT_ATTR
+#endif
+
 extern sigjmp_buf tctest_env;
 extern int tctest_assertion_line;
 extern int tctest_failures;
 extern int tctest_num_executed;
 void tctest_register_signal_handlers(void);
+
+/*
+ * This function is called by the ASSERT() and FAIL() macros
+ * if a test failure occurs. So, setting a breakpoint on this
+ * function is a useful way to gain control on the first
+ * test failure.
+ */
+void tctest_fail(const char *fmt, ...) TCTEST_PRINTF_FORMAT_ATTR;
 
 /*
  * Setting this pointer to a non-null value will cause tctest to
@@ -65,6 +85,39 @@ extern void (*tctest_on_test_executed)(const char *testname, int passed);
  */
 extern void (*tctest_on_complete)(int num_passed, int num_executed);
 
+#ifdef __cplusplus
+/*
+ * For tests implemented in C++, attempt to
+ * catch exceptions thrown from test functions
+ * and count them as test failures
+ */
+
+#  define TCTEST_TRY \
+	try {
+
+#  define TCTEST_CATCH(func) \
+	} catch (std::exception &ex) { \
+		printf("std::exception (what='%s')\n", ex.what()); \
+		tctest_failures++; \
+		if (tctest_on_test_executed) { \
+			tctest_on_test_executed(#func, 0); \
+		} \
+	} catch (...) { \
+		printf("exception\n"); \
+		tctest_failures++; \
+		if (tctest_on_test_executed) { \
+			tctest_on_test_executed(#func, 0); \
+		} \
+	}
+
+#else
+/*
+ * No try/catch in plain C code
+ */
+#  define TCTEST_TRY
+#  define TCTEST_CATCH(func)
+#endif
+
 #define TEST_INIT() do { \
 	tctest_register_signal_handlers(); \
 } while (0)
@@ -74,6 +127,7 @@ extern void (*tctest_on_complete)(int num_passed, int num_executed);
 		TestObjs *t = 0; \
 		tctest_num_executed++; \
 		tctest_assertion_line = -1; \
+		TCTEST_TRY \
 		if (sigsetjmp(tctest_env, 1) == 0) { \
 			t = setup(); \
 			printf("%s...", #func); \
@@ -89,6 +143,7 @@ extern void (*tctest_on_complete)(int num_passed, int num_executed);
 				tctest_on_test_executed(#func, 0); \
 			} \
 		} \
+		TCTEST_CATCH(func) \
 		if (t) { \
 			cleanup(t); \
 		} \
@@ -98,8 +153,7 @@ extern void (*tctest_on_complete)(int num_passed, int num_executed);
 #define ASSERT(cond) do { \
 	tctest_assertion_line = __LINE__; \
 	if (!(cond)) { \
-		printf("failed ASSERT %s at line %d\n", #cond, __LINE__); \
-		siglongjmp(tctest_env, 1); \
+		tctest_fail("failed ASSERT %s at line %d\n", #cond, __LINE__); \
 	} \
 } while (0)
 
@@ -109,20 +163,23 @@ extern void (*tctest_on_complete)(int num_passed, int num_executed);
  * ASSERT(0).
  */
 #define FAIL(msg) do { \
-	printf("%s\n", msg); \
-	siglongjmp(tctest_env, 1); \
+	tctest_fail("failed, %s\n", msg); \
 } while (0)
 
 #define TEST_FINI() do { \
 	if (tctest_failures == 0) { \
-		printf("All tests passed!\n"); \
+		if (tctest_num_executed > 0) { \
+			printf("All tests passed!\n"); \
+		} else { \
+			printf("No tests were executed!\n"); \
+		} \
 	} else { \
 		printf("%d test(s) failed\n", tctest_failures); \
 	} \
 	if (tctest_on_complete) { \
 		tctest_on_complete(tctest_num_executed - tctest_failures, tctest_num_executed); \
 	} \
-	return tctest_failures > 0; \
+	return tctest_failures > 0 || (tctest_failures == 0 && tctest_num_executed == 0); \
 } while (0)
 
 #ifdef __cplusplus

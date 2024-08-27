@@ -1,2 +1,4 @@
 /*.o
-/fixedpoint_tests
+/bigint_tests
+/depend.mak
+/solution.zip
