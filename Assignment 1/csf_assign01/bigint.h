@@ -14,7 +14,8 @@
 //! to record whether or not the value is negative.
 class BigInt {
 private:
-  // TODO: add fields
+  std::vector<u_int64_t> magnitude;
+  bool negative;
 
 public:
   //! Default constructor.

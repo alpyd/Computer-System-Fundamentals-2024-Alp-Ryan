@@ -1,24 +1,28 @@
 #include <cassert>
 #include "bigint.h"
 
+
+
 BigInt::BigInt()
-  // TODO: initialize member variables
 {
 }
 
 BigInt::BigInt(std::initializer_list<uint64_t> vals, bool negative)
-  // TODO: initialize member variables
 {
+  this->magnitude = vals;
+  this->negative = negative;
 }
 
 BigInt::BigInt(uint64_t val, bool negative)
-  // TODO: initialize member variables
 {
+  this->magnitude.push_back(val);
+  this->negative = negative;
 }
 
 BigInt::BigInt(const BigInt &other)
-  // TODO: initialize member variables
 {
+  this->magnitude = other.magnitude;
+  this->negative = other.negative;
 }
 
 BigInt::~BigInt()
