@@ -37,16 +37,11 @@ BigInt &BigInt::operator=(const BigInt &rhs)
   }
 
   return *this;
-    this->magnitude = rhs.magnitude;
-    this->negative = rhs.negative;
-  }
-
-  return *this;
 }
 
 bool BigInt::is_negative() const
 {
-  // TODO: implement
+  return this->negative;
 }
 
 uint64_t BigInt::get_bits(unsigned index) const
@@ -55,7 +50,7 @@ uint64_t BigInt::get_bits(unsigned index) const
 }
 
 const std::vector<uint64_t> &BigInt::get_bit_vector() const {
-  // TODO: implement
+  return this->magnitude;
 }
 
 BigInt BigInt::operator+(const BigInt &rhs) const
