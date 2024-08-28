@@ -31,7 +31,12 @@ BigInt::~BigInt()
 
 BigInt &BigInt::operator=(const BigInt &rhs)
 {
-  // TODO: implement
+  if (this != &rhs){
+    this->magnitude = rhs.magnitude;
+    this->negative = rhs.negative;
+  }
+
+  return *this;
 }
 
 bool BigInt::is_negative() const
