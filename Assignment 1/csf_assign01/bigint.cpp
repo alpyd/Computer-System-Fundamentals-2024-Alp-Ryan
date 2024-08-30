@@ -71,7 +71,13 @@ BigInt BigInt::operator-(const BigInt &rhs) const
 
 BigInt BigInt::operator-() const
 {
-  // TODO: implement
+  BigInt opposite_BigInt = *this;
+  if(opposite_BigInt.negative == true){
+    opposite_BigInt.negative = false;
+  } else {
+    opposite_BigInt.negative = true;
+  }
+  return opposite_BigInt;
 }
 
 bool BigInt::is_bit_set(unsigned n) const
