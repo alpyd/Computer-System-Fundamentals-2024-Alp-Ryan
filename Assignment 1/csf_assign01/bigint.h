@@ -184,6 +184,9 @@ public:
   //! @return the value of this BigInt object in decimal (base-10)
   std::string to_dec() const;
 
+  std::string convert_to_hex() const;
+
+
 private:
   // TODO: add helper functions
 };
