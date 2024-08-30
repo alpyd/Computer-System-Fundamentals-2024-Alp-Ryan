@@ -46,7 +46,12 @@ bool BigInt::is_negative() const
 
 uint64_t BigInt::get_bits(unsigned index) const
 {
-  return this->magnitude[index];
+  if(index < magnitude.size()) { //valid index
+    return magnitude[index];
+  }
+  else { //index out of bounds
+    return 0;
+  }
 }
 
 const std::vector<uint64_t> &BigInt::get_bit_vector() const {
