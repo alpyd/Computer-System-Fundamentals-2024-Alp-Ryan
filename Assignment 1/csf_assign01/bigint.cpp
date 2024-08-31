@@ -61,64 +61,121 @@ void BigInt::setMagnitude(const std::vector<uint64_t>& newMagnitude) {
         magnitude = newMagnitude;
   }
 
-
-static BigInt add_magnitudes(const BigInt &lhs, const BigInt &rhs);
-
-
-static BigInt subtract_magnitudes(const BigInt &lhs, const BigInt &rhs) {
-    
-    BigInt result;
-    std::vector<uint64_t> res_magnitude;
-    const size_t n = lhs.get_bit_vector().size();
-    res_magnitude.reserve(n);
-
-    uint64_t carry = 0;
-    for (size_t i = 0; i < n; ++i) {
-        uint64_t lhs_val = lhs.get_bit_vector()[i];
-        uint64_t rhs_val = i < rhs.get_bit_vector().size() ? rhs.get_bit_vector()[i] : 0;
-
-        uint64_t diff = lhs_val - rhs_val - carry;
-        if (lhs_val < rhs_val + carry) {
-            carry = 1;
-            diff += (1ULL << 64);
-        } else {
-            carry = 0;
-        }
-
-        res_magnitude.push_back(diff);
-    }
-
-    // Remove leading zeros
-    while (res_magnitude.size() > 1 && res_magnitude.back() == 0) {
-        res_magnitude.pop_back();
-    }
-
-    result.setMagnitude(res_magnitude);
-    return result;
-}
-
 //Returns 1 if LHS is larger, -1 if RHS is larger, 0 if equal
 static int compare_magnitudes(const BigInt &lhs, const BigInt &rhs) {
 
-  
-  if (lhs.get_bit_vector().size() != rhs.get_bit_vector().size()) {
-        return lhs.get_bit_vector().size() > rhs.get_bit_vector().size() ? 1 : -1; //compare by size of vector
+  const auto &lhs_magnitude = lhs.get_bit_vector();
+  const auto &rhs_magnitude = rhs.get_bit_vector();
+
+  if (lhs_magnitude.size() != rhs_magnitude.size()) {
+        return lhs_magnitude.size() > rhs_magnitude.size() ? 1 : -1; //check size of vectors
     }
     
-    for (int i = lhs.get_bit_vector().size() - 1; i >= 0; --i) { //start from most significant bit
-        if (lhs.get_bit_vector()[i] != rhs.get_bit_vector()[i]) {
-            return lhs.get_bit_vector()[i] > rhs.get_bit_vector()[i] ? 1 : -1;
+    //Compare element by element starting from most significant bit
+    for (int i = lhs_magnitude.size() - 1; i >= 0; --i) { 
+        if (lhs_magnitude[i] != rhs_magnitude[i]) {
+            return lhs_magnitude[i] > rhs_magnitude[i] ? 1 : -1;
         }
     }
 
     return 0; //equal magnitude
 }
 
+static BigInt add_magnitudes(const BigInt &lhs, const BigInt &rhs) {
+    BigInt result;
+    const auto& lhs_magnitude = lhs.get_bit_vector();
+    const auto& rhs_magnitude = rhs.get_bit_vector();
+
+    size_t max_size = std::max(lhs_magnitude.size(), rhs_magnitude.size()); //number of digits to be processed
+    std::vector<uint64_t> res_magnitude;
+    //res_magnitude.reserve(max_size);
+
+    uint64_t carry = 0; //used for grade school algo
+    for (size_t i = 0; i < max_size; ++i) {
+
+      //access i^th element, if past the size assume it is a 0
+        uint64_t lhs_val = i < lhs_magnitude.size() ? lhs_magnitude[i] : 0;
+        uint64_t rhs_val = i < rhs_magnitude.size() ? rhs_magnitude[i] : 0;
+
+        uint64_t sum = lhs_val + rhs_val + carry;
+        
+        //check if the addition resulted in an overflow
+        carry = (sum < lhs_val) ? 1 : 0;
+
+        //store result of current digit addition
+        res_magnitude.push_back(sum);
+    }
+
+    if (carry) { //check for any carry, adds if needed
+        res_magnitude.push_back(carry);
+    }
+
+    result.setMagnitude(res_magnitude); //assign result vector to BigInt
+    return result;
+}
+
+
+static BigInt subtract_magnitudes(const BigInt &lhs, const BigInt &rhs) {
+    
+    BigInt result;
+    const auto &lhs_magnitude = lhs.get_bit_vector();
+    const auto &rhs_magnitude = rhs.get_bit_vector();
+    std::vector<uint64_t> res_magnitude;
+    
+    bool lhs_greater = compare_magnitudes(lhs, rhs) >= 0; //1 if lhs equal/greater, 0 if rhs greater 
+
+    const auto &larger_magnitude =  lhs_greater ? lhs_magnitude : rhs_magnitude;
+    const auto &smaller_magnitude =  lhs_greater ? rhs_magnitude : lhs_magnitude;
+
+    uint64_t carry = 0;
+    for (size_t i = 0; i < larger_magnitude.size(); ++i) {
+
+      //access i^th element, if past the size assume it is a 0
+        uint64_t first_digit = larger_magnitude[i];
+        uint64_t second_digit = i < rhs_magnitude.size() ? smaller_magnitude[i] : 0;
+
+        uint64_t diff = first_digit - second_digit - carry; //do subtraction
+        carry = (first_digit < (second_digit + carry)) ? 1 : 0;
+
+        res_magnitude.push_back(diff);
+    }
+
+    //Remove zeroes at end of vector
+    while (res_magnitude.size() > 1 && res_magnitude.back() == 0) {
+        res_magnitude.pop_back();
+    }
+
+    result.setMagnitude(res_magnitude);
+
+    if (!lhs_greater) {
+    result = -result; // adjust sign if first operand had smaller magnitude
+    }
+
+    return result;
+}
+
 //BigInt div_by_2() const;
 
-BigInt BigInt::operator+(const BigInt &rhs) const
+BigInt BigInt::operator+(const BigInt &rhs) const 
 {
-  // TODO: implement
+  BigInt result;
+   if (this->negative == rhs.negative) { ////Same sign, just add their magnitudes
+        result = add_magnitudes(*this, rhs);
+        result.negative = this->negative;
+    } else { // If they have opposite signs, convert to subtraction, make sure larger - smaller
+
+        if (compare_magnitudes(*this, rhs) >= 0) { // *this has larger magnitude
+            result = subtract_magnitudes(*this, rhs);
+            result.negative = this->negative; // result takes the sign of the larger magnitude
+
+        } else { //rhs has larger magnitude
+            BigInt result = subtract_magnitudes(rhs, *this);
+            result.negative = rhs.negative;
+            
+        }
+
+    }
+    return result;
 }
 
 BigInt BigInt::operator-(const BigInt &rhs) const
@@ -126,22 +183,8 @@ BigInt BigInt::operator-(const BigInt &rhs) const
   // TODO: implement
   // Hint: a - b could be computed as a + -b
 
-  if (this->negative == rhs.negative) {
-        BigInt result;
-
-        if (this->compare(rhs) >= 0) {
-            result = subtract_magnitudes(*this, rhs);
-            result.negative = this->negative;
-        } else {
-            result = subtract_magnitudes(rhs, *this);
-            result.negative = !rhs.negative;
-        }
-
-        return result;
-    } else {
-        return *this + (-rhs);  // Convert subtraction to addition if signs differ
-    }
-
+    //To perform a - b, do a + -b
+    return add_magnitudes(*this, -rhs);
 
 }
 
