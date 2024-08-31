@@ -48,6 +48,10 @@ public:
   //! Destructor.
   ~BigInt();
 
+
+  //! Setter for magnitude vector
+  void setMagnitude(const std::vector<uint64_t>& newMagnitude);
+
   //! Assignment operator.
   //!
   //! @param rhs another BigInt object that this object should be made
