@@ -57,6 +57,38 @@ const std::vector<uint64_t> &BigInt::get_bit_vector() const {
   return this->magnitude;
 }
 
+std::string BigInt::to_hex() const
+{
+  
+  std::stringstream ss;
+  if(negative) { //add negative sign for negative values
+    ss << "-";
+  }
+  bool leading_zero = true;
+
+  //Start from most significant uint64_t in magnitude
+ for(auto it = magnitude.rbegin(); it != magnitude.rend(); ++it) {
+  
+  if(*it == 0 && leading_zero) { //skip leading zeroes
+    continue;
+  }
+
+  if(leading_zero) { //once non-zero encountered
+    ss << std::hex << *it; 
+    leading_zero = false; //stop skipping zeroes
+  } else { //ensure hex formatting & leading zero padding if necessary
+    ss << std::setfill('0') << std::setw(16) << *it;
+  }
+  
+ }
+
+  if(leading_zero) { //If all zeroes or empty magnitude vector
+    return "0";
+  }
+
+  return ss.str();
+}
+
 void BigInt::setMagnitude(const std::vector<uint64_t>& newMagnitude) {
         magnitude = newMagnitude;
   }
@@ -67,8 +99,9 @@ static int compare_magnitudes(const BigInt &lhs, const BigInt &rhs) {
   const auto &lhs_magnitude = lhs.get_bit_vector();
   const auto &rhs_magnitude = rhs.get_bit_vector();
 
+    //Compare based on number of significant digits (size of vector)
   if (lhs_magnitude.size() != rhs_magnitude.size()) {
-        return lhs_magnitude.size() > rhs_magnitude.size() ? 1 : -1; //check size of vectors
+        return lhs_magnitude.size() > rhs_magnitude.size() ? 1 : -1;
     }
     
     //Compare element by element starting from most significant bit
@@ -82,11 +115,12 @@ static int compare_magnitudes(const BigInt &lhs, const BigInt &rhs) {
 }
 
 static BigInt add_magnitudes(const BigInt &lhs, const BigInt &rhs) {
+    
     BigInt result;
     const auto& lhs_magnitude = lhs.get_bit_vector();
     const auto& rhs_magnitude = rhs.get_bit_vector();
 
-    size_t max_size = std::max(lhs_magnitude.size(), rhs_magnitude.size()); //number of digits to be processed
+    size_t max_size = std::max(lhs_magnitude.size(), rhs_magnitude.size()); //max number of digits to be processed
     std::vector<uint64_t> res_magnitude;
     //res_magnitude.reserve(max_size);
 
@@ -222,27 +256,6 @@ BigInt BigInt::operator/(const BigInt &rhs) const
 int BigInt::compare(const BigInt &rhs) const
 {
   // TODO: implement
-}
-
-std::string BigInt::to_hex() const
-{
-  const char hex_characters[] = "0123456789abcdef";
-  std::string hex = "";
-  if(magnitude.size() == 0){
-    return "0";
-  }
-  for (size_t i = 0; i < magnitude.size(); i++) {
-    uint64_t remaining_value = magnitude[i] + 64*magnitude[i+1];
-    for(int i = 0; i < 16; i++) {
-      char single_digit = hex_characters[remaining_value % 16];
-      remaining_value = (remaining_value - remaining_value % 16)/16;
-      hex = single_digit + hex;
-    }
-  }
-  while(hex.at(0) == 0) {
-    hex.erase(0, 1);  
-  }
-  return hex;
 }
 
 std::string BigInt::to_dec() const
