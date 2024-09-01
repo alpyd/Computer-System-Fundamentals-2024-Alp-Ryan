@@ -1,6 +1,8 @@
 #include <cassert>
 #include "bigint.h"
-
+#include <sstream> // For std::stringstream
+#include <iomanip> // For std::setfill, std::setw
+#include <string>  // For std::string
 
 BigInt::BigInt()
 {
@@ -224,13 +226,17 @@ BigInt BigInt::operator-(const BigInt &rhs) const
 
 BigInt BigInt::operator-() const
 {
-  BigInt opposite_BigInt = *this;
-  if(opposite_BigInt.negative == true){
-    opposite_BigInt.negative = false;
+  
+  if(this->magnitude.size() == 0) {
+    return *this;
+
   } else {
-    opposite_BigInt.negative = true;
+
+    BigInt opposite_BigInt = *this;
+    opposite_BigInt.negative = !(this->negative);
+    return opposite_BigInt;
   }
-  return opposite_BigInt;
+
 }
 
 bool BigInt::is_bit_set(unsigned n) const
