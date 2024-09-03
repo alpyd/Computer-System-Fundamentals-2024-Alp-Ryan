@@ -224,10 +224,26 @@ BigInt BigInt::operator-(const BigInt &rhs) const
 
 }
 
+//Returns true if the BigInt corresponds to value 0, false otherwise
+bool BigInt::is_zero() const {
+
+  bool zeroes_only = true;
+
+  if(this->magnitude.size() == 0) { //no magnitude means 0
+    return false;
+  }
+  for(size_t i = 0; i < this->magnitude.size(); ++i) {
+    if(this->magnitude[i] != 0) {
+      zeroes_only = false; //if we find a nonzero element, cannot be 0
+    }
+  }
+  return zeroes_only;
+}
+
 BigInt BigInt::operator-() const
 {
   
-  if(this->magnitude.size() == 0) {
+  if(is_zero()) { //do not negate 0
     return *this;
 
   } else {

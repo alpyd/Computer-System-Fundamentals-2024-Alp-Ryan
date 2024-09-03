@@ -52,6 +52,9 @@ public:
   //! Setter for magnitude vector
   void setMagnitude(const std::vector<uint64_t>& newMagnitude);
 
+  //! Returns true if the BigInt corresponds to value 0, false otherwise
+  bool is_zero() const;
+
   //! Assignment operator.
   //!
   //! @param rhs another BigInt object that this object should be made
