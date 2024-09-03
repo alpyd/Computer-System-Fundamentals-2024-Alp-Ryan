@@ -124,7 +124,7 @@ static BigInt add_magnitudes(const BigInt &lhs, const BigInt &rhs) {
 
     size_t max_size = std::max(lhs_magnitude.size(), rhs_magnitude.size()); //max number of digits to be processed
     std::vector<uint64_t> res_magnitude;
-    //res_magnitude.reserve(max_size);
+    res_magnitude.reserve(max_size);
 
     uint64_t carry = 0; //used for grade school algo
     for (size_t i = 0; i < max_size; ++i) {
@@ -156,12 +156,12 @@ static BigInt subtract_magnitudes(const BigInt &lhs, const BigInt &rhs) {
     BigInt result;
     const auto &lhs_magnitude = lhs.get_bit_vector();
     const auto &rhs_magnitude = rhs.get_bit_vector();
-    std::vector<uint64_t> res_magnitude;
     
     bool lhs_greater = compare_magnitudes(lhs, rhs) >= 0; //1 if lhs equal/greater, 0 if rhs greater 
-
     const auto &larger_magnitude =  lhs_greater ? lhs_magnitude : rhs_magnitude;
     const auto &smaller_magnitude =  lhs_greater ? rhs_magnitude : lhs_magnitude;
+
+    std::vector<uint64_t> res_magnitude;
 
     uint64_t carry = 0;
     for (size_t i = 0; i < larger_magnitude.size(); ++i) {
@@ -257,12 +257,35 @@ BigInt BigInt::operator-() const
 
 bool BigInt::is_bit_set(unsigned n) const
 {
-  // TODO: implement
+ unsigned vector_index = n / 64; //index of uint64_t's with vector (0,1,...)
+ unsigned bit_index = n % 64; //bit index within the uint64_t (64 bits)
+
+if(vector_index >= this->magnitude.size()) { //bit is not in set
+  return false;
+}
+
+uint64_t value = this->magnitude[vector_index];
+uint64_t mask = uint64_t(1) << bit_index; //set all bits to 0 besides n^th bit
+return (value & mask) != 0; //check n^th bit position in uint64_t value
+
+//bitwise AND will return 0 if the bit was 0, and nonzero if bit was 1
+
 }
 
 BigInt BigInt::operator<<(unsigned n) const
 {
-  // TODO: implement
+  if(this->negative) {
+    throw std::invalid_argument("Left shift not allowed for negative values");
+  }
+
+  BigInt result(*this);
+  
+  //TODO: implement left shift by n bits
+
+
+
+  return result;
+
 }
 
 BigInt BigInt::operator*(const BigInt &rhs) const
@@ -277,7 +300,24 @@ BigInt BigInt::operator/(const BigInt &rhs) const
 
 int BigInt::compare(const BigInt &rhs) const
 {
-  // TODO: implement
+  
+  if(this->negative && !rhs.negative) { //LHS < RHS
+    return -1;
+  }
+  if(rhs.negative && !this->negative) { //LHS > RHS
+    return 1;
+  }
+
+  //BigInts at this point must have same sign, now compare magnitude
+  //Returns 1 if LHS is larger, -1 if RHS is larger, 0 if equal
+  int compare_mag = compare_magnitudes(*this, rhs);
+
+  if(this->negative && rhs.negative) { //both values negative,
+    return -compare_mag; //larger negative magnitude is actually smaller
+  } else { //both values positive
+    return compare_mag;
+  }
+  
 }
 
 std::string BigInt::to_dec() const
