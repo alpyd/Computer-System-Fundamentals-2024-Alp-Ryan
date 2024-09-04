@@ -4,36 +4,43 @@
 #include <iomanip> // For std::setfill, std::setw
 #include <string>  // For std::string
 
+//Constructor for BigInt with no parameters. Makes an empty uint_64 vector to symbolize 0 and sets the negativity to false.
 BigInt::BigInt()
 {
   this->magnitude = std::vector<u_int64_t>{};
   this->negative = false;
 }
 
+//Constructor for BigInt with a uint64_t initializer list and predetermined negativity boolean.
 BigInt::BigInt(std::initializer_list<uint64_t> vals, bool negative)
 {
   this->magnitude = vals;
   this->negative = negative;
 }
 
+//Constructor for BigInt with a single uint64_t value and predetermined negativity boolean.
 BigInt::BigInt(uint64_t val, bool negative)
 {
   this->magnitude.push_back(val);
   this->negative = negative;
 }
 
+//Constructor for BigInt object with another BigInt object passed in as a parameter. It copies the negativity boolean and magnitude vector.
 BigInt::BigInt(const BigInt &other)
 {
   this->magnitude = other.magnitude;
   this->negative = other.negative;
 }
 
+//Destructor for BigInt. Destruction of vector is already handled.
 BigInt::~BigInt()
 {
 }
 
+//Definition of the = operator to create a new BigInt. Outputs a BigInt with same magnitude vector and negativity boolean of the rhs.
 BigInt &BigInt::operator=(const BigInt &rhs)
 {
+  //Checks to make sure it is not setting something equal to itself
   if (this != &rhs){
     this->magnitude = rhs.magnitude;
     this->negative = rhs.negative;
@@ -42,11 +49,13 @@ BigInt &BigInt::operator=(const BigInt &rhs)
   return *this;
 }
 
+//Returns whether or not the BigInt value is negative.
 bool BigInt::is_negative() const
 {
   return this->negative;
 }
 
+//Returns the uint64_t value of a certain number at the given index of the magnitude vector. Returns 0 if it is out of the index.
 uint64_t BigInt::get_bits(unsigned index) const
 {
   if(index < magnitude.size()) { //valid index
@@ -57,11 +66,14 @@ uint64_t BigInt::get_bits(unsigned index) const
   }
 }
 
+//Returns the magnitude vector of the BigInt.
 const std::vector<uint64_t> &BigInt::get_bit_vector() const
 {
   return this->magnitude;
 }
 
+
+//Converts the BigInt into a hexadecimal number by incorporating a negative sign and the hexadecimal representation of the magnitude vector
 std::string BigInt::to_hex() const
 {
   
