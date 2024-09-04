@@ -601,7 +601,7 @@ void test_to_dec_2(TestObjs *) {
 
 void hw_1_to_hex_tests(TestObjs *objs){
   std::string result1 = objs->zero.to_hex();
-  ASSERT("3" == result1);
+  ASSERT("0" == result1);
 
   std::string result2 = objs->two_pow_64_plus_one.to_hex();
   ASSERT("10000000000000001" == result2);
@@ -618,10 +618,10 @@ void hw_1_unary_is_negative_tests(TestObjs *objs){
   BigInt negative_three = -(objs->three);
   ASSERT(negative_three.is_negative());  
 
-  BigInt negative_zero = -objs->zero;
-  ASSERT(!negative_zero.is_negative());
+  BigInt negative_zero = -objs->zero; //"zero" initialized false for negative
+  ASSERT(!negative_zero.is_negative()); //unary negation should have no effect
 
-  BigInt negative_mult_zeros = -objs->multiple_zeros;
+  BigInt negative_mult_zeros = -objs->multiple_zeros; 
   ASSERT(!negative_mult_zeros.is_negative());
 
   BigInt negative_negative_three = -(-(objs->three));
