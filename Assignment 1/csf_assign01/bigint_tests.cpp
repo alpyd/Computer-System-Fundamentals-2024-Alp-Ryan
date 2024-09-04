@@ -15,7 +15,11 @@ struct TestObjs {
   BigInt negative_nine;
   BigInt negative_three;
   BigInt nine;
-  // TODO: add additional test fixture objects
+  BigInt two_pow_64_plus_one;
+  BigInt two_pow_64_plus_hex;
+  BigInt multiple_zeros;
+  BigInt really_big_number;
+  
 
   TestObjs();
 };
@@ -60,7 +64,11 @@ void test_to_hex_1(TestObjs *objs);
 void test_to_hex_2(TestObjs *objs);
 void test_to_dec_1(TestObjs *objs);
 void test_to_dec_2(TestObjs *objs);
-// TODO: declare additional test functions
+void hw1_constructors_equals_tests(TestObjs *objs);
+void hw1_get_bits_get_bit_vector_tests(TestObjs *objs);
+void hw_1_unary_is_negative_tests(TestObjs *objs);
+void hw_1_to_hex_tests(TestObjs *objs);
+
 
 int main(int argc, char **argv) {
   if (argc > 1) {
@@ -96,7 +104,10 @@ int main(int argc, char **argv) {
   TEST(test_to_hex_2);
   TEST(test_to_dec_1);
   TEST(test_to_dec_2);
-  // TODO: add calls to TEST for additional test functions
+  TEST(hw1_constructors_equals_tests);
+  TEST(hw1_get_bits_get_bit_vector_tests);
+  TEST(hw_1_unary_is_negative_tests);
+  TEST(hw_1_to_hex_tests);
 
   TEST_FINI();
 }
@@ -115,7 +126,10 @@ TestObjs::TestObjs()
   , negative_nine(9UL, true)
   , negative_three(3UL, true)
   , nine(9UL)
-  // TODO: initialize additional test fixture objects
+  , two_pow_64_plus_one({1UL, 1UL})
+  , two_pow_64_plus_hex({257UL, 1UL})
+  , multiple_zeros({0UL, 0UL, 0UL})
+  , really_big_number({4UL, 7UL, 6UL, 9UL, 0UL, 3UL, 1UL, 2UL, 5UL})
 {
 }
 
@@ -565,7 +579,7 @@ void test_to_hex_2(TestObjs *) {
 void test_to_dec_1(TestObjs *objs) {
   // some basic tests for to_dec()
 
-  std::string result1 = objs->zero.to_dec();
+  std::string result1 = objs->three.to_dec();
   ASSERT("0" == result1);
 
   std::string result2 = objs->negative_nine.to_dec();
@@ -585,4 +599,80 @@ void test_to_dec_2(TestObjs *) {
   }
 }
 
-// TODO: implement additional test functions
+void hw_1_to_hex_tests(TestObjs *objs){
+  std::string result1 = objs->zero.to_hex();
+  ASSERT("3" == result1);
+
+  std::string result2 = objs->two_pow_64_plus_one.to_hex();
+  ASSERT("10000000000000001" == result2);
+
+  std::string result3 = objs->two_pow_64_plus_hex.to_hex();
+  ASSERT("10000000000000101" == result3);
+
+  std::string result4 = objs->multiple_zeros.to_hex();
+  ASSERT("0" == result4);
+
+}
+
+void hw_1_unary_is_negative_tests(TestObjs *objs){
+  BigInt negative_three = -(objs->three);
+  ASSERT(negative_three.is_negative());  
+
+  BigInt negative_zero = -objs->zero;
+  ASSERT(!negative_zero.is_negative());
+
+  BigInt negative_mult_zeros = -objs->multiple_zeros;
+  ASSERT(!negative_mult_zeros.is_negative());
+
+  BigInt negative_negative_three = -(-(objs->three));
+  ASSERT(!negative_negative_three.is_negative());
+
+  BigInt two_to_pow_64 = -(objs->negative_two_pow_64);
+  ASSERT(!two_to_pow_64.is_negative());
+
+}
+
+void hw1_get_bits_get_bit_vector_tests(TestObjs *objs){
+  ASSERT(3UL == objs->three.get_bits(0));
+  ASSERT(0UL == objs->three.get_bits(1));
+  ASSERT(objs->three.get_bit_vector() == objs->negative_three.get_bit_vector());
+
+  ASSERT(5UL == objs->really_big_number.get_bits(8));
+  ASSERT(2UL == objs->really_big_number.get_bits(7));
+  ASSERT(1UL == objs->really_big_number.get_bits(6));
+  ASSERT(3UL == objs->really_big_number.get_bits(5));
+  ASSERT(0UL == objs->really_big_number.get_bits(4));
+  ASSERT(9UL == objs->really_big_number.get_bits(3));
+  ASSERT(6UL == objs->really_big_number.get_bits(2));
+  ASSERT(7UL == objs->really_big_number.get_bits(1));
+  ASSERT(4UL == objs->really_big_number.get_bits(0));
+  ASSERT(0UL == objs->really_big_number.get_bits(9));
+  ASSERT(objs->realy_big_number.get_bit_vector() == {4UL, 7UL, 6UL, 9UL, 0UL, 3UL, 1UL, 2UL, 5UL});
+
+  ASSERT(0UL == objs->multiple_zeros.get_bits(0));
+  ASSERT(0UL == objs->multiple_zeros.get_bits(4));
+  ASSERT(objs->multiple_zeros.get_bit_vector() == {0, 0, 0});
+
+  ASSERT(257UL == two_pow_64_plus_hex.get_bits(0));
+  ASSERT(1UL == two_pow_64_plus_hex.get_bits(1));
+  ASSERT(objs->two_pow_64_plus_hex.get_bit_vector() == {257UL, 1UL});
+}
+
+void hw1_constructors_equals_tests(TestObjs *objs){
+  BigInt result1 = objs->two_pow_64_plus_hex;
+  ASSERT(result1.get_bit_vector() == objs->two_pow_64_plus_hex.magnitude.get_bit_vector());
+  ASSERT(result1.is_negative() == objs->two_pow_64_plus_hex.is_negative());
+
+  BigInt result2 = objs->multiple_zeros;
+  ASSERT(result2.get_bit_vector() == objs->multiple_zeros.get_bit_vector());
+  ASSERT(result2.is_negative() == objs->multiple_zeros.is_negative());
+
+  BigInt result3 = BigInt(objs->really_big_number);
+  ASSERT(result3.get_bit_vector() == objs->really_big_number.magnitude.get_bit_vector());
+  ASSERT(result3.is_negative() == objs->really_big_number.is_negative());
+
+  BigInt result4 = BigInt(48UL, true);
+  ASSERT(result4.get_bits(0) == 48UL);
+  ASSERT(result4.is_negative());
+}
+
