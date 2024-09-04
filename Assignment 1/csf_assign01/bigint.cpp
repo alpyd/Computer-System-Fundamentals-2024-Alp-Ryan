@@ -8,7 +8,7 @@
 BigInt::BigInt()
 {
   this->magnitude = std::vector<u_int64_t>{};
-  this->negative = false;
+  //this->negative = false;
 }
 
 //Constructor for BigInt with a uint64_t initializer list and predetermined negativity boolean.
@@ -255,11 +255,9 @@ bool BigInt::is_zero() const {
 
 BigInt BigInt::operator-() const
 {
-  if(is_zero()) { //do not negate 0
+  if(this->magnitude.size() == 0) {
     return *this;
-
   } else {
-
     BigInt opposite_BigInt = *this;
     opposite_BigInt.negative = !(this->negative);
     return opposite_BigInt;
