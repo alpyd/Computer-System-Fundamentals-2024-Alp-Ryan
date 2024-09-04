@@ -55,7 +55,8 @@ uint64_t BigInt::get_bits(unsigned index) const
   }
 }
 
-const std::vector<uint64_t> &BigInt::get_bit_vector() const {
+const std::vector<uint64_t> &BigInt::get_bit_vector() const
+{
   return this->magnitude;
 }
 
@@ -91,103 +92,103 @@ std::string BigInt::to_hex() const
   return ss.str();
 }
 
-void BigInt::setMagnitude(const std::vector<uint64_t>& newMagnitude) {
-        magnitude = newMagnitude;
-  }
+void BigInt::setMagnitude(const std::vector<uint64_t>& newMagnitude)
+{
+  magnitude = newMagnitude;
+}
 
 //Returns 1 if LHS is larger, -1 if RHS is larger, 0 if equal
-static int compare_magnitudes(const BigInt &lhs, const BigInt &rhs) {
-
+static int compare_magnitudes(const BigInt &lhs, const BigInt &rhs)
+{
   const auto &lhs_magnitude = lhs.get_bit_vector();
   const auto &rhs_magnitude = rhs.get_bit_vector();
 
-    //Compare based on number of significant digits (size of vector)
+  //Compare based on number of significant digits (size of vector)
   if (lhs_magnitude.size() != rhs_magnitude.size()) {
-        return lhs_magnitude.size() > rhs_magnitude.size() ? 1 : -1;
-    }
+    return lhs_magnitude.size() > rhs_magnitude.size() ? 1 : -1;
+  }
     
-    //Compare element by element starting from most significant bit
-    for (int i = lhs_magnitude.size() - 1; i >= 0; --i) { 
-        if (lhs_magnitude[i] != rhs_magnitude[i]) {
-            return lhs_magnitude[i] > rhs_magnitude[i] ? 1 : -1;
-        }
-    }
+  //Compare element by element starting from most significant bit
+  for (int i = lhs_magnitude.size() - 1; i >= 0; --i) { 
+      if (lhs_magnitude[i] != rhs_magnitude[i]) {
+          return lhs_magnitude[i] > rhs_magnitude[i] ? 1 : -1;
+      }
+  }
 
-    return 0; //equal magnitude
+  return 0; //equal magnitude
 }
 
-static BigInt add_magnitudes(const BigInt &lhs, const BigInt &rhs) {
-    
-    BigInt result;
-    const auto& lhs_magnitude = lhs.get_bit_vector();
-    const auto& rhs_magnitude = rhs.get_bit_vector();
+static BigInt add_magnitudes(const BigInt &lhs, const BigInt &rhs)
+{  
+  BigInt result;
+  const auto& lhs_magnitude = lhs.get_bit_vector();
+  const auto& rhs_magnitude = rhs.get_bit_vector();
 
-    size_t max_size = std::max(lhs_magnitude.size(), rhs_magnitude.size()); //max number of digits to be processed
-    std::vector<uint64_t> res_magnitude;
-    res_magnitude.reserve(max_size);
+  size_t max_size = std::max(lhs_magnitude.size(), rhs_magnitude.size()); //max number of digits to be processed
+  std::vector<uint64_t> res_magnitude;
+  res_magnitude.reserve(max_size);
 
-    uint64_t carry = 0; //used for grade school algo
-    for (size_t i = 0; i < max_size; ++i) {
+  uint64_t carry = 0; //used for grade school algo
+  for (size_t i = 0; i < max_size; ++i) {
 
-      //access i^th element, if past the size assume it is a 0
-        uint64_t lhs_val = i < lhs_magnitude.size() ? lhs_magnitude[i] : 0;
-        uint64_t rhs_val = i < rhs_magnitude.size() ? rhs_magnitude[i] : 0;
+    //access i^th element, if past the size assume it is a 0
+      uint64_t lhs_val = i < lhs_magnitude.size() ? lhs_magnitude[i] : 0;
+      uint64_t rhs_val = i < rhs_magnitude.size() ? rhs_magnitude[i] : 0;
 
-        uint64_t sum = lhs_val + rhs_val + carry;
-        
-        //check if the addition resulted in an overflow
-        carry = (sum < lhs_val) ? 1 : 0;
+      uint64_t sum = lhs_val + rhs_val + carry;
+      
+      //check if the addition resulted in an overflow
+      carry = (sum < lhs_val) ? 1 : 0;
 
-        //store result of current digit addition
-        res_magnitude.push_back(sum);
-    }
+      //store result of current digit addition
+      res_magnitude.push_back(sum);
+  }
 
-    if (carry) { //check for any carry, adds if needed
-        res_magnitude.push_back(carry);
-    }
+  if (carry) { //check for any carry, adds if needed
+      res_magnitude.push_back(carry);
+  }
 
-    result.setMagnitude(res_magnitude); //assign result vector to BigInt
-    return result;
+  result.setMagnitude(res_magnitude); //assign result vector to BigInt
+  return result;
 }
 
 
-static BigInt subtract_magnitudes(const BigInt &lhs, const BigInt &rhs) {
-    
-    BigInt result;
-    const auto &lhs_magnitude = lhs.get_bit_vector();
-    const auto &rhs_magnitude = rhs.get_bit_vector();
-    
-    bool lhs_greater = compare_magnitudes(lhs, rhs) >= 0; //1 if lhs equal/greater, 0 if rhs greater 
-    const auto &larger_magnitude =  lhs_greater ? lhs_magnitude : rhs_magnitude;
-    const auto &smaller_magnitude =  lhs_greater ? rhs_magnitude : lhs_magnitude;
+static BigInt subtract_magnitudes(const BigInt &lhs, const BigInt &rhs)
+{
+  BigInt result;
+  const auto &lhs_magnitude = lhs.get_bit_vector();
+  const auto &rhs_magnitude = rhs.get_bit_vector();
+  
+  bool lhs_greater = compare_magnitudes(lhs, rhs) >= 0; //1 if lhs equal/greater, 0 if rhs greater 
+  const auto &larger_magnitude =  lhs_greater ? lhs_magnitude : rhs_magnitude;
+  const auto &smaller_magnitude =  lhs_greater ? rhs_magnitude : lhs_magnitude;
 
-    std::vector<uint64_t> res_magnitude;
+  std::vector<uint64_t> res_magnitude;
 
-    uint64_t carry = 0;
-    for (size_t i = 0; i < larger_magnitude.size(); ++i) {
+  uint64_t carry = 0;
+  for (size_t i = 0; i < larger_magnitude.size(); ++i) {
+    //access i^th element, if past the size assume it is a 0
+    uint64_t first_digit = larger_magnitude[i];
+    uint64_t second_digit = i < rhs_magnitude.size() ? smaller_magnitude[i] : 0;
 
-      //access i^th element, if past the size assume it is a 0
-        uint64_t first_digit = larger_magnitude[i];
-        uint64_t second_digit = i < rhs_magnitude.size() ? smaller_magnitude[i] : 0;
+    uint64_t diff = first_digit - second_digit - carry; //do subtraction
+    carry = (first_digit < (second_digit + carry)) ? 1 : 0;
 
-        uint64_t diff = first_digit - second_digit - carry; //do subtraction
-        carry = (first_digit < (second_digit + carry)) ? 1 : 0;
+    res_magnitude.push_back(diff);
+  }
 
-        res_magnitude.push_back(diff);
-    }
+  //Remove zeroes at end of vector
+  while (res_magnitude.size() > 1 && res_magnitude.back() == 0) {
+    res_magnitude.pop_back();
+  }
 
-    //Remove zeroes at end of vector
-    while (res_magnitude.size() > 1 && res_magnitude.back() == 0) {
-        res_magnitude.pop_back();
-    }
+  result.setMagnitude(res_magnitude);
 
-    result.setMagnitude(res_magnitude);
-
-    if (!lhs_greater) {
+  if (!lhs_greater) {
     result = -result; // adjust sign if first operand had smaller magnitude
-    }
+  }
 
-    return result;
+  return result;
 }
 
 //BigInt div_by_2() const;
@@ -226,7 +227,6 @@ BigInt BigInt::operator-(const BigInt &rhs) const
 
 //Returns true if the BigInt corresponds to value 0, false otherwise
 bool BigInt::is_zero() const {
-
   bool zeroes_only = true;
 
   if(this->magnitude.size() == 0) { //no magnitude means 0
@@ -242,7 +242,6 @@ bool BigInt::is_zero() const {
 
 BigInt BigInt::operator-() const
 {
-  
   if(is_zero()) { //do not negate 0
     return *this;
 
@@ -257,18 +256,18 @@ BigInt BigInt::operator-() const
 
 bool BigInt::is_bit_set(unsigned n) const
 {
- unsigned vector_index = n / 64; //index of uint64_t's with vector (0,1,...)
- unsigned bit_index = n % 64; //bit index within the uint64_t (64 bits)
+  unsigned vector_index = n / 64; //index of uint64_t's with vector (0,1,...)
+  unsigned bit_index = n % 64; //bit index within the uint64_t (64 bits)
 
-if(vector_index >= this->magnitude.size()) { //bit is not in set
-  return false;
-}
+  if(vector_index >= this->magnitude.size()) { //bit is not in set
+    return false;
+  }
 
-uint64_t value = this->magnitude[vector_index];
-uint64_t mask = uint64_t(1) << bit_index; //set all bits to 0 besides n^th bit
-return (value & mask) != 0; //check n^th bit position in uint64_t value
+  uint64_t value = this->magnitude[vector_index];
+  uint64_t mask = uint64_t(1) << bit_index; //set all bits to 0 besides n^th bit
+  return (value & mask) != 0; //check n^th bit position in uint64_t value
 
-//bitwise AND will return 0 if the bit was 0, and nonzero if bit was 1
+  //bitwise AND will return 0 if the bit was 0, and nonzero if bit was 1
 
 }
 

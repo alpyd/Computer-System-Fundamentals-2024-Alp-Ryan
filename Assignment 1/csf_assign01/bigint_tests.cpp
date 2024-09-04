@@ -647,20 +647,20 @@ void hw1_get_bits_get_bit_vector_tests(TestObjs *objs){
   ASSERT(7UL == objs->really_big_number.get_bits(1));
   ASSERT(4UL == objs->really_big_number.get_bits(0));
   ASSERT(0UL == objs->really_big_number.get_bits(9));
-  ASSERT(objs->realy_big_number.get_bit_vector() == {4UL, 7UL, 6UL, 9UL, 0UL, 3UL, 1UL, 2UL, 5UL});
+  ASSERT((objs->really_big_number.get_bit_vector() == std::vector<uint64_t>{4UL, 7UL, 6UL, 9UL, 0UL, 3UL, 1UL, 2UL, 5UL}));
 
   ASSERT(0UL == objs->multiple_zeros.get_bits(0));
   ASSERT(0UL == objs->multiple_zeros.get_bits(4));
-  ASSERT(objs->multiple_zeros.get_bit_vector() == {0, 0, 0});
+  ASSERT((objs->multiple_zeros.get_bit_vector() == std::vector<uint64_t>{0, 0, 0}));;
 
-  ASSERT(257UL == two_pow_64_plus_hex.get_bits(0));
-  ASSERT(1UL == two_pow_64_plus_hex.get_bits(1));
-  ASSERT(objs->two_pow_64_plus_hex.get_bit_vector() == {257UL, 1UL});
+  ASSERT(257UL == objs->two_pow_64_plus_hex.get_bits(0));
+  ASSERT(1UL == objs->two_pow_64_plus_hex.get_bits(1));
+  ASSERT((objs->two_pow_64_plus_hex.get_bit_vector() == std::vector<uint64_t>{257UL, 1UL}));
 }
 
 void hw1_constructors_equals_tests(TestObjs *objs){
   BigInt result1 = objs->two_pow_64_plus_hex;
-  ASSERT(result1.get_bit_vector() == objs->two_pow_64_plus_hex.magnitude.get_bit_vector());
+  ASSERT(result1.get_bit_vector() == objs->two_pow_64_plus_hex.get_bit_vector());
   ASSERT(result1.is_negative() == objs->two_pow_64_plus_hex.is_negative());
 
   BigInt result2 = objs->multiple_zeros;
@@ -668,7 +668,7 @@ void hw1_constructors_equals_tests(TestObjs *objs){
   ASSERT(result2.is_negative() == objs->multiple_zeros.is_negative());
 
   BigInt result3 = BigInt(objs->really_big_number);
-  ASSERT(result3.get_bit_vector() == objs->really_big_number.magnitude.get_bit_vector());
+  ASSERT(result3.get_bit_vector() == objs->really_big_number.get_bit_vector());
   ASSERT(result3.is_negative() == objs->really_big_number.is_negative());
 
   BigInt result4 = BigInt(48UL, true);
