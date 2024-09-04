@@ -6,6 +6,8 @@
 
 BigInt::BigInt()
 {
+  this->magnitude = std::vector<u_int64_t>{};
+  this->negative = false;
 }
 
 BigInt::BigInt(std::initializer_list<uint64_t> vals, bool negative)
@@ -200,7 +202,6 @@ BigInt BigInt::operator+(const BigInt &rhs) const
         result = add_magnitudes(*this, rhs);
         result.negative = this->negative;
     } else { // If they have opposite signs, convert to subtraction, make sure larger - smaller
-
         if (compare_magnitudes(*this, rhs) >= 0) { // *this has larger magnitude
             result = subtract_magnitudes(*this, rhs);
             result.negative = this->negative; // result takes the sign of the larger magnitude
