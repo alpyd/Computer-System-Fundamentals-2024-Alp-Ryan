@@ -5,41 +5,35 @@
 #include <string>  // For std::string
 
 //Constructor for BigInt with no parameters. Makes an empty uint_64 vector to symbolize 0 and sets the negativity to false.
-BigInt::BigInt()
-{
+BigInt::BigInt() {
   this->magnitude = std::vector<u_int64_t>{};
-  //this->negative = false;
+  this->negative = false;
 }
 
 //Constructor for BigInt with a uint64_t initializer list and predetermined negativity boolean.
-BigInt::BigInt(std::initializer_list<uint64_t> vals, bool negative)
-{
+BigInt::BigInt(std::initializer_list<uint64_t> vals, bool negative) {
   this->magnitude = vals;
   this->negative = negative;
 }
 
 //Constructor for BigInt with a single uint64_t value and predetermined negativity boolean.
-BigInt::BigInt(uint64_t val, bool negative)
-{
+BigInt::BigInt(uint64_t val, bool negative) {
   this->magnitude.push_back(val);
   this->negative = negative;
 }
 
 //Constructor for BigInt object with another BigInt object passed in as a parameter. It copies the negativity boolean and magnitude vector.
-BigInt::BigInt(const BigInt &other)
-{
+BigInt::BigInt(const BigInt &other) {
   this->magnitude = other.magnitude;
   this->negative = other.negative;
 }
 
 //Destructor for BigInt. Destruction of vector is already handled.
-BigInt::~BigInt()
-{
+BigInt::~BigInt() {
 }
 
 //Definition of the = operator to create a new BigInt. Outputs a BigInt with same magnitude vector and negativity boolean of the rhs.
-BigInt &BigInt::operator=(const BigInt &rhs)
-{
+BigInt &BigInt::operator=(const BigInt &rhs) {
   //Checks to make sure it is not setting something equal to itself
   if (this != &rhs){
     this->magnitude = rhs.magnitude;
@@ -50,14 +44,12 @@ BigInt &BigInt::operator=(const BigInt &rhs)
 }
 
 //Returns whether or not the BigInt value is negative.
-bool BigInt::is_negative() const
-{
+bool BigInt::is_negative() const {
   return this->negative;
 }
 
 //Returns the uint64_t value of a certain number at the given index of the magnitude vector. Returns 0 if it is out of the index.
-uint64_t BigInt::get_bits(unsigned index) const
-{
+uint64_t BigInt::get_bits(unsigned index) const {
   if(index < magnitude.size()) { //valid index
     return magnitude[index];
   }
@@ -67,15 +59,13 @@ uint64_t BigInt::get_bits(unsigned index) const
 }
 
 //Returns the magnitude vector of the BigInt.
-const std::vector<uint64_t> &BigInt::get_bit_vector() const
-{
+const std::vector<uint64_t> &BigInt::get_bit_vector() const {
   return this->magnitude;
 }
 
 
 //Converts the BigInt into a hexadecimal number by incorporating a negative sign and the hexadecimal representation of the magnitude vector
-std::string BigInt::to_hex() const
-{
+std::string BigInt::to_hex() const {
   
   std::stringstream ss;
   if(negative) { //add negative sign for negative values
@@ -106,14 +96,12 @@ std::string BigInt::to_hex() const
   return ss.str();
 }
 
-void BigInt::setMagnitude(const std::vector<uint64_t>& newMagnitude)
-{
+void BigInt::setMagnitude(const std::vector<uint64_t>& newMagnitude) {
   magnitude = newMagnitude;
 }
 
 //Returns 1 if LHS is larger, -1 if RHS is larger, 0 if equal
-static int compare_magnitudes(const BigInt &lhs, const BigInt &rhs)
-{
+static int compare_magnitudes(const BigInt &lhs, const BigInt &rhs) {
   const auto &lhs_magnitude = lhs.get_bit_vector();
   const auto &rhs_magnitude = rhs.get_bit_vector();
 
@@ -132,8 +120,7 @@ static int compare_magnitudes(const BigInt &lhs, const BigInt &rhs)
   return 0; //equal magnitude
 }
 
-static BigInt add_magnitudes(const BigInt &lhs, const BigInt &rhs)
-{  
+static BigInt add_magnitudes(const BigInt &lhs, const BigInt &rhs) {  
   BigInt result;
   const auto& lhs_magnitude = lhs.get_bit_vector();
   const auto& rhs_magnitude = rhs.get_bit_vector();
@@ -167,8 +154,7 @@ static BigInt add_magnitudes(const BigInt &lhs, const BigInt &rhs)
 }
 
 
-static BigInt subtract_magnitudes(const BigInt &lhs, const BigInt &rhs)
-{
+static BigInt subtract_magnitudes(const BigInt &lhs, const BigInt &rhs) {
   BigInt result;
   const auto &lhs_magnitude = lhs.get_bit_vector();
   const auto &rhs_magnitude = rhs.get_bit_vector();
@@ -207,8 +193,7 @@ static BigInt subtract_magnitudes(const BigInt &lhs, const BigInt &rhs)
 
 //BigInt div_by_2() const;
 
-BigInt BigInt::operator+(const BigInt &rhs) const 
-{
+BigInt BigInt::operator+(const BigInt &rhs) const {
   BigInt result;
    if (this->negative == rhs.negative) { ////Same sign, just add their magnitudes
         result = add_magnitudes(*this, rhs);
@@ -228,8 +213,7 @@ BigInt BigInt::operator+(const BigInt &rhs) const
     return result;
 }
 
-BigInt BigInt::operator-(const BigInt &rhs) const
-{
+BigInt BigInt::operator-(const BigInt &rhs) const {
   // TODO: implement
   // Hint: a - b could be computed as a + -b
 
@@ -253,8 +237,7 @@ bool BigInt::is_zero() const {
   return zeroes_only;
 }
 
-BigInt BigInt::operator-() const
-{
+BigInt BigInt::operator-() const {
   if(this->magnitude.size() == 0) {
     return *this;
   } else {
@@ -265,8 +248,7 @@ BigInt BigInt::operator-() const
 
 }
 
-bool BigInt::is_bit_set(unsigned n) const
-{
+bool BigInt::is_bit_set(unsigned n) const {
   unsigned vector_index = n / 64; //index of uint64_t's with vector (0,1,...)
   unsigned bit_index = n % 64; //bit index within the uint64_t (64 bits)
 
@@ -282,8 +264,7 @@ bool BigInt::is_bit_set(unsigned n) const
 
 }
 
-BigInt BigInt::operator<<(unsigned n) const
-{
+BigInt BigInt::operator<<(unsigned n) const {
   if(this->negative) {
     throw std::invalid_argument("Left shift not allowed for negative values");
   }
@@ -298,18 +279,15 @@ BigInt BigInt::operator<<(unsigned n) const
 
 }
 
-BigInt BigInt::operator*(const BigInt &rhs) const
-{
+BigInt BigInt::operator*(const BigInt &rhs) const {
   // TODO: implement
 }
 
-BigInt BigInt::operator/(const BigInt &rhs) const
-{
+BigInt BigInt::operator/(const BigInt &rhs) const {
   // TODO: implement
 }
 
-int BigInt::compare(const BigInt &rhs) const
-{
+int BigInt::compare(const BigInt &rhs) const {
   
   if(this->negative && !rhs.negative) { //LHS < RHS
     return -1;
@@ -330,8 +308,7 @@ int BigInt::compare(const BigInt &rhs) const
   
 }
 
-std::string BigInt::to_dec() const
-{
+std::string BigInt::to_dec() const {
   // TODO: implement
 }
 
