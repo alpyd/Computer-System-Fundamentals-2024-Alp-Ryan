@@ -301,7 +301,26 @@ BigInt BigInt::operator<<(unsigned n) const {
 }
 
 BigInt BigInt::operator*(const BigInt &rhs) const {
-  // TODO: implement
+  
+  BigInt result;
+
+  if(this->is_zero() || rhs.is_zero()) { //multiplying 0 yields 0
+    return BigInt(0, false);
+  }
+  
+  BigInt temp = *this;
+  for (unsigned i = 0; i < rhs.magnitude.size() * 64; ++i) {
+        if (rhs.is_bit_set(i)) {
+            // If the i^th bit is 1, add *this shifted left by i bits to multiply
+            result = result + (temp << i);
+        }
+    }
+
+  //if both operands have same sign, result is positive
+  //if mixed signs will be negative
+  result.negative = (this->negative != rhs.negative); 
+  return result;
+
 }
 
 BigInt BigInt::operator/(const BigInt &rhs) const {
