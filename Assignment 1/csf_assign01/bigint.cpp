@@ -198,13 +198,15 @@ BigInt BigInt::operator+(const BigInt &rhs) const {
    if (this->negative == rhs.negative) { ////Same sign, just add their magnitudes
         result = add_magnitudes(*this, rhs);
         result.negative = this->negative;
-    } else { // If they have opposite signs, convert to subtraction, make sure larger - smaller
+
+    } else { // If they have opposite signs, subtract magnitudes, make sure larger - smaller
+        
         if (compare_magnitudes(*this, rhs) >= 0) { // *this has larger magnitude
             result = subtract_magnitudes(*this, rhs);
             result.negative = this->negative; // result takes the sign of the larger magnitude
 
         } else { //rhs has larger magnitude
-            BigInt result = subtract_magnitudes(rhs, *this);
+            result = subtract_magnitudes(rhs, *this);
             result.negative = rhs.negative;
             
         }
@@ -214,11 +216,9 @@ BigInt BigInt::operator+(const BigInt &rhs) const {
 }
 
 BigInt BigInt::operator-(const BigInt &rhs) const {
-  // TODO: implement
-  // Hint: a - b could be computed as a + -b
-
+  
     //To perform a - b, do a + -b
-    return add_magnitudes(*this, -rhs);
+    return *this + -rhs;
 
 }
 
@@ -227,7 +227,7 @@ bool BigInt::is_zero() const {
   bool zeroes_only = true;
 
   if(this->magnitude.size() == 0) { //no magnitude means 0
-    return false;
+    return true;
   }
   for(size_t i = 0; i < this->magnitude.size(); ++i) {
     if(this->magnitude[i] != 0) {
@@ -238,7 +238,7 @@ bool BigInt::is_zero() const {
 }
 
 BigInt BigInt::operator-() const {
-  if(this->magnitude.size() == 0) {
+  if(this->is_zero()) {
     return *this;
   } else {
     BigInt opposite_BigInt = *this;
@@ -269,18 +269,58 @@ BigInt BigInt::operator<<(unsigned n) const {
     throw std::invalid_argument("Left shift not allowed for negative values");
   }
 
-  BigInt result(*this);
-  
-  //TODO: implement left shift by n bits
+  BigInt result;
 
+  //how many uint64_t's to shift left
+  int shift_index = n / 64;
 
+  //how many bits to shift within a uint64_t 
+  int shift_bits = n % 64; 
+
+  //add uint64 0's as a result of left shift
+  result.magnitude.resize(this->magnitude.size() + shift_index, 0);
+
+  // Shift the magnitude blocks and handle bit shifting
+    uint64_t carry = 0; // To store bits that spill over from lower part
+    for (size_t i = 0; i < this->magnitude.size(); ++i) {
+        uint64_t current = this->magnitude[i];
+
+        // Shift the current block left and add carry from the previous block
+        result.magnitude[i + shift_index] = (current << shift_bits) | carry;
+
+        // Calculate new carry (spillover bits that shift out of the current block)
+        carry = (shift_bits > 0) ? (current >> (64 - shift_bits)) : 0;
+    }
+
+    // If there is still a carry left, append it as a new block
+    if (carry > 0) {
+        result.magnitude.push_back(carry);
+    }
 
   return result;
-
 }
 
 BigInt BigInt::operator*(const BigInt &rhs) const {
-  // TODO: implement
+  
+  BigInt result;
+
+  if(this->is_zero() || rhs.is_zero()) { //multiplying 0 yields 0
+    return BigInt(0, false);
+  }
+  
+  BigInt temp = *this;
+  for (unsigned i = 0; i < rhs.magnitude.size() * 64; ++i) {
+        if (rhs.is_bit_set(i)) {
+            // If the i^th bit is 1, add *this shifted left by i bits to multiply
+            result = result + (temp << i);
+        }
+    }
+
+  //if both operands have same sign, result is positive
+  //if mixed signs will be negative
+  result.negative = (this->negative != rhs.negative); 
+  return result;
+
 }
 
 BigInt BigInt::operator/(const BigInt &rhs) const {
