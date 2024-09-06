@@ -309,7 +309,56 @@ int BigInt::compare(const BigInt &rhs) const {
 }
 
 std::string BigInt::to_dec() const {
-  // TODO: implement
+  std::string hex = this->to_hex();
+  std::istringstream stream(hex);
+  std::vector<int> decimal;
+  std::string dec;
+
+  int remainder = 0;
+  char hex_char = 'z';
+
+  while (stream >> hex_char) {
+    int digit = -1;
+    if (hex_char >= '0' && hex_char <= '9') {
+      digit = hex_char - '0';
+    } else if (hex_char >= 'a' && hex_char <= 'f') {
+      digit = 10 + (hex_char - 'a');
+    } 
+      int hex_value = 16 * digit + remainder;
+      decimal.push_back(hex_value/10);
+      remainder = (hex_value % 10) * 16;
+  }
+  int original_decimal_length = decimal.size();
+  int added_indices = 0;
+  for (size_t i = original_decimal_length - 1; i >= 0; i++) {
+    int digit = decimal[i + added_indices];
+    int test_digit = digit;
+    int order_of_magnitude = 0;
+      while(test_digit >= 10){
+        test_digit /= 10;
+        order_of_magnitude++;
+      }
+    for (int j = 0; j < order_of_magnitude; j++){
+      int added_digit = digit % 10;
+      digit = (digit - added_digit) / 10;
+      if(j == 0){
+        decimal[i + added_indices] = added_digit;
+      } else {
+        if((i + added_indices - j) < 0){
+          decimal.insert(decimal.begin(), added_digit);
+          added_indices++;
+        } else {
+          decimal[i + added_indices - j] += added_digit;
+        }
+      }
+    }
+  }
+  for (size_t i = 0; i < decimal.size(); i++){
+    char dec_char = decimal[i] + '0';
+    dec.push_back(dec_char);
+  }
+
+  return dec;
 }
 
 
