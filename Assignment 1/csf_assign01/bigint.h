@@ -52,6 +52,15 @@ public:
   //! Setter for magnitude vector
   void setMagnitude(const std::vector<uint64_t>& newMagnitude);
 
+  //! Setter for negative bool
+  void setNegative(bool is_negative);
+
+  //! Remove leading zeroes from magnitude vector
+  void trim_leading_zeroes();
+
+  //! Divide implicit BigInt (*this) by 2
+  BigInt div_by_2() const;
+
   //! Returns true if the BigInt corresponds to value 0, false otherwise
   bool is_zero() const;
 

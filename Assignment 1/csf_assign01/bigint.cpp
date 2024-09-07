@@ -48,6 +48,10 @@ bool BigInt::is_negative() const {
   return this->negative;
 }
 
+void BigInt::setNegative(bool is_negative) {
+  this->negative = is_negative;
+}
+
 //Returns the uint64_t value of a certain number at the given index of the magnitude vector. Returns 0 if it is out of the index.
 uint64_t BigInt::get_bits(unsigned index) const {
   if(index < magnitude.size()) { //valid index
@@ -177,12 +181,10 @@ static BigInt subtract_magnitudes(const BigInt &lhs, const BigInt &rhs) {
     res_magnitude.push_back(diff);
   }
 
-  //Remove zeroes at end of vector
-  while (res_magnitude.size() > 1 && res_magnitude.back() == 0) {
-    res_magnitude.pop_back();
-  }
-
   result.setMagnitude(res_magnitude);
+
+  //Remove zeroes at end of vector
+  result.trim_leading_zeroes();
 
   if (!lhs_greater) {
     result = -result; // adjust sign if first operand had smaller magnitude
@@ -190,8 +192,6 @@ static BigInt subtract_magnitudes(const BigInt &lhs, const BigInt &rhs) {
 
   return result;
 }
-
-//BigInt div_by_2() const;
 
 BigInt BigInt::operator+(const BigInt &rhs) const {
   BigInt result;
@@ -323,8 +323,89 @@ BigInt BigInt::operator*(const BigInt &rhs) const {
 
 }
 
+static BigInt binary_search(const BigInt &lhs, const BigInt &rhs) {
+
+    BigInt dividend = lhs;
+    dividend.setNegative(false);
+
+    BigInt divisor = rhs;
+    divisor.setNegative(false);
+
+    // Binary search for the quotient
+    BigInt lower_bound(0);
+    BigInt upper_bound = dividend;
+
+    BigInt quotient;
+
+    while (lower_bound <= upper_bound) {
+        BigInt mid = (lower_bound + upper_bound).div_by_2();  // divide by 2
+        BigInt product = mid * divisor; //see how close to dividend
+
+        if (product == dividend) {
+            quotient = mid;
+            break;
+        } else if (product < dividend) { //increase lower bound
+            lower_bound = mid + BigInt(1);
+            quotient = mid;  // keep the last valid quotient
+        } else { //decrease upper bound
+            upper_bound = mid - BigInt(1);
+        }
+    }
+
+  return quotient;
+}
+
+BigInt BigInt::div_by_2() const {
+    BigInt result;
+    uint64_t carry = 0;
+
+    // Iterate over the magnitude from the most significant to least significant block
+    for (size_t i = this->magnitude.size(); i > 0; --i) {
+        // Extract current block
+        uint64_t current = this->magnitude[i - 1];
+
+        // Shift right and incorporate any carry from the previous block
+        result.magnitude.insert(result.magnitude.begin(), (current >> 1) | carry);
+
+        // Prepare carry for the next iteration, which is the least significant bit
+        carry = (current & 1) ? (1ULL << 63) : 0;  // If LSB is 1, it carries over as MSB
+    }
+
+    // Ensure the sign is handled correctly
+    result.negative = this->negative;
+    
+    // Trim leading zeroes if necessary
+    result.trim_leading_zeroes();
+
+    return result;
+}
+
+void BigInt::trim_leading_zeroes() {
+    // Keep removing the most significant uint64_t 0 blocks
+    while (!magnitude.empty() && magnitude.back() == 0) {
+        magnitude.pop_back();
+    }
+
+    // If all blocks are zero, reset sign to non-negative
+    if (magnitude.empty()) {
+        negative = false;
+    }
+}
+
+
 BigInt BigInt::operator/(const BigInt &rhs) const {
-  // TODO: implement
+  if(rhs.is_zero()) {
+    throw std::invalid_argument("Cannot divide by zero");
+  }
+
+  if(this->is_zero()) { //0 divided by x is 0
+    return BigInt(0);
+  }
+
+  BigInt result = binary_search(*this, rhs);
+  result.negative = (this->negative != rhs.negative);
+
+  return result;
 }
 
 int BigInt::compare(const BigInt &rhs) const {
