@@ -68,6 +68,14 @@ void hw1_constructors_equals_tests(TestObjs *objs);
 void hw1_get_bits_get_bit_vector_tests(TestObjs *objs);
 void hw_1_unary_is_negative_tests(TestObjs *objs);
 void hw_1_to_hex_tests(TestObjs *objs);
+void hw1_addition_tests(TestObjs *objs);
+void hw1_subtract_tests(TestObjs *objs);
+void hw1_multiply_tests(TestObjs *objs);
+void hw1_divide_tests(TestObjs *objs);
+void hw1_is_bit_set_tests(TestObjs *objs);
+void hw1_compare_tests(TestObjs *objs);
+void hw1_left_shift_tests(TestObjs *objs);
+void hw1_to_dec_tests(TestObjs *objs);
 
 
 int main(int argc, char **argv) {
@@ -108,6 +116,15 @@ int main(int argc, char **argv) {
   TEST(hw1_get_bits_get_bit_vector_tests);
   TEST(hw_1_unary_is_negative_tests);
   TEST(hw_1_to_hex_tests);
+  TEST(hw1_addition_tests);
+  TEST(hw1_subtract_tests);
+  TEST(hw1_multiply_tests);
+  TEST(hw1_divide_tests);
+  TEST(hw1_is_bit_set_tests);
+  TEST(hw1_compare_tests);
+  TEST(hw1_left_shift_tests);
+  TEST(hw1_to_dec_tests);
+
 
   TEST_FINI();
 }
@@ -676,36 +693,36 @@ void hw1_constructors_equals_tests(TestObjs *objs){
 
 //TODO: Ryan
 
-void hw1_operator+_tests {
+void hw1_addition_tests(TestObjs *objs) {
 
 }
 
-void hw1_operator-_tests {
+void hw1_subtract_tests(TestObjs *objs) {
   
 }
 
-void hw1_operator*_tests {
+void hw1_multiply_tests(TestObjs *objs) {
   
 }
 
-void hw1_operator/_tests {
+void hw1_divide_tests(TestObjs *objs) {
   
 }
 
 //TODO: Alp
 
-void hw1_is_bit_set_tests {
+void hw1_is_bit_set_tests(TestObjs *objs) {
   
 }
 
-void hw1_compare_tests {
+void hw1_compare_tests(TestObjs *objs) {
   
 }
 
-void hw1_operator<<_tests {
+void hw1_left_shift_tests(TestObjs *objs) {
   
 }
 
-void hw1_to_dec_tests {
+void hw1_to_dec_tests(TestObjs *objs) {
   
 }
