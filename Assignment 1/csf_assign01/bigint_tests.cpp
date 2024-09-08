@@ -674,3 +674,38 @@ void hw1_constructors_equals_tests(TestObjs *objs){
   ASSERT(result4.is_negative());
 }
 
+//TODO: Ryan
+
+void hw1_operator+_tests {
+
+}
+
+void hw1_operator-_tests {
+  
+}
+
+void hw1_operator*_tests {
+  
+}
+
+void hw1_operator/_tests {
+  
+}
+
+//TODO: Alp
+
+void hw1_is_bit_set_tests {
+  
+}
+
+void hw1_compare_tests {
+  
+}
+
+void hw1_operator<<_tests {
+  
+}
+
+void hw1_to_dec_tests {
+  
+}
