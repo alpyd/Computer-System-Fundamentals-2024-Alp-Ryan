@@ -436,13 +436,18 @@ std::string BigInt::to_dec() const {
     return "0";
   }
   std::string dec = "";
+  std::string dec_rev = "";
   BigInt ten = BigInt(10, false);
   BigInt copy = BigInt(*this);
   while(copy.get_bits(0) != 0){
     BigInt division = copy/ten;
     BigInt mod = copy - ten * division;
+    copy = division;
     char c = mod.get_bits(0) + '0';
-    dec.push_back(c);
+    dec_rev.push_back(c);
+  }
+  for(int i = dec_rev.size() - 1; i >= 0; i--){
+    dec.push_back(dec_rev[i]);
   }
   if(this->negative){
     dec.insert(dec.begin(), '-');
