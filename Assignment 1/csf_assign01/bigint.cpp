@@ -432,6 +432,9 @@ int BigInt::compare(const BigInt &rhs) const {
 }
 
 std::string BigInt::to_dec() const {
+  if(magnitude.size() == 0){
+    return "0";
+  }
   std::string dec = "";
   BigInt ten = BigInt(10, false);
   BigInt copy = BigInt(*this);
