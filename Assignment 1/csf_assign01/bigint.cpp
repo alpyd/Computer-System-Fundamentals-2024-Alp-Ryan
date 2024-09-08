@@ -3,6 +3,8 @@
 #include <sstream> // For std::stringstream
 #include <iomanip> // For std::setfill, std::setw
 #include <string>  // For std::string
+#include <iostream>
+#include <algorithm>
 
 //Constructor for BigInt with no parameters. Makes an empty uint_64 vector to symbolize 0 and sets the negativity to false.
 BigInt::BigInt() {
@@ -430,64 +432,18 @@ int BigInt::compare(const BigInt &rhs) const {
 }
 
 std::string BigInt::to_dec() const {
-  bool is_negative = false;
-  std::string hex = this->to_hex();
-  if (hex[0] == '-') {
-    is_negative = true;
-    hex = hex.substr(1); // Remove the negative sign
+  std::string dec = "";
+  BigInt ten = BigInt(10, false);
+  BigInt copy = BigInt(*this);
+  while(copy.get_bits(0) != 0){
+    BigInt division = copy/ten;
+    BigInt mod = copy - ten * division;
+    char c = mod.get_bits(0) + '0';
+    dec.push_back(c);
   }
-  std::istringstream stream(hex);
-  std::vector<int> decimal;
-  std::string dec;
-
-  int remainder = 0;
-  char hex_char = 'z';
-
-  while (stream >> hex_char) {
-    int digit = -1;
-    if (hex_char >= '0' && hex_char <= '9') {
-      digit = hex_char - '0';
-    } else if (hex_char >= 'a' && hex_char <= 'f') {
-      digit = 10 + (hex_char - 'a');
-    } 
-      int hex_value = 16 * digit + remainder;
-      decimal.push_back(hex_value/10);
-      remainder = (hex_value % 10) * 16;
-  }
-  int original_decimal_length = decimal.size();
-  int added_indices = 0;
-  for (size_t i = original_decimal_length - 1; i >= 0; i++) {
-    int digit = decimal[i + added_indices];
-    int test_digit = digit;
-    int order_of_magnitude = 0;
-      while(test_digit >= 10){
-        test_digit /= 10;
-        order_of_magnitude++;
-      }
-    for (int j = 0; j < order_of_magnitude; j++){
-      int added_digit = digit % 10;
-      digit = (digit - added_digit) / 10;
-      if(j == 0){
-        decimal[i + added_indices] = added_digit;
-      } else {
-        if((i + added_indices - j) < 0){
-          decimal.insert(decimal.begin(), added_digit);
-          added_indices++;
-        } else {
-          decimal[i + added_indices - j] += added_digit;
-        }
-      }
-    }
-  }
-  for (size_t i = 0; i < decimal.size(); i++){
-    char dec_char = decimal[i] + '0';
-    dec.push_back(dec_char);
-  }
-
-  if (is_negative) {
+  if(this->negative){
     dec.insert(dec.begin(), '-');
   }
-
   return dec;
 }
 
