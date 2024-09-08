@@ -430,7 +430,12 @@ int BigInt::compare(const BigInt &rhs) const {
 }
 
 std::string BigInt::to_dec() const {
+  bool is_negative = false;
   std::string hex = this->to_hex();
+  if (hex[0] == '-') {
+    is_negative = true;
+    hex = hex.substr(1); // Remove the negative sign
+  }
   std::istringstream stream(hex);
   std::vector<int> decimal;
   std::string dec;
@@ -477,6 +482,10 @@ std::string BigInt::to_dec() const {
   for (size_t i = 0; i < decimal.size(); i++){
     char dec_char = decimal[i] + '0';
     dec.push_back(dec_char);
+  }
+
+  if (is_negative) {
+    dec.insert(dec.begin(), '-');
   }
 
   return dec;
