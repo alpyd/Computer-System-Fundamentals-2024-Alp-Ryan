@@ -452,10 +452,20 @@ std::string BigInt::to_dec() const {
   if(magnitude.size() == 0){
     return "0";
   }
+  bool has_nonzero = false;
+  for(size_t i = 0; i < magnitude.size(); i++){
+    if(magnitude[i] != 0){
+      has_nonzero = true;
+    } 
+  } 
+  if(!has_nonzero){
+    return "0";
+  }
   std::string dec = "";
   std::string dec_rev = "";
   BigInt ten = BigInt(10, false);
   BigInt copy = BigInt(*this);
+  copy.trim_leading_zeroes();
   while(copy.get_bits(0) != 0){
     BigInt division = copy/ten;
     BigInt mod = copy - ten * division;

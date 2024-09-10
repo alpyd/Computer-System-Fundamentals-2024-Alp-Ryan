@@ -714,6 +714,17 @@ ASSERT(objs->negative_three + objs->three == objs->zero);
 // 0 + 0 = 0
 ASSERT(objs->zero + objs->zero == objs->zero);
 
+//Edge case: Spillover into the next vector index
+ASSERT(objs->u64_max + objs->one == objs->two_pow_64);
+
+BigInt u128_max({0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL}, false);
+BigInt two_pow_128({0, 0, 1});
+ASSERT(u128_max + objs->one == two_pow_128);
+
+BigInt u192_max({0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL}, false);
+BigInt two_pow_192({0, 0, 0, 1});
+ASSERT(u192_max + objs->one == two_pow_192);
+
 }
 
 void hw1_subtract_tests(TestObjs *objs) {}
@@ -756,7 +767,7 @@ void hw1_divide_tests(TestObjs *objs) {
 
 void hw1_is_bit_set_tests(TestObjs *objs) {
   //Testing big number and returning 0 for indices that are outside the number.
-  BigInt new_val({1311768467463790320, 1311747204760522223, 14974415777481871311});
+  BigInt new_val({1311768467463790320UL, 1311747204760522223UL, 14974415777481871311UL});
   ASSERT(!new_val.is_bit_set(0));
   ASSERT(new_val.is_bit_set(9));
   ASSERT(new_val.is_bit_set(14));
@@ -781,7 +792,7 @@ void hw1_is_bit_set_tests(TestObjs *objs) {
   ASSERT(!new_val.is_bit_set(500));
 
   // Ensuring that these results are the same for a negative BigInt
-  BigInt neg_val({1311768467463790320, 1311747204760522223, 14974415777481871311}, true);
+  BigInt neg_val({1311768467463790320UL, 1311747204760522223UL, 14974415777481871311UL}, true);
   ASSERT(!new_val.is_bit_set(0));
   ASSERT(new_val.is_bit_set(9));
   ASSERT(new_val.is_bit_set(14));
@@ -920,11 +931,43 @@ void hw1_left_shift_tests(TestObjs *objs) {
     objs->negative_one << 0;
     FAIL("left shifting a negative value should throw an exception");
   } catch (std::invalid_argument &ex) {
-    // good
+    // GOOD CATCH!
   }
   
 }
 
 void hw1_to_dec_tests(TestObjs *objs) {
-  
+//Edge Case: Test if 0 prints correctly for multiple zeros and negative zero
+  ASSERT(objs->zero.to_dec() == "0");
+  ASSERT(objs->multiple_zeros.to_dec() == "0");
+  BigInt neg_zero_unfilled = BigInt({}, true);
+  BigInt neg_zero_filled = BigInt({0}, true);
+  ASSERT(neg_zero_unfilled.to_dec() == "0");
+  ASSERT(neg_zero_filled.to_dec() == "0");
+
+  //Edge Case: Test if 0s in front of a number have it print correctly
+  BigInt val({0x361adeb15b6962c7UL, 0x31a5b3c012d2a685UL, 0x7b3b4839UL, 0UL, 0UL, 0UL, 0UL, 0UL});
+  std::string result = val.to_dec();
+  ASSERT("703527900324720116021349050368162523567079645895" == result);
+
+  //Edge Case: Test if 0s in front of a number have it print correctly
+  BigInt val_neg({0x361adeb15b6962c7UL, 0x31a5b3c012d2a685UL, 0x7b3b4839UL, 0UL, 0UL, 0UL, 0UL, 0UL}, true);
+  std::string result_neg = val_neg.to_dec();
+  ASSERT("-703527900324720116021349050368162523567079645895" == result_neg);
+
+  //Testing a really large number
+  BigInt big_num({0x7f3c9d2a14b8e5f1UL, 0xa6d2e3f04c9b7a8dUL, 0x0e6f4c9a1b2d8e3fUL, 0x4a6b7c8d9e0f1a2bUL, 0x7f3c9d2a14b8e5f1UL, 0xa6d2e3f04c9b7a8dUL});
+  std::string result2 = big_num.to_dec();
+  ASSERT("25676531365894721546215871327825460310544539604088347369401678692335220609481358959798999890609518318106951215015409" == result2);
+
+  //Testing a really large number that is negative
+  BigInt big_num_neg({0x7f3c9d2a14b8e5f1UL, 0xa6d2e3f04c9b7a8dUL, 0x0e6f4c9a1b2d8e3fUL, 0x4a6b7c8d9e0f1a2bUL, 0x7f3c9d2a14b8e5f1UL, 0xa6d2e3f04c9b7a8dUL}, true);
+  std::string result2_neg = big_num_neg.to_dec();
+  ASSERT("-25676531365894721546215871327825460310544539604088347369401678692335220609481358959798999890609518318106951215015409" == result2_neg);
+
+  //Testing multiple maxed out indices in the vector
+  BigInt u64_max_rep({0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL});
+  std::string result3 = u64_max_rep.to_dec();
+  std::cout << result3 << std::endl;
+  ASSERT("340282366920938463463374607431768211455" == result3);
 }
