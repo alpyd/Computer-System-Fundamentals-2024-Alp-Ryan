@@ -20,6 +20,7 @@ struct TestObjs {
   BigInt multiple_zeros;
   BigInt really_big_number;
   BigInt two_pow_65_plus_two;
+  BigInt negative_one;
   
 
   TestObjs();
@@ -149,6 +150,7 @@ TestObjs::TestObjs()
   , multiple_zeros({0UL, 0UL, 0UL})
   , really_big_number({4UL, 7UL, 6UL, 9UL, 0UL, 3UL, 1UL, 2UL, 5UL})
   , two_pow_65_plus_two({2UL, 0UL, 0UL, 0UL, 0UL, 0UL, 0UL, 0UL})
+  , negative_one({1}, true)
 {
 }
 
@@ -833,7 +835,51 @@ void hw1_is_bit_set_tests(TestObjs *objs) {
 }
 
 void hw1_compare_tests(TestObjs *objs) {
+  //  Edge Case Tests: Compare -1 and 1; compare -1 with itself; compare -1 with the same value but different object
+  BigInt other_neg_one = BigInt({1}, true);
+  ASSERT(objs->negative_one.compare(objs->one) < 0);
+  ASSERT(objs->negative_one.compare(objs->zero) < 0);
+  ASSERT(objs->negative_one.compare(objs->negative_three) > 0);
+  ASSERT(objs->negative_one.compare(objs->negative_one) == 0);
+  ASSERT(objs->negative_one.compare(other_neg_one) == 0);
+
+  //Edge Cases: Compare BigInts with different vector sizes, but smaller vector having larger values in each index 
+  BigInt larger = BigInt({0, 0, 1});
+  BigInt smaller = BigInt({0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL});
+  ASSERT(larger.compare(smaller) > 0);
+  ASSERT(smaller.compare(larger) < 0);
+
+  //Edge Cases: Compare same magnitudes as above, but making the values negative. Also, ensure that negative values work.
+  BigInt larger_neg = BigInt({0, 0, 1}, true);
+  BigInt smaller_neg = BigInt({0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL}, true);
+  ASSERT(larger_neg.compare(smaller_neg) < 0);
+  ASSERT(smaller_neg.compare(larger_neg) > 0);
+  ASSERT(larger_neg.compare(smaller) < 0);
   
+  //Edge Cases: Compare BigInts with vectors largely the same except for a difference in the smallest index.
+  BigInt larger_same = BigInt({0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL});
+  BigInt smaller_same = BigInt({0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFEUL});
+  ASSERT(larger_same.compare(smaller_same) > 0);
+  ASSERT(smaller_same.compare(larger_same) < 0);
+
+  //Edge Cases: Ensure that adding more zeros to the end of a number vector does not change the magnitude
+  ASSERT(objs->multiple_zeros.compare(objs->zero) == 0);
+
+  BigInt base = BigInt({0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL});
+  BigInt base_more_zeros = BigInt({0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0, 0, 0});
+  ASSERT (base.compare(base_more_zeros) == 0);
+
+  BigInt base_neg = BigInt({0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL});
+  BigInt base_more_zeros_neg = BigInt({0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0, 0, 0});
+  ASSERT (base_neg.compare(base_more_zeros_neg) == 0);
+
+  BigInt smaller_number_more_zeros = BigInt({0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0, 0});
+  BigInt larger_number_less_zeros = BigInt({0, 0, 1});
+  ASSERT (larger_number_less_zeros.compare(smaller_number_more_zeros) > 0);
+
+  BigInt smaller_number_more_zeros_neg = BigInt({0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0, 0}, true);
+  BigInt larger_number_less_zeros_neg = BigInt({0, 0, 1, 0, 0, 0}, true);
+  ASSERT (larger_number_less_zeros_neg.compare(smaller_number_more_zeros_neg) < 0);
 }
 
 void hw1_left_shift_tests(TestObjs *objs) {

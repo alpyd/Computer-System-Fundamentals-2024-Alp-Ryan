@@ -108,8 +108,13 @@ void BigInt::setMagnitude(const std::vector<uint64_t>& newMagnitude) {
 
 //Returns 1 if LHS is larger, -1 if RHS is larger, 0 if equal
 static int compare_magnitudes(const BigInt &lhs, const BigInt &rhs) {
-  const auto &lhs_magnitude = lhs.get_bit_vector();
-  const auto &rhs_magnitude = rhs.get_bit_vector();
+  BigInt editable_rhs = BigInt(rhs);
+  BigInt editable_lhs = BigInt(lhs);
+  editable_lhs.trim_leading_zeroes();
+  editable_rhs.trim_leading_zeroes();
+
+  const auto &lhs_magnitude = editable_lhs.get_bit_vector();
+  const auto &rhs_magnitude = editable_rhs.get_bit_vector();
 
   //Compare based on number of significant digits (size of vector)
   if (lhs_magnitude.size() != rhs_magnitude.size()) {
