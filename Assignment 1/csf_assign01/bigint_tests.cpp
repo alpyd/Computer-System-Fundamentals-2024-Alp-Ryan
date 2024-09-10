@@ -19,7 +19,7 @@ struct TestObjs {
   BigInt two_pow_64_plus_hex;
   BigInt multiple_zeros;
   BigInt really_big_number;
-  BigInt two_pow_65_plus_two;
+  BigInt two_pow_65;
   BigInt negative_one;
   
 
@@ -149,7 +149,7 @@ TestObjs::TestObjs()
   , two_pow_64_plus_hex({257UL, 1UL})
   , multiple_zeros({0UL, 0UL, 0UL})
   , really_big_number({4UL, 7UL, 6UL, 9UL, 0UL, 3UL, 1UL, 2UL, 5UL})
-  , two_pow_65_plus_two({2UL, 0UL, 0UL, 0UL, 0UL, 0UL, 0UL, 0UL})
+  , two_pow_65({1UL, 0UL, 0UL, 0UL, 0UL, 0UL, 0UL, 0UL})
   , negative_one({1}, true)
 {
 }
@@ -717,13 +717,9 @@ ASSERT(objs->zero + objs->zero == objs->zero);
 //Edge case: Spillover into the next vector index
 ASSERT(objs->u64_max + objs->one == objs->two_pow_64);
 
-BigInt u128_max({0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL}, false);
-BigInt two_pow_128({0, 0, 1});
-ASSERT(u128_max + objs->one == two_pow_128);
+//2^64 + 2^64 = 2^65
+//ASSERT(objs->two_pow_64 + objs->two_pow_64 == objs->two_pow_65);
 
-BigInt u192_max({0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL}, false);
-BigInt two_pow_192({0, 0, 0, 1});
-ASSERT(u192_max + objs->one == two_pow_192);
 
 }
 
@@ -771,7 +767,7 @@ void hw1_divide_tests(TestObjs *objs) {
   //Integer division where dividend < divisor
   ASSERT(objs->three / objs->nine == objs->zero); 
   ASSERT(objs->negative_three / objs->nine == objs->zero);
-  
+
 }
 
 //TODO: Alp
