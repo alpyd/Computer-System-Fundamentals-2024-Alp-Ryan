@@ -352,26 +352,25 @@ static BigInt binary_search(const BigInt &lhs, const BigInt &rhs) {
 
     // Binary search for the quotient
     BigInt lower_bound(0);
-    BigInt upper_bound = dividend;
+    BigInt upper_bound = dividend + BigInt(1);
 
     BigInt quotient;
 
-    while (lower_bound <= upper_bound) {
-        BigInt mid = (lower_bound + upper_bound).div_by_2();  // divide by 2
-        BigInt product = mid * divisor; //see how close to dividend
+    while (lower_bound + BigInt(1) < upper_bound) {
+      BigInt mid = (lower_bound + upper_bound).div_by_2();  // divide by 2
+      BigInt product = mid * divisor; //see how close to dividend
 
-        if (product == dividend) {
-            quotient = mid;
-            break;
-        } else if (product < dividend) { //increase lower bound
-            lower_bound = mid + BigInt(1);
-            quotient = mid;  // keep the last valid quotient
-        } else { //decrease upper bound
-            upper_bound = mid - BigInt(1);
-        }
+      if (product == dividend) {
+          return mid;
+      } else if (product < dividend) { //increase lower bound
+          lower_bound = mid;
+      } else { //decrease upper bound
+          upper_bound = mid;
+      }
     }
 
-  return quotient;
+  return lower_bound;
+
 }
 
 BigInt BigInt::div_by_2() const {
@@ -423,7 +422,6 @@ BigInt BigInt::operator/(const BigInt &rhs) const {
 
   BigInt result = binary_search(*this, rhs);
   result.negative = (this->negative != rhs.negative);
-
   return result;
 }
 

@@ -968,6 +968,5 @@ void hw1_to_dec_tests(TestObjs *objs) {
   //Testing multiple maxed out indices in the vector
   BigInt u64_max_rep({0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL});
   std::string result3 = u64_max_rep.to_dec();
-  std::cout << result3 << std::endl;
   ASSERT("340282366920938463463374607431768211455" == result3);
 }
