@@ -761,6 +761,17 @@ void hw1_multiply_tests(TestObjs *objs) {
 
 void hw1_divide_tests(TestObjs *objs) {
   
+  //Mixed sign division
+  ASSERT(objs->nine / objs->negative_three == objs->negative_three); 
+  ASSERT(objs->negative_nine / objs->three == objs->negative_three); 
+
+  //Both negative
+  ASSERT(objs->negative_nine / objs->negative_three == objs->three); 
+
+  //Integer division where dividend < divisor
+  ASSERT(objs->three / objs->nine == objs->zero); 
+  ASSERT(objs->negative_three / objs->nine == objs->zero);
+  
 }
 
 //TODO: Alp

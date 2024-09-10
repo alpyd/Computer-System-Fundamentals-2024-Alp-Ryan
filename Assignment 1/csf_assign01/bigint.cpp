@@ -171,16 +171,16 @@ static BigInt subtract_magnitudes(const BigInt &lhs, const BigInt &rhs) {
   const auto &rhs_magnitude = rhs.get_bit_vector();
   
   bool lhs_greater = compare_magnitudes(lhs, rhs) >= 0; //1 if lhs equal/greater, 0 if rhs greater 
-  const auto &larger_magnitude =  lhs_greater ? lhs_magnitude : rhs_magnitude;
-  const auto &smaller_magnitude =  lhs_greater ? rhs_magnitude : lhs_magnitude;
+  const auto &larger_mag =  lhs_greater ? lhs_magnitude : rhs_magnitude;
+  const auto &smaller_mag =  lhs_greater ? rhs_magnitude : lhs_magnitude;
 
   std::vector<uint64_t> res_magnitude;
 
   uint64_t carry = 0;
-  for (size_t i = 0; i < larger_magnitude.size(); ++i) {
+  for (size_t i = 0; i < larger_mag.size(); ++i) {
     //access i^th element, if past the size assume it is a 0
-    uint64_t first_digit = larger_magnitude[i];
-    uint64_t second_digit = i < rhs_magnitude.size() ? smaller_magnitude[i] : 0;
+    uint64_t first_digit = larger_mag[i];
+    uint64_t second_digit = i < rhs_magnitude.size() ? smaller_mag[i] : 0;
 
     uint64_t diff = first_digit - second_digit - carry; //do subtraction
     carry = (first_digit < (second_digit + carry)) ? 1 : 0;
@@ -416,12 +416,16 @@ BigInt BigInt::operator/(const BigInt &rhs) const {
     throw std::invalid_argument("Cannot divide by zero");
   }
 
-  if(this->is_zero()) { //0 divided by x is 0
-    return BigInt(0);
+  //dividend 0 leads to quotient 0
+  if(this->is_zero()) { 
+    return BigInt();
   }
 
   BigInt result = binary_search(*this, rhs);
-  result.negative = (this->negative != rhs.negative);
+  
+  if(!result.is_zero()) { //adjust sign if nonzero
+    result.negative = (this->negative != rhs.negative); //same sign = positive, different = negative
+  }
   return result;
 }
 
