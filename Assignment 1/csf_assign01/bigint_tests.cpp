@@ -753,7 +753,83 @@ void hw1_divide_tests(TestObjs *objs) {
 //TODO: Alp
 
 void hw1_is_bit_set_tests(TestObjs *objs) {
-  
+  //Testing big number and returning 0 for indices that are outside the number.
+  BigInt new_val({1311768467463790320, 1311747204760522223, 14974415777481871311});
+  ASSERT(!new_val.is_bit_set(0));
+  ASSERT(new_val.is_bit_set(9));
+  ASSERT(new_val.is_bit_set(14));
+  ASSERT(new_val.is_bit_set(60));
+  ASSERT(!new_val.is_bit_set(61));
+  ASSERT(!new_val.is_bit_set(62));  
+  ASSERT(!new_val.is_bit_set(63)); 
+  ASSERT(new_val.is_bit_set(64));
+  ASSERT(!new_val.is_bit_set(68));
+  ASSERT(new_val.is_bit_set(82));
+  ASSERT(new_val.is_bit_set(124));
+  ASSERT(!new_val.is_bit_set(125));
+  ASSERT(!new_val.is_bit_set(126));  
+  ASSERT(!new_val.is_bit_set(127)); 
+  ASSERT(new_val.is_bit_set(128)); 
+  ASSERT(!new_val.is_bit_set(132)); 
+  ASSERT(!new_val.is_bit_set(140)); 
+  ASSERT(new_val.is_bit_set(191)); 
+  ASSERT(new_val.is_bit_set(190)); 
+  ASSERT(!new_val.is_bit_set(189)); 
+  ASSERT(!new_val.is_bit_set(192));   
+  ASSERT(!new_val.is_bit_set(500));
+
+  // Ensuring that these results are the same for a negative BigInt
+  BigInt neg_val({1311768467463790320, 1311747204760522223, 14974415777481871311}, true);
+  ASSERT(!new_val.is_bit_set(0));
+  ASSERT(new_val.is_bit_set(9));
+  ASSERT(new_val.is_bit_set(14));
+  ASSERT(new_val.is_bit_set(60));
+  ASSERT(!new_val.is_bit_set(61));
+  ASSERT(!new_val.is_bit_set(62));  
+  ASSERT(!new_val.is_bit_set(63)); 
+  ASSERT(new_val.is_bit_set(64));
+  ASSERT(!new_val.is_bit_set(68));
+  ASSERT(new_val.is_bit_set(82));
+  ASSERT(new_val.is_bit_set(124));
+  ASSERT(!new_val.is_bit_set(125));
+  ASSERT(!new_val.is_bit_set(126));  
+  ASSERT(!new_val.is_bit_set(127)); 
+  ASSERT(new_val.is_bit_set(128)); 
+  ASSERT(!new_val.is_bit_set(132)); 
+  ASSERT(!new_val.is_bit_set(140)); 
+  ASSERT(new_val.is_bit_set(191)); 
+  ASSERT(new_val.is_bit_set(190)); 
+  ASSERT(!new_val.is_bit_set(189)); 
+  ASSERT(!new_val.is_bit_set(192));   
+  ASSERT(!new_val.is_bit_set(500));
+
+  //Testing for edge case: Multiple zeros are added in an array
+  ASSERT(!objs->multiple_zeros.is_bit_set(0));
+  ASSERT(!objs->multiple_zeros.is_bit_set(1));
+  ASSERT(!objs->multiple_zeros.is_bit_set(2));
+  ASSERT(!objs->multiple_zeros.is_bit_set(3));
+  ASSERT(!objs->multiple_zeros.is_bit_set(4));
+
+  //Testing for edge case: BigInt value of 1
+  ASSERT(objs->one.is_bit_set(0));
+  ASSERT(!objs->one.is_bit_set(1));
+
+  //Testing for edge case: BigInt value of 2^64
+  for(int i = 0; i < 64; i++){
+    ASSERT(!objs->two_pow_64.is_bit_set(i));
+  }
+  ASSERT(objs->two_pow_64.is_bit_set(64));
+
+  //Testing for edge case: BigInt value of u64Max
+  for(int i = 0; i < 64; i++){
+    ASSERT(objs->u64_max.is_bit_set(i));
+  }
+
+  BigInt u64_max_rep({0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL});
+  for(int i = 0; i < 64*7; i++){
+    ASSERT(u64_max_rep.is_bit_set(i));
+  }
+  ASSERT(!u64_max_rep.is_bit_set(64*7));
 }
 
 void hw1_compare_tests(TestObjs *objs) {
