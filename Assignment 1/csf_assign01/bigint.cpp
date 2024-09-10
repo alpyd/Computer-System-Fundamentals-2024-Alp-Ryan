@@ -197,20 +197,23 @@ static BigInt subtract_magnitudes(const BigInt &lhs, const BigInt &rhs) {
 
 BigInt BigInt::operator+(const BigInt &rhs) const {
   BigInt result;
-   if (this->negative == rhs.negative) { ////Same sign, just add their magnitudes
+
+   if (this->negative == rhs.negative) { //Same sign, just add their magnitudes
         result = add_magnitudes(*this, rhs);
         result.negative = this->negative;
 
     } else { // If they have opposite signs, subtract magnitudes, make sure larger - smaller
         
-        if (compare_magnitudes(*this, rhs) >= 0) { // *this has larger magnitude
+        if (compare_magnitudes(*this, rhs) > 0) { // *this has larger magnitude
             result = subtract_magnitudes(*this, rhs);
             result.negative = this->negative; // result takes the sign of the larger magnitude
 
-        } else { //rhs has larger magnitude
+        } else if(compare_magnitudes(*this, rhs) < 0) { //rhs has larger magnitude
             result = subtract_magnitudes(rhs, *this);
             result.negative = rhs.negative;
             
+        } else { //equal magnitudes
+          return BigInt(); //returns the BigInt 0
         }
 
     }
@@ -271,6 +274,10 @@ BigInt BigInt::operator<<(unsigned n) const {
     throw std::invalid_argument("Left shift not allowed for negative values");
   }
 
+  if(n == 0) { //no shift performed
+    return *this;
+  }
+
   BigInt result;
 
   //how many uint64_t's to shift left
@@ -305,14 +312,19 @@ BigInt BigInt::operator<<(unsigned n) const {
 BigInt BigInt::operator*(const BigInt &rhs) const {
   
   BigInt result;
-
   if(this->is_zero() || rhs.is_zero()) { //multiplying 0 yields 0
-    return BigInt(0, false);
+    return BigInt();
   }
   
-  BigInt temp = *this;
-  for (unsigned i = 0; i < rhs.magnitude.size() * 64; ++i) {
-        if (rhs.is_bit_set(i)) {
+  //Use absolute values of operands to be able to left shift
+  BigInt lhs_abs = *this; 
+  BigInt rhs_abs = rhs;
+  if (lhs_abs.negative) lhs_abs.negative = false;
+  if (rhs_abs.negative) rhs_abs.negative = false;
+
+  BigInt temp = lhs_abs;
+  for (unsigned i = 0; i < rhs_abs.magnitude.size() * 64; ++i) {
+        if (rhs_abs.is_bit_set(i)) {
             // If the i^th bit is 1, add *this shifted left by i bits to multiply
             result = result + (temp << i);
         }

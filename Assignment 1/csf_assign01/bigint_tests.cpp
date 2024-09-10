@@ -19,6 +19,7 @@ struct TestObjs {
   BigInt two_pow_64_plus_hex;
   BigInt multiple_zeros;
   BigInt really_big_number;
+  BigInt two_pow_65_plus_two;
   
 
   TestObjs();
@@ -147,6 +148,7 @@ TestObjs::TestObjs()
   , two_pow_64_plus_hex({257UL, 1UL})
   , multiple_zeros({0UL, 0UL, 0UL})
   , really_big_number({4UL, 7UL, 6UL, 9UL, 0UL, 3UL, 1UL, 2UL, 5UL})
+  , two_pow_65_plus_two({2UL, 0UL, 0UL, 0UL, 0UL, 0UL, 0UL, 0UL})
 {
 }
 
@@ -695,14 +697,53 @@ void hw1_constructors_equals_tests(TestObjs *objs){
 
 void hw1_addition_tests(TestObjs *objs) {
 
+// 0 + 2 = 2
+ASSERT(objs->zero + objs->two == objs->two);
+
+// 0 - 3 = -3
+ASSERT(objs->zero - objs->three == objs->negative_three);
+
+// 3 + (-3) = 0
+ASSERT(objs->three + objs->negative_three == objs->zero);
+
+// -3 + 3 = 0
+ASSERT(objs->negative_three + objs->three == objs->zero);
+
+// 0 + 0 = 0
+ASSERT(objs->zero + objs->zero == objs->zero);
+
 }
 
-void hw1_subtract_tests(TestObjs *objs) {
-  
-}
+void hw1_subtract_tests(TestObjs *objs) {}
 
 void hw1_multiply_tests(TestObjs *objs) {
-  
+
+// Test multiplication with zero
+    ASSERT((objs->zero * objs->one) == objs->zero);           // 0 * 1 = 0
+    ASSERT((objs->one * objs->zero) == objs->zero);           // 1 * 0 = 0
+
+    // Test multiplication with one
+    ASSERT((objs->one * objs->one) == objs->one);             // 1 * 1 = 1
+    ASSERT((objs->one * objs->two) == objs->two);             // 1 * 2 = 2
+    ASSERT((objs->two * objs->one) == objs->two);             // 2 * 1 = 2
+
+    // Test multiplication of positive numbers
+    ASSERT((objs->three * objs->three) == objs->nine);        // 3 * 3 = 9
+    
+    // Test multiplication with large numbers
+    ASSERT((objs->u64_max * objs->one) == objs->u64_max);     // UINT64_MAX * 1 = UINT64_MAX
+    ASSERT((objs->u64_max * objs->two) == objs->u64_max * 2); // UINT64_MAX * 2 = UINT64_MAX * 2
+    
+    // Test multiplication with negative numbers
+    ASSERT((objs->negative_three * objs->three) == objs->negative_nine); // -3 * 3 = -9
+    
+    // Test multiplication with large negative numbers
+    ASSERT((objs->negative_two_pow_64 * objs->one) == objs->negative_two_pow_64); // -2^64 * 2 = -2^65
+    
+    // Test multiplication of large number with zero
+    ASSERT((objs->multiple_zeros * objs->really_big_number) == objs->zero); // 0 * very_large_number = 0
+    ASSERT((objs->really_big_number * objs->multiple_zeros) == objs->zero); // very_large_number * 0 = 0
+
 }
 
 void hw1_divide_tests(TestObjs *objs) {
