@@ -883,6 +883,45 @@ void hw1_compare_tests(TestObjs *objs) {
 }
 
 void hw1_left_shift_tests(TestObjs *objs) {
+  //See if shifting by 1 
+  BigInt result1 = objs->one << 0;
+  ASSERT(result1.get_bit_vector() == objs->one.get_bit_vector());
+  ASSERT(!result1.is_negative());
+
+  BigInt result2 = objs->two_pow_64 << 64;
+  BigInt exp_res_2 = BigInt({0UL, 0UL, 1UL});
+  ASSERT(result2.get_bit_vector() == exp_res_2.get_bit_vector());
+  ASSERT(!result2.is_negative());
+
+  //Ensure all bits shift left
+  BigInt result3 = objs->two_pow_64_plus_one << 64;
+  BigInt exp_res_3 = BigInt({0UL, 1UL, 1UL});
+  ASSERT(result3.get_bit_vector() == exp_res_3.get_bit_vector());
+  ASSERT(!result3.is_negative());
+
+  //Comparing that zero left shifted is zero
+  BigInt result4 = objs->zero << 12347348;
+  ASSERT(result4.compare(objs->zero) == 0);
+  ASSERT(!result4.is_negative());
+
+  BigInt result5 = objs->multiple_zeros << 12347348;
+  ASSERT(result5.compare(objs->multiple_zeros) == 0);
+  ASSERT(!result5.is_negative());
+
+  //Comparing that the formula of multiplied by 2 per bit shift is followed
+  BigInt thirty_seven = BigInt({37});
+  BigInt result6 = thirty_seven << 37;
+  BigInt exp_res_6 = BigInt(5085241278464, false);
+  ASSERT(result6.compare(exp_res_6) == 0);
+  ASSERT(!result6.is_negative());
+
+  //Check to see if std::invalid_argument is thrown for negative one
+  try {
+    objs->negative_one << 0;
+    FAIL("left shifting a negative value should throw an exception");
+  } catch (std::invalid_argument &ex) {
+    // good
+  }
   
 }
 
