@@ -989,4 +989,12 @@ void hw1_to_dec_tests(TestObjs *objs) {
   BigInt neg_two_pow_64({0, 1}, true);
   std::string result6 = neg_two_pow_64.to_dec();
   ASSERT("-18446744073709551616" == result6);
+
+  BigInt two_pow_128({0, 0, 1}); 
+  std::string result7 = two_pow_128.to_dec();
+  ASSERT("340282366920938463463374607431768211456" == result7);
+
+  BigInt two_pow_128_neg({0, 0, 1}, true); 
+  std::string result8 = two_pow_128_neg.to_dec();
+  ASSERT("-340282366920938463463374607431768211456" == result8);
 }
