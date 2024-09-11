@@ -149,7 +149,7 @@ TestObjs::TestObjs()
   , two_pow_64_plus_hex({257UL, 1UL})
   , multiple_zeros({0UL, 0UL, 0UL})
   , really_big_number({4UL, 7UL, 6UL, 9UL, 0UL, 3UL, 1UL, 2UL, 5UL})
-  , two_pow_65({1UL, 0UL, 0UL, 0UL, 0UL, 0UL, 0UL, 0UL})
+  , two_pow_65({0UL, 2UL})
   , negative_one({1}, true)
 {
 }
@@ -718,7 +718,7 @@ ASSERT(objs->zero + objs->zero == objs->zero);
 ASSERT(objs->u64_max + objs->one == objs->two_pow_64);
 
 //2^64 + 2^64 = 2^65
-//ASSERT(objs->two_pow_64 + objs->two_pow_64 == objs->two_pow_65);
+ASSERT(objs->two_pow_64 + objs->two_pow_64 == objs->two_pow_65);
 
 
 }
@@ -976,4 +976,17 @@ void hw1_to_dec_tests(TestObjs *objs) {
   BigInt u64_max_rep({0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL});
   std::string result3 = u64_max_rep.to_dec();
   ASSERT("340282366920938463463374607431768211455" == result3);
+
+  //Testing for sanity
+  BigInt thirty_two({32}, true);
+  std::string result4 = thirty_two.to_dec();
+  ASSERT("-32" == result4);
+
+  //Testing numbers that have 0 in their first index -- Caused a change in to_dec()
+  std::string result5 = objs->two_pow_64.to_dec();
+  ASSERT("18446744073709551616" == result5);
+
+  BigInt neg_two_pow_64({0, 1}, true);
+  std::string result6 = neg_two_pow_64.to_dec();
+  ASSERT("-18446744073709551616" == result6);
 }

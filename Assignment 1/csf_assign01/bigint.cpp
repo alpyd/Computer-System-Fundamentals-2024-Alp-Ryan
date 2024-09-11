@@ -467,8 +467,9 @@ std::string BigInt::to_dec() const {
   std::string dec_rev = "";
   BigInt ten = BigInt(10, false);
   BigInt copy = BigInt(*this);
+  BigInt zero = BigInt(0, false);
   copy.trim_leading_zeroes();
-  while(copy.get_bits(0) != 0){
+  while(copy.compare(zero) != 0){
     BigInt division = copy/ten;
     BigInt mod = copy - ten * division;
     copy = division;
