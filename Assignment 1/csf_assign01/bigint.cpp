@@ -183,9 +183,9 @@ static BigInt subtract_magnitudes(const BigInt &lhs, const BigInt &rhs) {
     uint64_t second_digit = i < rhs_magnitude.size() ? smaller_mag[i] : 0;
 
     uint64_t diff = first_digit - second_digit - carry; //do subtraction
-    carry = (first_digit < (second_digit + carry)) ? 1 : 0;
+    carry = (first_digit < (second_digit + carry)) ? 1 : 0; //determine if carry needed
 
-    res_magnitude.push_back(diff);
+    res_magnitude.push_back(diff); //store difference of operands
   }
 
   result.setMagnitude(res_magnitude);
@@ -218,7 +218,7 @@ BigInt BigInt::operator+(const BigInt &rhs) const {
             result.negative = rhs.negative;
             
         } else { //equal magnitudes
-          return BigInt(); //returns the BigInt 0
+          return BigInt(); //the sum is the BigInt 0
         }
 
     }
@@ -248,7 +248,7 @@ bool BigInt::is_zero() const {
 }
 
 BigInt BigInt::operator-() const {
-  if(this->is_zero()) {
+  if(this->is_zero()) { //cannot negate 0
     return *this;
   } else {
     BigInt opposite_BigInt = *this;
@@ -285,17 +285,17 @@ BigInt BigInt::operator<<(unsigned n) const {
 
   BigInt result;
 
-  //how many uint64_t's to shift left
+  //How many uint64_t's to shift left
   int shift_index = n / 64;
 
-  //how many bits to shift within a uint64_t 
+  //How many bits to shift within a uint64_t 
   int shift_bits = n % 64; 
 
-  //add uint64 0's as a result of left shift
+  //Add uint64 0's as a result of left shift
   result.magnitude.resize(this->magnitude.size() + shift_index, 0);
 
-  // Shift the magnitude blocks and handle bit shifting
-    uint64_t carry = 0; // To store bits that spill over from lower part
+  // Shift the magnitude blocks
+    uint64_t carry = 0; // Store bits that spill over from lower part
     for (size_t i = 0; i < this->magnitude.size(); ++i) {
         uint64_t current = this->magnitude[i];
 
@@ -379,7 +379,7 @@ BigInt BigInt::div_by_2() const {
 
     // Iterate over the magnitude from the most significant to least significant block
     for (size_t i = this->magnitude.size(); i > 0; --i) {
-        // Extract current block
+        // Get current block
         uint64_t current = this->magnitude[i - 1];
 
         // Shift right and incorporate any carry from the previous block
@@ -389,7 +389,7 @@ BigInt BigInt::div_by_2() const {
         carry = (current & 1) ? (1ULL << 63) : 0;  // If LSB is 1, it carries over as MSB
     }
 
-    // Ensure the sign is handled correctly
+    // Keep same sign as *this
     result.negative = this->negative;
     
     // Trim leading zeroes if necessary
