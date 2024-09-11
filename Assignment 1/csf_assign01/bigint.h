@@ -61,6 +61,9 @@ public:
   //! Divide implicit BigInt (*this) by 2
   BigInt div_by_2() const;
 
+  // Returns true if the magnitude vector has any non-zero indices in the function, false otherwise.
+  bool has_non_zero() const;
+
   //! Returns true if the BigInt corresponds to value 0, false otherwise
   bool is_zero() const;
 

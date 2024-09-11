@@ -123,9 +123,9 @@ static int compare_magnitudes(const BigInt &lhs, const BigInt &rhs) {
     
   //Compare element by element starting from most significant bit
   for (int i = lhs_magnitude.size() - 1; i >= 0; --i) { 
-      if (lhs_magnitude[i] != rhs_magnitude[i]) {
-          return lhs_magnitude[i] > rhs_magnitude[i] ? 1 : -1;
-      }
+    if (lhs_magnitude[i] != rhs_magnitude[i]) {
+      return lhs_magnitude[i] > rhs_magnitude[i] ? 1 : -1;
+    }
   }
 
   return 0; //equal magnitude
@@ -142,22 +142,21 @@ static BigInt add_magnitudes(const BigInt &lhs, const BigInt &rhs) {
 
   uint64_t carry = 0; //used for grade school algo
   for (size_t i = 0; i < max_size; ++i) {
-
     //access i^th element, if past the size assume it is a 0
-      uint64_t lhs_val = i < lhs_magnitude.size() ? lhs_magnitude[i] : 0;
-      uint64_t rhs_val = i < rhs_magnitude.size() ? rhs_magnitude[i] : 0;
+    uint64_t lhs_val = i < lhs_magnitude.size() ? lhs_magnitude[i] : 0;
+    uint64_t rhs_val = i < rhs_magnitude.size() ? rhs_magnitude[i] : 0;
 
-      uint64_t sum = lhs_val + rhs_val + carry;
-      
-      //check if the addition resulted in an overflow
-      carry = (sum < lhs_val) ? 1 : 0;
+    uint64_t sum = lhs_val + rhs_val + carry;
+    
+    //check if the addition resulted in an overflow
+    carry = (sum < lhs_val) ? 1 : 0;
 
-      //store result of current digit addition
-      res_magnitude.push_back(sum);
+    //store result of current digit addition
+    res_magnitude.push_back(sum);
   }
 
   if (carry) { //check for any carry, adds if needed
-      res_magnitude.push_back(carry);
+    res_magnitude.push_back(carry);
   }
 
   result.setMagnitude(res_magnitude); //assign result vector to BigInt
@@ -202,25 +201,21 @@ static BigInt subtract_magnitudes(const BigInt &lhs, const BigInt &rhs) {
 
 BigInt BigInt::operator+(const BigInt &rhs) const {
   BigInt result;
-
    if (this->negative == rhs.negative) { //Same sign, just add their magnitudes
         result = add_magnitudes(*this, rhs);
         result.negative = this->negative;
-
     } else { // If they have opposite signs, subtract magnitudes, make sure larger - smaller
-        
-        if (compare_magnitudes(*this, rhs) > 0) { // *this has larger magnitude
-            result = subtract_magnitudes(*this, rhs);
-            result.negative = this->negative; // result takes the sign of the larger magnitude
+      if (compare_magnitudes(*this, rhs) > 0) { // *this has larger magnitude
+          result = subtract_magnitudes(*this, rhs);
+          result.negative = this->negative; // result takes the sign of the larger magnitude
 
-        } else if(compare_magnitudes(*this, rhs) < 0) { //rhs has larger magnitude
-            result = subtract_magnitudes(rhs, *this);
-            result.negative = rhs.negative;
-            
-        } else { //equal magnitudes
-          return BigInt(); //the sum is the BigInt 0
-        }
-
+      } else if(compare_magnitudes(*this, rhs) < 0) { //rhs has larger magnitude
+          result = subtract_magnitudes(rhs, *this);
+          result.negative = rhs.negative;
+          
+      } else { //equal magnitudes
+        return BigInt(); //the sum is the BigInt 0
+      }
     }
     return result;
 }
@@ -255,7 +250,6 @@ BigInt BigInt::operator-() const {
     opposite_BigInt.negative = !(this->negative);
     return opposite_BigInt;
   }
-
 }
 
 bool BigInt::is_bit_set(unsigned n) const {
@@ -430,7 +424,6 @@ BigInt BigInt::operator/(const BigInt &rhs) const {
 }
 
 int BigInt::compare(const BigInt &rhs) const {
-  
   if(this->negative && !rhs.negative) { //LHS < RHS
     return -1;
   }
@@ -447,23 +440,23 @@ int BigInt::compare(const BigInt &rhs) const {
   } else { //both values positive
     return compare_mag;
   }
-  
 }
 
-std::string BigInt::to_dec() const {
-  if(magnitude.size() == 0){
-    return "0";
-  }
+bool BigInt::has_non_zero() const {
   bool has_nonzero = false;
-  for(size_t i = 0; i < magnitude.size(); i++){
+  for(size_t i = 0; i < this->magnitude.size(); i++){
     if(magnitude[i] != 0){
       has_nonzero = true;
     } 
   } 
-  if(!has_nonzero){
+  return has_nonzero;
+}
+
+std::string BigInt::to_dec() const {
+  if(magnitude.size() == 0 || !has_non_zero()){
     return "0";
   }
-  std::string dec = "";
+  std::string dec = ""; 
   std::string dec_rev = "";
   BigInt ten = BigInt(10, false);
   BigInt copy = BigInt(*this);
@@ -484,5 +477,3 @@ std::string BigInt::to_dec() const {
   }
   return dec;
 }
-
-
