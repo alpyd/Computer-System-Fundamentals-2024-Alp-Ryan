@@ -453,15 +453,22 @@ bool BigInt::has_non_zero() const {
 }
 
 std::string BigInt::to_dec() const {
+  //Return 0 if the BigInt equals 0
   if(magnitude.size() == 0 || !has_non_zero()){
     return "0";
   }
+
+  //Create string placeholders and BigInt representations of number to be able to execute program
   std::string dec = ""; 
   std::string dec_rev = "";
   BigInt ten = BigInt(10, false);
   BigInt copy = BigInt(*this);
   BigInt zero = BigInt(0, false);
+
+  //Edge Case: Remove any Zeros in the beginning of the magntidue
   copy.trim_leading_zeroes();
+
+  //Take the mod 10 of the number to get the digit and then divide by 10 continuously until the BigInt equals zero.
   while(copy.compare(zero) != 0){
     BigInt division = copy/ten;
     BigInt mod = copy - ten * division;
@@ -469,9 +476,13 @@ std::string BigInt::to_dec() const {
     char c = mod.get_bits(0) + '0';
     dec_rev.push_back(c);
   }
+
+  // Reverse the string to ensure that the largest digit is first
   for(int i = dec_rev.size() - 1; i >= 0; i--){
     dec.push_back(dec_rev[i]);
   }
+
+  // Add a negative sign if the number string is negative 
   if(this->negative){
     dec.insert(dec.begin(), '-');
   }
