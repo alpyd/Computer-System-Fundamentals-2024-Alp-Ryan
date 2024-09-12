@@ -48,25 +48,6 @@ public:
   //! Destructor.
   ~BigInt();
 
-  //! Setter for magnitude vector
-  //! @param newMagnitude another std::vector<uint64_t> magnitude object that represents the new vector of the BigInt
-  //!
-  void setMagnitude(const std::vector<uint64_t>& newMagnitude);
-
-  //! Setter for negative bool
-  void setNegative(bool is_negative);
-
-  //! Remove leading zeroes from magnitude vector
-  void trim_leading_zeroes();
-
-  //! Divide implicit BigInt (*this) by 2
-  //! @return BigInt quotient of dividing BigInt by 2
-  BigInt div_by_2() const;
-
-  //! Method that checks if the BigInt object (*this) is equal to 0
-  //! @return true if the BigInt object equals 0, false otherwise
-  bool is_zero() const;
-
   //! Assignment operator.
   //!
   //! @param rhs another BigInt object that this object should be made
@@ -205,9 +186,40 @@ public:
 
 
 private:
+
+  //! Remove leading zeroes from magnitude vector
+  void trim_leading_zeroes();
+
+  //! Divide implicit BigInt (*this) by 2
+  //! @return BigInt quotient of dividing BigInt by 2
+  BigInt div_by_2() const;
+
+  //! Method that checks if the BigInt object (*this) is equal to 0
+  //! @return true if the BigInt object equals 0, false otherwise
+  bool is_zero() const;
+
+  //! Setter for negative bool
+  void setNegative(bool is_negative);
+
+  //! Setter for magnitude vector
+  //! @param newMagnitude another std::vector<uint64_t> magnitude object that represents the new vector of the BigInt
+  //!
+  void setMagnitude(const std::vector<uint64_t>& newMagnitude);
+
   //! RMethod to check if there are any non-zero indices inside the vector
   //! @return true if there are any non-zero indices in the function, false otherwise
   bool has_non_zero() const;
+
+  // Helper function that compares magnitudes of two BigInt objects
+  int compare_magnitudes(const BigInt &lhs, const BigInt &rhs) const;
+
+  // Helper function that adds the magnitudes of two BigInt objects
+  BigInt add_magnitudes(const BigInt &lhs, const BigInt &rhs) const;
+
+  // Helper function that subtracts the magnitudes of two BigInt objects
+  BigInt subtract_magnitudes(const BigInt &lhs, const BigInt &rhs) const;
+
+  BigInt binary_search(const BigInt &lhs, const BigInt &rhs) const;
 
 };
 

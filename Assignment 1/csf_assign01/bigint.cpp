@@ -108,7 +108,7 @@ void BigInt::setMagnitude(const std::vector<uint64_t>& newMagnitude) {
 }
 
 //Returns 1 if LHS is larger, -1 if RHS is larger, 0 if equal
-static int compare_magnitudes(const BigInt &lhs, const BigInt &rhs) {
+int BigInt::compare_magnitudes(const BigInt &lhs, const BigInt &rhs) const {
   BigInt editable_rhs = BigInt(rhs);
   BigInt editable_lhs = BigInt(lhs);
   editable_lhs.trim_leading_zeroes();
@@ -133,7 +133,7 @@ static int compare_magnitudes(const BigInt &lhs, const BigInt &rhs) {
 }
 
 //This helper method adds the magnitude vectors of the left hand and right hand BigInts
-static BigInt add_magnitudes(const BigInt &lhs, const BigInt &rhs) {  
+BigInt BigInt::add_magnitudes(const BigInt &lhs, const BigInt &rhs) const {  
   BigInt result;
   const auto& lhs_magnitude = lhs.get_bit_vector();
   const auto& rhs_magnitude = rhs.get_bit_vector();
@@ -166,7 +166,7 @@ static BigInt add_magnitudes(const BigInt &lhs, const BigInt &rhs) {
 }
 
 //This helper method carries out the subtraction of magnitudes of two different BigInts
-static BigInt subtract_magnitudes(const BigInt &lhs, const BigInt &rhs) {
+BigInt BigInt::subtract_magnitudes(const BigInt &lhs, const BigInt &rhs) const {
   BigInt result;
   const auto &lhs_magnitude = lhs.get_bit_vector();
   const auto &rhs_magnitude = rhs.get_bit_vector();
@@ -345,7 +345,7 @@ BigInt BigInt::operator*(const BigInt &rhs) const {
 }
 
 //This function carries out a binary search to divide the lhs by the rhs
-static BigInt binary_search(const BigInt &lhs, const BigInt &rhs) {
+BigInt BigInt::binary_search(const BigInt &lhs, const BigInt &rhs) const {
 
     BigInt dividend = lhs;
     dividend.setNegative(false);
