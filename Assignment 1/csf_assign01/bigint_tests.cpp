@@ -25,6 +25,16 @@ struct TestObjs {
   BigInt is_bit_1;
   BigInt is_bit_2;
   BigInt u64_max_rep;
+  BigInt other_neg_one;
+  BigInt compare_larger;
+  BigInt compare_smaller;
+  BigInt smaller_neg;
+  BigInt larger_neg;
+  BigInt to_dec_1;
+  BigInt to_dec_2;
+  BigInt to_dec_3;
+  BigInt to_dec_4;
+
   
   
 
@@ -161,6 +171,15 @@ TestObjs::TestObjs()
   , is_bit_1({1311768467463790320UL, 1311747204760522223UL, 14974415777481871311UL})
   , is_bit_2({1311768467463790320UL, 1311747204760522223UL, 14974415777481871311UL}, true)
   , u64_max_rep({0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL})
+  , other_neg_one({1}, true)
+  , compare_larger({0, 0, 1})
+  , compare_smaller({0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL})
+  , smaller_neg({0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL}, true)
+  , larger_neg({0, 0, 1}, true)
+  , to_dec_1({0x361adeb15b6962c7UL, 0x31a5b3c012d2a685UL, 0x7b3b4839UL, 0UL, 0UL, 0UL, 0UL, 0UL})
+  , to_dec_2({0x361adeb15b6962c7UL, 0x31a5b3c012d2a685UL, 0x7b3b4839UL, 0UL, 0UL, 0UL, 0UL, 0UL}, true)
+  , to_dec_3({0x7f3c9d2a14b8e5f1UL, 0xa6d2e3f04c9b7a8dUL, 0x0e6f4c9a1b2d8e3fUL, 0x4a6b7c8d9e0f1a2bUL, 0x7f3c9d2a14b8e5f1UL, 0xa6d2e3f04c9b7a8dUL})
+  , to_dec_4({0x7f3c9d2a14b8e5f1UL, 0xa6d2e3f04c9b7a8dUL, 0x0e6f4c9a1b2d8e3fUL, 0x4a6b7c8d9e0f1a2bUL, 0x7f3c9d2a14b8e5f1UL, 0xa6d2e3f04c9b7a8dUL}, true)
 {
 }
 
@@ -706,27 +725,26 @@ void hw1_constructors_equals_tests(TestObjs *objs){
 }
 
 void hw1_addition_tests(TestObjs *objs) {
+  // 0 + 2 = 2
+  ASSERT(objs->zero + objs->two == objs->two);
 
-// 0 + 2 = 2
-ASSERT(objs->zero + objs->two == objs->two);
+  // 0 - 3 = -3
+  ASSERT(objs->zero - objs->three == objs->negative_three);
 
-// 0 - 3 = -3
-ASSERT(objs->zero - objs->three == objs->negative_three);
+  // 3 + (-3) = 0
+  ASSERT(objs->three + objs->negative_three == objs->zero);
 
-// 3 + (-3) = 0
-ASSERT(objs->three + objs->negative_three == objs->zero);
+  // -3 + 3 = 0
+  ASSERT(objs->negative_three + objs->three == objs->zero);
 
-// -3 + 3 = 0
-ASSERT(objs->negative_three + objs->three == objs->zero);
+  // 0 + 0 = 0
+  ASSERT(objs->zero + objs->zero == objs->zero);
 
-// 0 + 0 = 0
-ASSERT(objs->zero + objs->zero == objs->zero);
+  //Edge case: Spillover into the next vector index
+  ASSERT(objs->u64_max + objs->one == objs->two_pow_64);
 
-//Edge case: Spillover into the next vector index
-ASSERT(objs->u64_max + objs->one == objs->two_pow_64);
-
-//2^64 + 2^64 = 2^65
-ASSERT(objs->two_pow_64 + objs->two_pow_64 == objs->two_pow_65);
+  //2^64 + 2^64 = 2^65
+  ASSERT(objs->two_pow_64 + objs->two_pow_64 == objs->two_pow_65);
 
 
 }
@@ -734,30 +752,30 @@ ASSERT(objs->two_pow_64 + objs->two_pow_64 == objs->two_pow_65);
 void hw1_multiply_tests(TestObjs *objs) {
 
 // Test multiplication with zero
-    ASSERT((objs->zero * objs->one) == objs->zero);           // 0 * 1 = 0
-    ASSERT((objs->one * objs->zero) == objs->zero);           // 1 * 0 = 0
+  ASSERT((objs->zero * objs->one) == objs->zero);           // 0 * 1 = 0
+  ASSERT((objs->one * objs->zero) == objs->zero);           // 1 * 0 = 0
 
-    // Test multiplication with one
-    ASSERT((objs->one * objs->one) == objs->one);             // 1 * 1 = 1
-    ASSERT((objs->one * objs->two) == objs->two);             // 1 * 2 = 2
-    ASSERT((objs->two * objs->one) == objs->two);             // 2 * 1 = 2
+  // Test multiplication with one
+  ASSERT((objs->one * objs->one) == objs->one);             // 1 * 1 = 1
+  ASSERT((objs->one * objs->two) == objs->two);             // 1 * 2 = 2
+  ASSERT((objs->two * objs->one) == objs->two);             // 2 * 1 = 2
 
-    // Test multiplication of positive numbers
-    ASSERT((objs->three * objs->three) == objs->nine);        // 3 * 3 = 9
-    
-    // Test multiplication with large numbers
-    ASSERT((objs->u64_max * objs->one) == objs->u64_max);     // UINT64_MAX * 1 = UINT64_MAX
-    ASSERT((objs->u64_max * objs->two) == objs->u64_max * 2); // UINT64_MAX * 2 = UINT64_MAX * 2
-    
-    // Test multiplication with negative numbers
-    ASSERT((objs->negative_three * objs->three) == objs->negative_nine); // -3 * 3 = -9
-    
-    // Test multiplication with large negative numbers
-    ASSERT((objs->negative_two_pow_64 * objs->one) == objs->negative_two_pow_64); // -2^64 * 2 = -2^65
-    
-    // Test multiplication of large number with zero
-    ASSERT((objs->multiple_zeros * objs->really_big_number) == objs->zero); // 0 * very_large_number = 0
-    ASSERT((objs->really_big_number * objs->multiple_zeros) == objs->zero); // very_large_number * 0 = 0
+  // Test multiplication of positive numbers
+  ASSERT((objs->three * objs->three) == objs->nine);        // 3 * 3 = 9
+  
+  // Test multiplication with large numbers
+  ASSERT((objs->u64_max * objs->one) == objs->u64_max);     // UINT64_MAX * 1 = UINT64_MAX
+  ASSERT((objs->u64_max * objs->two) == objs->u64_max * 2); // UINT64_MAX * 2 = UINT64_MAX * 2
+  
+  // Test multiplication with negative numbers
+  ASSERT((objs->negative_three * objs->three) == objs->negative_nine); // -3 * 3 = -9
+  
+  // Test multiplication with large negative numbers
+  ASSERT((objs->negative_two_pow_64 * objs->one) == objs->negative_two_pow_64); // -2^64 * 2 = -2^65
+  
+  // Test multiplication of large number with zero
+  ASSERT((objs->multiple_zeros * objs->really_big_number) == objs->zero); // 0 * very_large_number = 0
+  ASSERT((objs->really_big_number * objs->multiple_zeros) == objs->zero); // very_large_number * 0 = 0
 
 }
 
@@ -856,25 +874,20 @@ void hw1_is_bit_set_tests(TestObjs *objs) {
 
 void hw1_compare_tests(TestObjs *objs) {
   //  Edge Case Tests: Compare -1 and 1; compare -1 with itself; compare -1 with the same value but different object
-  BigInt other_neg_one = BigInt({1}, true);
   ASSERT(objs->negative_one.compare(objs->one) < 0);
   ASSERT(objs->negative_one.compare(objs->zero) < 0);
   ASSERT(objs->negative_one.compare(objs->negative_three) > 0);
   ASSERT(objs->negative_one.compare(objs->negative_one) == 0);
-  ASSERT(objs->negative_one.compare(other_neg_one) == 0);
+  ASSERT(objs->negative_one.compare(objs->other_neg_one) == 0);
 
   //Edge Cases: Compare BigInts with different vector sizes, but smaller vector having larger values in each index 
-  BigInt larger = BigInt({0, 0, 1});
-  BigInt smaller = BigInt({0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL});
-  ASSERT(larger.compare(smaller) > 0);
-  ASSERT(smaller.compare(larger) < 0);
+  ASSERT(objs->compare_larger.compare(objs->compare_smaller) > 0);
+  ASSERT(objs->compare_smaller.compare(objs->compare_larger) < 0);
 
   //Edge Cases: Compare same magnitudes as above, but making the values negative. Also, ensure that negative values work.
-  BigInt larger_neg = BigInt({0, 0, 1}, true);
-  BigInt smaller_neg = BigInt({0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL}, true);
-  ASSERT(larger_neg.compare(smaller_neg) < 0);
-  ASSERT(smaller_neg.compare(larger_neg) > 0);
-  ASSERT(larger_neg.compare(smaller) < 0);
+  ASSERT(objs->larger_neg.compare(objs->smaller_neg) < 0);
+  ASSERT(objs->smaller_neg.compare(objs->larger_neg) > 0);
+  ASSERT(objs->larger_neg.compare(objs->compare_smaller) < 0);
   
   //Edge Cases: Compare BigInts with vectors largely the same except for a difference in the smallest index.
   BigInt larger_same = BigInt({0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL});
@@ -955,23 +968,19 @@ void hw1_to_dec_tests(TestObjs *objs) {
   ASSERT(neg_zero_filled.to_dec() == "0");
 
   //Edge Case: Test if 0s in front of a number have it print correctly
-  BigInt val({0x361adeb15b6962c7UL, 0x31a5b3c012d2a685UL, 0x7b3b4839UL, 0UL, 0UL, 0UL, 0UL, 0UL});
-  std::string result = val.to_dec();
+  std::string result = objs->to_dec_1.to_dec();
   ASSERT("703527900324720116021349050368162523567079645895" == result);
 
   //Edge Case: Test if 0s in front of a number have it print correctly
-  BigInt val_neg({0x361adeb15b6962c7UL, 0x31a5b3c012d2a685UL, 0x7b3b4839UL, 0UL, 0UL, 0UL, 0UL, 0UL}, true);
-  std::string result_neg = val_neg.to_dec();
+  std::string result_neg = objs->to_dec_2.to_dec();
   ASSERT("-703527900324720116021349050368162523567079645895" == result_neg);
 
   //Testing a really large number
-  BigInt big_num({0x7f3c9d2a14b8e5f1UL, 0xa6d2e3f04c9b7a8dUL, 0x0e6f4c9a1b2d8e3fUL, 0x4a6b7c8d9e0f1a2bUL, 0x7f3c9d2a14b8e5f1UL, 0xa6d2e3f04c9b7a8dUL});
-  std::string result2 = big_num.to_dec();
+  std::string result2 = objs->to_dec_3.to_dec();
   ASSERT("25676531365894721546215871327825460310544539604088347369401678692335220609481358959798999890609518318106951215015409" == result2);
 
   //Testing a really large number that is negative
-  BigInt big_num_neg({0x7f3c9d2a14b8e5f1UL, 0xa6d2e3f04c9b7a8dUL, 0x0e6f4c9a1b2d8e3fUL, 0x4a6b7c8d9e0f1a2bUL, 0x7f3c9d2a14b8e5f1UL, 0xa6d2e3f04c9b7a8dUL}, true);
-  std::string result2_neg = big_num_neg.to_dec();
+  std::string result2_neg = objs->to_dec_4.to_dec();
   ASSERT("-25676531365894721546215871327825460310544539604088347369401678692335220609481358959798999890609518318106951215015409" == result2_neg);
 
   //Testing multiple maxed out indices in the vector

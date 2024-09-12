@@ -77,23 +77,24 @@ std::string BigInt::to_hex() const {
   if(negative) { //add negative sign for negative values
     ss << "-";
   }
+
   bool leading_zero = true;
 
   //Start from most significant uint64_t in magnitude
- for(auto it = magnitude.rbegin(); it != magnitude.rend(); ++it) {
+  for(auto it = magnitude.rbegin(); it != magnitude.rend(); ++it) {
   
-  if(*it == 0 && leading_zero) { //skip leading zeroes
-    continue;
-  }
+    if(*it == 0 && leading_zero) { //skip leading zeroes
+      continue;
+    }
 
-  if(leading_zero) { //once non-zero encountered
-    ss << std::hex << *it; 
-    leading_zero = false; //stop skipping zeroes
-  } else { //ensure hex formatting & leading zero padding if necessary
-    ss << std::setfill('0') << std::setw(16) << *it;
-  }
+    if(leading_zero) { //once non-zero encountered
+      ss << std::hex << *it; 
+      leading_zero = false; //stop skipping zeroes
+    } else { //ensure hex formatting & leading zero padding if necessary
+      ss << std::setfill('0') << std::setw(16) << *it;
+    }
   
- }
+  }
 
   if(leading_zero) { //If all zeroes or empty magnitude vector
     return "0";
@@ -204,30 +205,28 @@ BigInt BigInt::subtract_magnitudes(const BigInt &lhs, const BigInt &rhs) const {
 // This method carries out the addition of the current BigInt with the right hand side BigInt to return the sum of the BigInt
 BigInt BigInt::operator+(const BigInt &rhs) const {
   BigInt result;
-   if (this->negative == rhs.negative) { //Same sign, just add their magnitudes
-        result = add_magnitudes(*this, rhs);
-        result.negative = this->negative;
-    } else { // If they have opposite signs, subtract magnitudes, make sure larger - smaller
-      if (compare_magnitudes(*this, rhs) > 0) { // *this has larger magnitude
-          result = subtract_magnitudes(*this, rhs);
-          result.negative = this->negative; // result takes the sign of the larger magnitude
-
-      } else if(compare_magnitudes(*this, rhs) < 0) { //rhs has larger magnitude
-          result = subtract_magnitudes(rhs, *this);
-          result.negative = rhs.negative;
-          
-      } else { //equal magnitudes
-        return BigInt(); //the sum is the BigInt 0
-      }
+  if (this->negative == rhs.negative) { //Same sign, just add their magnitudes
+    result = add_magnitudes(*this, rhs);
+    result.negative = this->negative;
+  } else { // If they have opposite signs, subtract magnitudes, make sure larger - smaller
+    if (compare_magnitudes(*this, rhs) > 0) { // *this has larger magnitude
+      result = subtract_magnitudes(*this, rhs);
+      result.negative = this->negative; // result takes the sign of the larger magnitude
+    } else if(compare_magnitudes(*this, rhs) < 0) { //rhs has larger magnitude
+      result = subtract_magnitudes(rhs, *this);
+      result.negative = rhs.negative;
+    } else { //equal magnitudes
+      return BigInt(); //the sum is the BigInt 0
     }
-    return result;
+  }
+  return result;
 }
 
 //This method carries out the subtraction of the current BigInt with the right hand side BigInt to return the difference of the two.
 BigInt BigInt::operator-(const BigInt &rhs) const {
-  
-    //To perform a - b, do a + -b
-    return *this + -rhs;
+
+  //To perform a - b, do a + -b
+  return *this + -rhs;
 
 }
 
@@ -296,21 +295,21 @@ BigInt BigInt::operator<<(unsigned n) const {
   result.magnitude.resize(this->magnitude.size() + shift_index, 0);
 
   // Shift the magnitude blocks
-    uint64_t carry = 0; // Store bits that spill over from lower part
-    for (size_t i = 0; i < this->magnitude.size(); ++i) {
-        uint64_t current = this->magnitude[i];
+  uint64_t carry = 0; // Store bits that spill over from lower part
+  for (size_t i = 0; i < this->magnitude.size(); ++i) {
+    uint64_t current = this->magnitude[i];
 
-        // Shift the current block left and add carry from the previous block
-        result.magnitude[i + shift_index] = (current << shift_bits) | carry;
+    // Shift the current block left and add carry from the previous block
+    result.magnitude[i + shift_index] = (current << shift_bits) | carry;
 
-        // Calculate new carry (spillover bits that shift out of the current block)
-        carry = (shift_bits > 0) ? (current >> (64 - shift_bits)) : 0;
-    }
+    // Calculate new carry (spillover bits that shift out of the current block)
+    carry = (shift_bits > 0) ? (current >> (64 - shift_bits)) : 0;
+  }
 
-    // If there is still a carry left, append it as a new block
-    if (carry > 0) {
-        result.magnitude.push_back(carry);
-    }
+  // If there is still a carry left, append it as a new block
+  if (carry > 0) {
+    result.magnitude.push_back(carry);
+  }
 
   return result;
 }
@@ -331,11 +330,11 @@ BigInt BigInt::operator*(const BigInt &rhs) const {
 
   BigInt temp = lhs_abs;
   for (unsigned i = 0; i < rhs_abs.magnitude.size() * 64; ++i) {
-        if (rhs_abs.is_bit_set(i)) {
-            // If the i^th bit is 1, add *this shifted left by i bits to multiply
-            result = result + (temp << i);
-        }
+    if (rhs_abs.is_bit_set(i)) {
+      // If the i^th bit is 1, add *this shifted left by i bits to multiply
+      result = result + (temp << i);
     }
+  }
 
   //if both operands have same sign, result is positive
   //if mixed signs will be negative
@@ -347,30 +346,30 @@ BigInt BigInt::operator*(const BigInt &rhs) const {
 //This function carries out a binary search to divide the lhs by the rhs
 BigInt BigInt::binary_search(const BigInt &lhs, const BigInt &rhs) const {
 
-    BigInt dividend = lhs;
-    dividend.setNegative(false);
+  BigInt dividend = lhs;
+  dividend.setNegative(false);
 
-    BigInt divisor = rhs;
-    divisor.setNegative(false);
+  BigInt divisor = rhs;
+  divisor.setNegative(false);
 
-    // Binary search for the quotient
-    BigInt lower_bound(0);
-    BigInt upper_bound = dividend + BigInt(1);
+  // Binary search for the quotient
+  BigInt lower_bound(0);
+  BigInt upper_bound = dividend + BigInt(1);
 
-    BigInt quotient;
+  BigInt quotient;
 
-    while (lower_bound + BigInt(1) < upper_bound) {
-      BigInt mid = (lower_bound + upper_bound).div_by_2();  // divide by 2
-      BigInt product = mid * divisor; //see how close to dividend
+  while (lower_bound + BigInt(1) < upper_bound) {
+    BigInt mid = (lower_bound + upper_bound).div_by_2();  // divide by 2
+    BigInt product = mid * divisor; //see how close to dividend
 
-      if (product == dividend) {
-          return mid;
-      } else if (product < dividend) { //increase lower bound
-          lower_bound = mid;
-      } else { //decrease upper bound
-          upper_bound = mid;
-      }
+    if (product == dividend) {
+      return mid;
+    } else if (product < dividend) { //increase lower bound
+      lower_bound = mid;
+    } else { //decrease upper bound
+      upper_bound = mid;
     }
+  }
 
   return lower_bound;
 
@@ -378,41 +377,41 @@ BigInt BigInt::binary_search(const BigInt &lhs, const BigInt &rhs) const {
 
 //This function divides the Implicit BigInt (this*) by 2
 BigInt BigInt::div_by_2() const {
-    BigInt result;
-    uint64_t carry = 0;
+  BigInt result;
+  uint64_t carry = 0;
 
-    // Iterate over the magnitude from the most significant to least significant block
-    for (size_t i = this->magnitude.size(); i > 0; --i) {
-        // Get current block
-        uint64_t current = this->magnitude[i - 1];
+  // Iterate over the magnitude from the most significant to least significant block
+  for (size_t i = this->magnitude.size(); i > 0; --i) {
+    // Get current block
+    uint64_t current = this->magnitude[i - 1];
 
-        // Shift right and incorporate any carry from the previous block
-        result.magnitude.insert(result.magnitude.begin(), (current >> 1) | carry);
+    // Shift right and incorporate any carry from the previous block
+    result.magnitude.insert(result.magnitude.begin(), (current >> 1) | carry);
 
-        // Prepare carry for the next iteration, which is the least significant bit
-        carry = (current & 1) ? (1ULL << 63) : 0;  // If LSB is 1, it carries over as MSB
-    }
+    // Prepare carry for the next iteration, which is the least significant bit
+    carry = (current & 1) ? (1ULL << 63) : 0;  // If LSB is 1, it carries over as MSB
+  }
 
-    // Keep same sign as *this
-    result.negative = this->negative;
-    
-    // Trim leading zeroes if necessary
-    result.trim_leading_zeroes();
+  // Keep same sign as *this
+  result.negative = this->negative;
+  
+  // Trim leading zeroes if necessary
+  result.trim_leading_zeroes();
 
-    return result;
+  return result;
 }
 
 //This method removes the leading zeros for an array that do not influence the magnitude
 void BigInt::trim_leading_zeroes() {
-    // Keep removing the most significant uint64_t 0 blocks
-    while (!magnitude.empty() && magnitude.back() == 0) {
-        magnitude.pop_back();
-    }
+  // Keep removing the most significant uint64_t 0 blocks
+  while (!magnitude.empty() && magnitude.back() == 0) {
+    magnitude.pop_back();
+  }
 
-    // If all blocks are zero, reset sign to non-negative
-    if (magnitude.empty()) {
-        negative = false;
-    }
+  // If all blocks are zero, reset sign to non-negative
+  if (magnitude.empty()) {
+    negative = false;
+  }
 }
 
 //This method divides the BigInt (*this) by the rhs
