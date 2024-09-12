@@ -21,6 +21,11 @@ struct TestObjs {
   BigInt really_big_number;
   BigInt two_pow_65;
   BigInt negative_one;
+  BigInt forty_eight;
+  BigInt is_bit_1;
+  BigInt is_bit_2;
+  BigInt u64_max_rep;
+  
   
 
   TestObjs();
@@ -71,7 +76,6 @@ void hw1_get_bits_get_bit_vector_tests(TestObjs *objs);
 void hw_1_unary_is_negative_tests(TestObjs *objs);
 void hw_1_to_hex_tests(TestObjs *objs);
 void hw1_addition_tests(TestObjs *objs);
-void hw1_subtract_tests(TestObjs *objs);
 void hw1_multiply_tests(TestObjs *objs);
 void hw1_divide_tests(TestObjs *objs);
 void hw1_is_bit_set_tests(TestObjs *objs);
@@ -114,12 +118,14 @@ int main(int argc, char **argv) {
   TEST(test_to_hex_2);
   TEST(test_to_dec_1);
   TEST(test_to_dec_2);
+
+  //! The following tests were the student-made to test various edge cases
+  //! They do not contain tests that were previously written with the provided code.
   TEST(hw1_constructors_equals_tests);
   TEST(hw1_get_bits_get_bit_vector_tests);
   TEST(hw_1_unary_is_negative_tests);
   TEST(hw_1_to_hex_tests);
   TEST(hw1_addition_tests);
-  TEST(hw1_subtract_tests);
   TEST(hw1_multiply_tests);
   TEST(hw1_divide_tests);
   TEST(hw1_is_bit_set_tests);
@@ -151,6 +157,10 @@ TestObjs::TestObjs()
   , really_big_number({4UL, 7UL, 6UL, 9UL, 0UL, 3UL, 1UL, 2UL, 5UL})
   , two_pow_65({0UL, 2UL})
   , negative_one({1}, true)
+  , forty_eight({48UL}, true)
+  , is_bit_1({1311768467463790320UL, 1311747204760522223UL, 14974415777481871311UL})
+  , is_bit_2({1311768467463790320UL, 1311747204760522223UL, 14974415777481871311UL}, true)
+  , u64_max_rep({0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL})
 {
 }
 
@@ -690,7 +700,7 @@ void hw1_constructors_equals_tests(TestObjs *objs){
   ASSERT(result3.get_bit_vector() == objs->really_big_number.get_bit_vector());
   ASSERT(result3.is_negative() == objs->really_big_number.is_negative());
 
-  BigInt result4 = BigInt(48UL, true);
+  BigInt result4 = BigInt(objs->forty_eight);
   ASSERT(result4.get_bits(0) == 48UL);
   ASSERT(result4.is_negative());
 }
@@ -720,8 +730,6 @@ ASSERT(objs->two_pow_64 + objs->two_pow_64 == objs->two_pow_65);
 
 
 }
-
-void hw1_subtract_tests(TestObjs *objs) {}
 
 void hw1_multiply_tests(TestObjs *objs) {
 
@@ -770,54 +778,53 @@ void hw1_divide_tests(TestObjs *objs) {
 
 void hw1_is_bit_set_tests(TestObjs *objs) {
   //Testing big number and returning 0 for indices that are outside the number.
-  BigInt new_val({1311768467463790320UL, 1311747204760522223UL, 14974415777481871311UL});
-  ASSERT(!new_val.is_bit_set(0));
-  ASSERT(new_val.is_bit_set(9));
-  ASSERT(new_val.is_bit_set(14));
-  ASSERT(new_val.is_bit_set(60));
-  ASSERT(!new_val.is_bit_set(61));
-  ASSERT(!new_val.is_bit_set(62));  
-  ASSERT(!new_val.is_bit_set(63)); 
-  ASSERT(new_val.is_bit_set(64));
-  ASSERT(!new_val.is_bit_set(68));
-  ASSERT(new_val.is_bit_set(82));
-  ASSERT(new_val.is_bit_set(124));
-  ASSERT(!new_val.is_bit_set(125));
-  ASSERT(!new_val.is_bit_set(126));  
-  ASSERT(!new_val.is_bit_set(127)); 
-  ASSERT(new_val.is_bit_set(128)); 
-  ASSERT(!new_val.is_bit_set(132)); 
-  ASSERT(!new_val.is_bit_set(140)); 
-  ASSERT(new_val.is_bit_set(191)); 
-  ASSERT(new_val.is_bit_set(190)); 
-  ASSERT(!new_val.is_bit_set(189)); 
-  ASSERT(!new_val.is_bit_set(192));   
-  ASSERT(!new_val.is_bit_set(500));
+  BigInt new_val = objs->is_bit_1;
+  ASSERT(!objs->is_bit_1.is_bit_set(0));
+  ASSERT(objs->is_bit_1.is_bit_set(9));
+  ASSERT(objs->is_bit_1.is_bit_set(14));
+  ASSERT(objs->is_bit_1.is_bit_set(60));
+  ASSERT(!objs->is_bit_1.is_bit_set(61));
+  ASSERT(!objs->is_bit_1.is_bit_set(62));  
+  ASSERT(!objs->is_bit_1.is_bit_set(63)); 
+  ASSERT(objs->is_bit_1.is_bit_set(64));
+  ASSERT(!objs->is_bit_1.is_bit_set(68));
+  ASSERT(objs->is_bit_1.is_bit_set(82));
+  ASSERT(objs->is_bit_1.is_bit_set(124));
+  ASSERT(!objs->is_bit_1.is_bit_set(125));
+  ASSERT(!objs->is_bit_1.is_bit_set(126));  
+  ASSERT(!objs->is_bit_1.is_bit_set(127)); 
+  ASSERT(objs->is_bit_1.is_bit_set(128)); 
+  ASSERT(!objs->is_bit_1.is_bit_set(132)); 
+  ASSERT(!objs->is_bit_1.is_bit_set(140)); 
+  ASSERT(objs->is_bit_1.is_bit_set(191)); 
+  ASSERT(objs->is_bit_1.is_bit_set(190)); 
+  ASSERT(!objs->is_bit_1.is_bit_set(189)); 
+  ASSERT(!objs->is_bit_1.is_bit_set(192));   
+  ASSERT(!objs->is_bit_1.is_bit_set(500));
 
   // Ensuring that these results are the same for a negative BigInt
-  BigInt neg_val({1311768467463790320UL, 1311747204760522223UL, 14974415777481871311UL}, true);
-  ASSERT(!new_val.is_bit_set(0));
-  ASSERT(new_val.is_bit_set(9));
-  ASSERT(new_val.is_bit_set(14));
-  ASSERT(new_val.is_bit_set(60));
-  ASSERT(!new_val.is_bit_set(61));
-  ASSERT(!new_val.is_bit_set(62));  
-  ASSERT(!new_val.is_bit_set(63)); 
-  ASSERT(new_val.is_bit_set(64));
-  ASSERT(!new_val.is_bit_set(68));
-  ASSERT(new_val.is_bit_set(82));
-  ASSERT(new_val.is_bit_set(124));
-  ASSERT(!new_val.is_bit_set(125));
-  ASSERT(!new_val.is_bit_set(126));  
-  ASSERT(!new_val.is_bit_set(127)); 
-  ASSERT(new_val.is_bit_set(128)); 
-  ASSERT(!new_val.is_bit_set(132)); 
-  ASSERT(!new_val.is_bit_set(140)); 
-  ASSERT(new_val.is_bit_set(191)); 
-  ASSERT(new_val.is_bit_set(190)); 
-  ASSERT(!new_val.is_bit_set(189)); 
-  ASSERT(!new_val.is_bit_set(192));   
-  ASSERT(!new_val.is_bit_set(500));
+  ASSERT(!objs->is_bit_2.is_bit_set(0));
+  ASSERT(objs->is_bit_2.is_bit_set(9));
+  ASSERT(objs->is_bit_2.is_bit_set(14));
+  ASSERT(objs->is_bit_2.is_bit_set(60));
+  ASSERT(!objs->is_bit_2.is_bit_set(61));
+  ASSERT(!objs->is_bit_2.is_bit_set(62));  
+  ASSERT(!objs->is_bit_2.is_bit_set(63)); 
+  ASSERT(objs->is_bit_2.is_bit_set(64));
+  ASSERT(!objs->is_bit_2.is_bit_set(68));
+  ASSERT(objs->is_bit_2.is_bit_set(82));
+  ASSERT(objs->is_bit_2.is_bit_set(124));
+  ASSERT(!objs->is_bit_2.is_bit_set(125));
+  ASSERT(!objs->is_bit_2.is_bit_set(126));  
+  ASSERT(!objs->is_bit_2.is_bit_set(127)); 
+  ASSERT(objs->is_bit_2.is_bit_set(128)); 
+  ASSERT(!objs->is_bit_2.is_bit_set(132)); 
+  ASSERT(!objs->is_bit_2.is_bit_set(140)); 
+  ASSERT(objs->is_bit_2.is_bit_set(191)); 
+  ASSERT(objs->is_bit_2.is_bit_set(190)); 
+  ASSERT(!objs->is_bit_2.is_bit_set(189)); 
+  ASSERT(!objs->is_bit_2.is_bit_set(192));   
+  ASSERT(!objs->is_bit_2.is_bit_set(500));
 
   //Testing for edge case: Multiple zeros are added in an array
   ASSERT(!objs->multiple_zeros.is_bit_set(0));
@@ -841,11 +848,10 @@ void hw1_is_bit_set_tests(TestObjs *objs) {
     ASSERT(objs->u64_max.is_bit_set(i));
   }
 
-  BigInt u64_max_rep({0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL, 0xFFFFFFFFFFFFFFFFUL});
   for(int i = 0; i < 64*7; i++){
-    ASSERT(u64_max_rep.is_bit_set(i));
+    ASSERT(objs->u64_max_rep.is_bit_set(i));
   }
-  ASSERT(!u64_max_rep.is_bit_set(64*7));
+  ASSERT(!objs->u64_max_rep.is_bit_set(64*7));
 }
 
 void hw1_compare_tests(TestObjs *objs) {
