@@ -48,8 +48,9 @@ public:
   //! Destructor.
   ~BigInt();
 
-
   //! Setter for magnitude vector
+  //! @param newMagnitude another std::vector<uint64_t> magnitude object that represents the new vector of the BigInt
+  //!
   void setMagnitude(const std::vector<uint64_t>& newMagnitude);
 
   //! Setter for negative bool
@@ -59,12 +60,11 @@ public:
   void trim_leading_zeroes();
 
   //! Divide implicit BigInt (*this) by 2
+  //! @return BigInt quotient of dividing BigInt by 2
   BigInt div_by_2() const;
 
-  // Returns true if the magnitude vector has any non-zero indices in the function, false otherwise.
-  bool has_non_zero() const;
-
-  //! Returns true if the BigInt corresponds to value 0, false otherwise
+  //! Method that checks if the BigInt object (*this) is equal to 0
+  //! @return true if the BigInt object equals 0, false otherwise
   bool is_zero() const;
 
   //! Assignment operator.
@@ -205,7 +205,10 @@ public:
 
 
 private:
-  // TODO: add helper functions
+  //! RMethod to check if there are any non-zero indices inside the vector
+  //! @return true if there are any non-zero indices in the function, false otherwise
+  bool has_non_zero() const;
+
 };
 
 #endif // BIGINT_H

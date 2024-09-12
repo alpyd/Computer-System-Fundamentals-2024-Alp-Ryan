@@ -695,8 +695,6 @@ void hw1_constructors_equals_tests(TestObjs *objs){
   ASSERT(result4.is_negative());
 }
 
-//TODO: Ryan
-
 void hw1_addition_tests(TestObjs *objs) {
 
 // 0 + 2 = 2
@@ -769,8 +767,6 @@ void hw1_divide_tests(TestObjs *objs) {
   ASSERT(objs->negative_three / objs->nine == objs->zero);
 
 }
-
-//TODO: Alp
 
 void hw1_is_bit_set_tests(TestObjs *objs) {
   //Testing big number and returning 0 for indices that are outside the number.

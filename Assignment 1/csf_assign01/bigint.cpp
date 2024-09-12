@@ -102,6 +102,7 @@ std::string BigInt::to_hex() const {
   return ss.str();
 }
 
+//This helper method sets a new magnitude vector for the current BigInt
 void BigInt::setMagnitude(const std::vector<uint64_t>& newMagnitude) {
   magnitude = newMagnitude;
 }
@@ -131,6 +132,7 @@ static int compare_magnitudes(const BigInt &lhs, const BigInt &rhs) {
   return 0; //equal magnitude
 }
 
+//This helper method adds the magnitude vectors of the left hand and right hand BigInts
 static BigInt add_magnitudes(const BigInt &lhs, const BigInt &rhs) {  
   BigInt result;
   const auto& lhs_magnitude = lhs.get_bit_vector();
@@ -163,7 +165,7 @@ static BigInt add_magnitudes(const BigInt &lhs, const BigInt &rhs) {
   return result;
 }
 
-
+//This helper method carries out the subtraction of magnitudes of two different BigInts
 static BigInt subtract_magnitudes(const BigInt &lhs, const BigInt &rhs) {
   BigInt result;
   const auto &lhs_magnitude = lhs.get_bit_vector();
@@ -199,6 +201,7 @@ static BigInt subtract_magnitudes(const BigInt &lhs, const BigInt &rhs) {
   return result;
 }
 
+// This method carries out the addition of the current BigInt with the right hand side BigInt to return the sum of the BigInt
 BigInt BigInt::operator+(const BigInt &rhs) const {
   BigInt result;
    if (this->negative == rhs.negative) { //Same sign, just add their magnitudes
@@ -220,6 +223,7 @@ BigInt BigInt::operator+(const BigInt &rhs) const {
     return result;
 }
 
+//This method carries out the subtraction of the current BigInt with the right hand side BigInt to return the difference of the two.
 BigInt BigInt::operator-(const BigInt &rhs) const {
   
     //To perform a - b, do a + -b
@@ -242,6 +246,7 @@ bool BigInt::is_zero() const {
   return zeroes_only;
 }
 
+//This method returns the negative version of the BigInt by flipping the negative value.
 BigInt BigInt::operator-() const {
   if(this->is_zero()) { //cannot negate 0
     return *this;
@@ -252,6 +257,7 @@ BigInt BigInt::operator-() const {
   }
 }
 
+//This function checks whether the bit at the provided index is a 1 or 0 and returns true if it is a 1 and false if it is a 0
 bool BigInt::is_bit_set(unsigned n) const {
   unsigned vector_index = n / 64; //index of uint64_t's with vector (0,1,...)
   unsigned bit_index = n % 64; //bit index within the uint64_t (64 bits)
@@ -268,6 +274,7 @@ bool BigInt::is_bit_set(unsigned n) const {
 
 }
 
+//This function left shifts the magnitude vector by the specified number of iterations
 BigInt BigInt::operator<<(unsigned n) const {
   if(this->negative) {
     throw std::invalid_argument("Left shift not allowed for negative values");
@@ -308,6 +315,7 @@ BigInt BigInt::operator<<(unsigned n) const {
   return result;
 }
 
+//This function carries out the multiplication between the left hand side and the right hand side and returns their product as a BigInt
 BigInt BigInt::operator*(const BigInt &rhs) const {
   
   BigInt result;
@@ -336,6 +344,7 @@ BigInt BigInt::operator*(const BigInt &rhs) const {
 
 }
 
+//This function carries out a binary search to divide the lhs by the rhs
 static BigInt binary_search(const BigInt &lhs, const BigInt &rhs) {
 
     BigInt dividend = lhs;
@@ -367,6 +376,7 @@ static BigInt binary_search(const BigInt &lhs, const BigInt &rhs) {
 
 }
 
+//This function divides the Implicit BigInt (this*) by 2
 BigInt BigInt::div_by_2() const {
     BigInt result;
     uint64_t carry = 0;
@@ -392,6 +402,7 @@ BigInt BigInt::div_by_2() const {
     return result;
 }
 
+//This method removes the leading zeros for an array that do not influence the magnitude
 void BigInt::trim_leading_zeroes() {
     // Keep removing the most significant uint64_t 0 blocks
     while (!magnitude.empty() && magnitude.back() == 0) {
@@ -404,7 +415,7 @@ void BigInt::trim_leading_zeroes() {
     }
 }
 
-
+//This method divides the BigInt (*this) by the rhs
 BigInt BigInt::operator/(const BigInt &rhs) const {
   if(rhs.is_zero()) {
     throw std::invalid_argument("Cannot divide by zero");
@@ -423,6 +434,8 @@ BigInt BigInt::operator/(const BigInt &rhs) const {
   return result;
 }
 
+// This method compares the current BigInt with the right hand side BigInt
+// and returns 1 if the current is larger, 0 if they are equal, and -1 if the rhs is larger.
 int BigInt::compare(const BigInt &rhs) const {
   if(this->negative && !rhs.negative) { //LHS < RHS
     return -1;
@@ -442,6 +455,7 @@ int BigInt::compare(const BigInt &rhs) const {
   }
 }
 
+//has_non_zero() is a helper function that checks if there are any non-zero indices in all of the magnitude vectors
 bool BigInt::has_non_zero() const {
   bool has_nonzero = false;
   for(size_t i = 0; i < this->magnitude.size(); i++){
@@ -452,6 +466,7 @@ bool BigInt::has_non_zero() const {
   return has_nonzero;
 }
 
+//To Decimal Function That Converts BigInt magnitude vector to a String
 std::string BigInt::to_dec() const {
   //Return 0 if the BigInt equals 0
   if(magnitude.size() == 0 || !has_non_zero()){
