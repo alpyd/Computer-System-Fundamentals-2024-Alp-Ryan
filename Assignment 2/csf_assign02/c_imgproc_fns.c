@@ -46,8 +46,28 @@ uint32_t to_grayscale( uint32_t pixel ) {
 }
 
 
-uint32_t blend_components( uint32_t fg, uint32_t bg, uint32_t alpha );
-uint32_t blend_colors( uint32_t fg, uint32_t bg );
+uint32_t blend_components( uint32_t fg, uint32_t bg, uint32_t alpha ) {
+  return (alpha * fg + (255 - alpha) * bg) / 255; //computation for new color component
+}
+
+uint32_t blend_colors( uint32_t fg, uint32_t bg ) {
+  uint32_t fg_r = get_r(fg);
+  uint32_t fg_g = get_g(fg);
+  uint32_t fg_b = get_b(fg);
+  uint32_t fg_a = get_a(fg);  // alpha value for blending
+
+  uint32_t bg_r = get_r(bg);
+  uint32_t bg_g = get_g(bg);
+  uint32_t bg_b = get_b(bg);
+
+  // Blend each color component using the foreground alpha
+  uint32_t blended_r = blend_components(fg_r, bg_r, fg_a);
+  uint32_t blended_g = blend_components(fg_g, bg_g, fg_a);
+  uint32_t blended_b = blend_components(fg_b, bg_b, fg_a);
+
+  // return new pixel w/ alpha 255 (fully opaque)
+  return make_pixel(blended_r, blended_g, blended_b, 255);
+}
 
 // Mirror input image horizontally.
 // This transformation always succeeds.
