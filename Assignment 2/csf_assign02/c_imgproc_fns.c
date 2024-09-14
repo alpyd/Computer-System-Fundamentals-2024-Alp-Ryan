@@ -40,7 +40,12 @@ void set_pixel(struct Image *img, int32_t x, int32_t y, uint32_t pixel) {
     img->data[y * img->width + x] = pixel;
 }
 
-uint32_t to_grayscale( uint32_t pixel );
+uint32_t to_grayscale( uint32_t pixel ) {
+  uint32_t gray_value = ((79 * get_r(pixel)) + (128 * get_g(pixel)) + (49 * get_b(pixel))) / 256;
+  return make_pixel(gray_value, gray_value, gray_value, get_a(pixel));
+}
+
+
 uint32_t blend_components( uint32_t fg, uint32_t bg, uint32_t alpha );
 uint32_t blend_colors( uint32_t fg, uint32_t bg );
 
@@ -57,11 +62,11 @@ void imgproc_mirror_h( struct Image *input_img, struct Image *output_img ) {
   for(int32_t y = 0; y < input_img->height; y++) {
     for(int32_t x = 0; x < input_img->width; x++) {
 
-      int32_t mirrored_index = input_img->width - 1 - x; //tile to swap with
+      int32_t mirrored_width = input_img->width - 1 - x; // width index of tile to swap with
 
       // Swap current pixel to mirrored position in output image
       uint32_t pixel = get_pixel(input_img, x, y);
-      set_pixel(output_img, mirrored_index, y, pixel);
+      set_pixel(output_img, mirrored_width, y, pixel);
     }
   }
 
@@ -75,7 +80,19 @@ void imgproc_mirror_h( struct Image *input_img, struct Image *output_img ) {
 //   output_img - pointer to the output Image (in which the transformed
 //                pixels should be stored)
 void imgproc_mirror_v( struct Image *input_img, struct Image *output_img ) {
-  // TODO: implement
+  
+  //iterate over each row, swap the pixels to produce mirror image
+  for(int32_t y = 0; y < input_img->height; y++) {
+    for(int32_t x = 0; x < input_img->width; x++) {
+
+      int32_t mirrored_height = input_img->height - 1 - y; //height of tile to swap with
+
+      // Swap current pixel to mirrored pixel in output image
+      uint32_t pixel = get_pixel(input_img, x, y);
+      set_pixel(output_img, x, mirrored_height, pixel);
+    }
+  }
+
 }
 
 // Transform image by generating a grid of n x n smaller tiles created by
@@ -104,7 +121,21 @@ int imgproc_tile( struct Image *input_img, int n, struct Image *output_img ) {
 //   output_img - pointer to the output Image (in which the transformed
 //                pixels should be stored)
 void imgproc_grayscale( struct Image *input_img, struct Image *output_img ) {
-  // TODO: implement
+  
+  for(int x = 0; x < input_img->width; x++) {
+    for(int y = 0; y < input_img->height; y++) {
+
+      uint32_t pixel = get_pixel(input_img, x, y);
+
+      //convert current pixel to grayscale version
+      uint32_t grayed_pixel = to_grayscale(pixel);
+
+      //set current pixel to grayed version in output
+      set_pixel(output_img, x, y, grayed_pixel);
+
+    }
+  }
+
 }
 
 // Overlay a foreground image on a background image, using each foreground
