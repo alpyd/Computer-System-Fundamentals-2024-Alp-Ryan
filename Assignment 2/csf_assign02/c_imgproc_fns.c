@@ -10,9 +10,6 @@ int all_tiles_nonempty( int width, int height, int n ){
   }
   return 1;
 }
-int determine_tile_w( int width, int n, int tile_col ){
-  return width/n + determine_tile_x_offset(width, n, tile_col);
-}
 
 int determine_tile_x_offset( int width, int n, int tile_col ){
   int remainder = width % n;
@@ -23,10 +20,6 @@ int determine_tile_x_offset( int width, int n, int tile_col ){
   }
 }
 
-int determine_tile_h( int height, int n, int tile_row ){
-  return height/n + determine_tile_y_offset(height, n, tile_row);
-}
-
 int determine_tile_y_offset( int height, int n, int tile_row ){
   int remainder = height % n;
   if(tile_row < remainder){
@@ -35,6 +28,27 @@ int determine_tile_y_offset( int height, int n, int tile_row ){
     return 0;
   }
 }
+
+int determine_tile_w( int width, int n, int tile_col ){
+  return width/n + determine_tile_x_offset(width, n, tile_col);
+}
+
+int determine_tile_h( int height, int n, int tile_row ){
+  return height/n + determine_tile_y_offset(height, n, tile_row);
+}
+
+uint32_t make_pixel(uint32_t r, uint32_t g, uint32_t b, uint32_t a) {
+    return (r << 24) | (g << 16) | (b << 8) | a;
+}
+
+uint32_t get_pixel(struct Image *img, int32_t x, int32_t y) {
+    return img->data[y * img->width + x];
+}
+
+void set_pixel(struct Image *img, int32_t x, int32_t y, uint32_t pixel) {
+    img->data[y * img->width + x] = pixel;
+}
+
 void copy_tile( struct Image *out_img, struct Image *img, int tile_row, int tile_col, int n ){
   int tile_width = determine_tile_w(img->width, n, tile_col);
   int tile_height = determine_tile_h(img->height, n, tile_row);
@@ -46,14 +60,24 @@ void copy_tile( struct Image *out_img, struct Image *img, int tile_row, int tile
 
   int top_most_pixel_y = 0;
   for(int j = 0; j < tile_row; j++){
-    top_most_pixel_y += determine_tile_width(out_img->height, n, j);
+    top_most_pixel_y += determine_tile_h(out_img->height, n, j);
   }
 
-  for(int w = 0; w < tile_width; w++){
-    for(int h = 0; h < tile_height; h++){      
-      set_pixel(out_img, left_most_pixel_x + w, top_most_pixel_y, get_pixel(img, w*6, h*6));
+  int input_x_offset = tile_col * (img->width / n);
+  int input_y_offset = tile_row * (img->height / n);
+
+  for (int h = 0; h < tile_height; h++) {
+    for (int w = 0; w < tile_width; w++) {
+        int src_x = input_x_offset + w;
+        int src_y = input_y_offset + h;
+        
+        if (src_x < img->width && src_y < img->height) {
+            uint32_t pixel = get_pixel(img, src_x, src_y);
+            set_pixel(out_img, left_most_pixel_x + w, top_most_pixel_y + h, pixel);
+        }
+      }
     }
-  }
+
 }
 
 uint32_t get_r(uint32_t pixel) { //shift 
@@ -70,18 +94,6 @@ uint32_t get_b(uint32_t pixel) {
 
 uint32_t get_a(uint32_t pixel) {
     return pixel & 0xFF;
-}
-
-uint32_t make_pixel(uint32_t r, uint32_t g, uint32_t b, uint32_t a) {
-    return (r << 24) | (g << 16) | (b << 8) | a;
-}
-
-uint32_t get_pixel(struct Image *img, int32_t x, int32_t y) {
-    return img->data[y * img->width + x];
-}
-
-void set_pixel(struct Image *img, int32_t x, int32_t y, uint32_t pixel) {
-    img->data[y * img->width + x] = pixel;
 }
 
 uint32_t to_grayscale( uint32_t pixel ) {
@@ -174,17 +186,17 @@ void imgproc_mirror_v( struct Image *input_img, struct Image *output_img ) {
 //       be empty (i.e., have 0 width or height)
 
 int imgproc_tile( struct Image *input_img, int n, struct Image *output_img ) {
-  if(n < 1){
+  
+  if (n < 1 || !all_tiles_nonempty(input_img->width, input_img->height, n)) {
     return 0;
   }
-  if(!all_tiles_nonempty(input_img->width, input_img->height, n)){
-    return 0;
-  }
+
   for(int r = 0; r < n; r++){
     for(int c = 0; c < n; c++){
       copy_tile(output_img, input_img, r, c, n);
     }
   } 
+
   return 1;
 }
 
@@ -229,37 +241,15 @@ int imgproc_composite( struct Image *base_img, struct Image *overlay_img, struct
   if(base_img->width != overlay_img-> width || base_img->height != overlay_img->height){
     return 0;
   }
-  for(int r = 0; r < output_img->width; r++){
-    for(int c = 0; c < output_img->height; c++){
-      uint32_t foreground_pixel = get_pixel(overlay_img, c, r);
-      uint32_t background_pixel = get_pixel(base_img, c, r);
-      uint32_t foreground_alpha = get_a(foreground_pixel);
-      uint32_t output_r = (int) (foreground_alpha*get_r(foreground_pixel) + (255-foreground_alpha)*get_r(background_pixel)/255);
-      uint32_t output_g = (int) (foreground_alpha*get_g(foreground_pixel) + (255-foreground_alpha)*get_g(background_pixel)/255);
-      uint32_t output_b = (int) (foreground_alpha*get_b(foreground_pixel) + (255-foreground_alpha)*get_b(background_pixel)/255);
-      uint32_t output_pixel = make_pixel(output_r, output_g, output_b, 255);
-      set_pixel(output_img, c, r, output_pixel);
+  
+  for (int r = 0; r < output_img->height; r++) {
+        for (int c = 0; c < output_img->width; c++) {
+            uint32_t foreground_pixel = get_pixel(overlay_img, c, r);
+            uint32_t background_pixel = get_pixel(base_img, c, r);
+            uint32_t blended_pixel = blend_colors(foreground_pixel, background_pixel);
+            set_pixel(output_img, c, r, blended_pixel);
+        }
     }
-  }
+
   return 1;
-}
-
-uint32_t get_r(uint32_t pixel) { //shift 
-    return (pixel >> 24) & 0xFF;
-}
-
-uint32_t get_g(uint32_t pixel) {
-    return (pixel >> 16) & 0xFF;
-}
-
-uint32_t get_b(uint32_t pixel) {
-    return (pixel >> 8) & 0xFF;
-}
-
-uint32_t get_a(uint32_t pixel) {
-    return pixel & 0xFF;
-}
-
-uint32_t make_pixel(uint32_t r, uint32_t g, uint32_t b, uint32_t a) {
-    return (r << 24) | (g << 16) | (b << 8) | a;
 }
