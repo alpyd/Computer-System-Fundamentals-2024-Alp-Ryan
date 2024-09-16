@@ -4,11 +4,9 @@
 #include <assert.h>
 #include "imgproc.h"
 
+//Returns true (1) if value of n results in nonempty sized tiles
 int all_tiles_nonempty( int width, int height, int n ){
-  if(n > width || n > height){
-    return 0;
-  }
-  return 1;
+  return (width / n > 0) && (height / n > 0);
 }
 
 int determine_tile_x_offset( int width, int n, int tile_col ){

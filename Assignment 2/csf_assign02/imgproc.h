@@ -64,4 +64,38 @@ int imgproc_composite( struct Image *base_img, struct Image *overlay_img, struct
 
 // TODO: add prototypes for your helper functions
 
+//Returns true (1) if value of n results in nonempty sized tiles
+int all_tiles_nonempty(int width, int height, int n);
+
+int determine_tile_x_offset(int width, int n, int tile_col);
+
+int determine_tile_y_offset( int height, int n, int tile_row);
+
+int determine_tile_w( int width, int n, int tile_col );
+
+int determine_tile_h( int height, int n, int tile_row );
+
+uint32_t make_pixel(uint32_t r, uint32_t g, uint32_t b, uint32_t a);
+
+uint32_t get_pixel(struct Image *img, int32_t x, int32_t y);
+
+void set_pixel(struct Image *img, int32_t x, int32_t y, uint32_t pixel);
+
+void copy_tile( struct Image *out_img, struct Image *img, int tile_row, int tile_col, int n );
+
+uint32_t get_r(uint32_t pixel);
+
+uint32_t get_g(uint32_t pixel);
+
+uint32_t get_b(uint32_t pixel);
+
+uint32_t get_a(uint32_t pixel);
+
+uint32_t to_grayscale(uint32_t pixel);
+
+uint32_t blend_components(uint32_t fg, uint32_t bg, uint32_t alpha);
+
+uint32_t blend_colors(uint32_t fg, uint32_t bg);
+
+
 #endif // IMGPROC_H

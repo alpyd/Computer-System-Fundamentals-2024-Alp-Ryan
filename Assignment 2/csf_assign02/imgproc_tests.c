@@ -98,6 +98,22 @@ void test_tile_basic( TestObjs *objs );
 void test_grayscale_basic( TestObjs *objs );
 void test_composite_basic( TestObjs *objs );
 // TODO: add prototypes for additional test functions
+void test_all_tiles_nonempty( TestObjs *objs);
+void test_determine_tile_x_offset( TestObjs *objs);
+void test_determine_tile_y_offset( TestObjs *objs);
+void test_determine_tile_w( TestObjs *objs);
+void test_determine_tile_y( TestObjs *objs);
+void test_make_pixel( TestObjs *objs);
+void test_get_pixel( TestObjs *objs);
+void test_set_pixel( TestObjs *objs);
+void test_copy_tile( TestObjs *objs);
+void test_get_r( TestObjs *objs);
+void test_get_g( TestObjs *objs);
+void test_get_b( TestObjs *objs);
+void test_get_a( TestObjs *objs);
+void test_to_grayscale( TestObjs *objs);
+void test_blend_components( TestObjs *objs);
+void test_blend_colors( TestObjs *objs);
 
 int main( int argc, char **argv ) {
   // allow the specific test to execute to be specified as the
@@ -115,6 +131,7 @@ int main( int argc, char **argv ) {
   TEST( test_tile_basic );
   TEST( test_grayscale_basic );
   TEST( test_composite_basic );
+  TEST( test_all_tiles_nonempty );
 
   TEST_FINI();
 }
@@ -348,3 +365,12 @@ void test_composite_basic( TestObjs *objs ) {
   ASSERT( 0x000080FF == objs->smiley_out->data[87] );
 }
 
+//TESTS FOR HELPER FUNCTIONS
+
+void test_all_tiles_nonempty(TestObjs *objs) {
+
+
+//ASSERT(all_tiles_nonempty(16, 16, 2) == 1);
+
+
+}
