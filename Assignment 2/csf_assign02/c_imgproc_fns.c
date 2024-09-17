@@ -61,21 +61,14 @@ void copy_tile( struct Image *out_img, struct Image *img, int tile_row, int tile
     top_most_pixel_y += determine_tile_h(out_img->height, n, j);
   }
 
-  int input_x_offset = tile_col * (img->width / n);
-  int input_y_offset = tile_row * (img->height / n);
-
   for (int h = 0; h < tile_height; h++) {
     for (int w = 0; w < tile_width; w++) {
-        int src_x = input_x_offset + w;
-        int src_y = input_y_offset + h;
-        
-        if (src_x < img->width && src_y < img->height) {
-            uint32_t pixel = get_pixel(img, src_x, src_y);
-            set_pixel(out_img, left_most_pixel_x + w, top_most_pixel_y + h, pixel);
-        }
+      if (w*n < img->width && h*n < img->height) {
+          uint32_t pixel = get_pixel(img, w * n, h * n);
+          set_pixel(out_img, left_most_pixel_x + w, top_most_pixel_y + h, pixel);
       }
     }
-
+  }
 }
 
 uint32_t get_r(uint32_t pixel) { //shift 
