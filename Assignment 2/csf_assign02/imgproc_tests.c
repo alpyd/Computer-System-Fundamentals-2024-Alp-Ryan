@@ -142,6 +142,10 @@ int main( int argc, char **argv ) {
   TEST( test_get_pixel);
   TEST( test_set_pixel);
   TEST( test_copy_tile);
+  TEST( test_get_r);
+  TEST( test_get_g);
+  TEST( test_get_b);
+  TEST( test_get_a);
 
   TEST_FINI();
 }
@@ -707,4 +711,103 @@ void test_copy_tile( TestObjs *objs){
 
   //Ensure no other zeros are changed
   ASSERT(get_pixel(copy_odd_output_n3, 0, 3) == 0x00000FF);
+}
+
+void test_get_r( TestObjs *objs) {
+
+//Expected red value: 0xFF
+uint32_t pixel = 0xFF336699;
+ASSERT(get_r(pixel) == 0xFF);
+
+//Test with pixel having red as 0xAA: 0xAA112233
+pixel = 0xAA112233;
+ASSERT(get_r(pixel) == 0xAA);
+
+//Test with pixel where red part is 0x00: 0x00334455
+pixel = 0x00334455;
+ASSERT(get_r(pixel) == 0x00);
+
+//Edge case: all parts set to 0: 0x00000000
+pixel = 0x00000000;
+ASSERT(get_r(pixel) == 0x00);
+
+//Edge case: all 8 bit parts set to maximum: 0xFFFFFFFF
+pixel = 0xFFFFFFFF;
+ASSERT(get_r(pixel) == 0xFF);
+
+}
+
+void test_get_g( TestObjs *objs) {
+
+uint32_t pixel = 0xFF336699;
+ASSERT(get_g(pixel) == 0x33);
+
+//Test with green set as 0xBB
+pixel = 0x11BB2233;
+ASSERT(get_g(pixel) == 0xBB);
+
+//Test with pixel where green part is 0x00: 0xFF003355
+pixel = 0xFF003355;
+ASSERT(get_g(pixel) == 0x00);
+
+//Edge case: all bits set to 0: 0x00000000
+pixel = 0x00000000;
+ASSERT(get_g(pixel) == 0x00);
+
+//Edge case: all bits set to maximum: 0xFFFFFFFF
+pixel = 0xFFFFFFFF;
+ASSERT(get_g(pixel) == 0xFF);
+
+}
+
+void test_get_b( TestObjs *objs) {
+
+uint32_t pixel = 0xFF336699;
+ASSERT(get_b(pixel) == 0x66); //expected is 3rd pair (bits 8-15)
+
+//Test with blue part as 0xCC: 0x11BBCC33
+pixel = 0x11BBCC33;
+ASSERT(get_b(pixel) == 0xCC);
+
+//Edge case: all bits set to 0: 0x00000000
+pixel = 0x00000000;
+ASSERT(get_b(pixel) == 0x00);
+
+//Edge case: all bits set to maximum: 0xFFFFFFFF
+pixel = 0xFFFFFFFF;
+ASSERT(get_b(pixel) == 0xFF);
+
+}
+
+void test_get_a( TestObjs *objs) {
+
+uint32_t pixel = 0xFF336699;
+ASSERT(get_a(pixel) == 0x99); //expected is bits (0-7) = 99 in hex
+
+//Test with pixel having alpha as 0xDD: 0x11BB22DD
+pixel = 0x11BB22DD;
+ASSERT(get_a(pixel) == 0xDD);
+
+// Edge case: all channels set to 0: 0x00000000
+pixel = 0x00000000;
+ASSERT(get_a(pixel) == 0x00);
+
+// Edge case: all channels set to maximum: 0xFFFFFFFF
+pixel = 0xFFFFFFFF;
+ASSERT(get_a(pixel) == 0xFF);
+
+}
+
+//TODO: Add these tests to list of tests to run
+
+void test_to_grayscale( TestObjs *objs) {
+
+}
+
+void test_blend_components( TestObjs *objs) {
+
+}
+
+void test_blend_colors( TestObjs *objs) {
+
 }
