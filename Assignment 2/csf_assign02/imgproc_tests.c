@@ -135,6 +135,10 @@ int main( int argc, char **argv ) {
   TEST( test_composite_basic );
   TEST( test_all_tiles_nonempty );
   TEST( test_determine_tile_x_offset);
+<<<<<<< HEAD
+=======
+  TEST( test_determine_tile_y_offset);
+>>>>>>> 0fe8fded2cbf1321f163bef142eb068b2b89cec0
 
   TEST_FINI();
 }
@@ -372,9 +376,61 @@ void test_composite_basic( TestObjs *objs ) {
 
 void test_all_tiles_nonempty(TestObjs *objs) {
 
+//same width and height, valid tiling factor
+ASSERT(all_tiles_nonempty(16, 16, 2) == 1);
 
-//ASSERT(all_tiles_nonempty(16, 16, 2) == 1);
+//tiling factor fails for both height/width
+ASSERT(all_tiles_nonempty(16, 16, 17) == 0);
 
+//tiling factor fails for height only
+ASSERT(all_tiles_nonempty(20, 10, 11) == 0);
+
+//tiling factor fails for width only
+ASSERT(all_tiles_nonempty(12, 15, 15) == 0);
+
+}
+
+void test_determine_tile_x_offset(TestObjs *objs) {
+
+//width is perfectly divisible by n (no remainder)
+ASSERT(determine_tile_x_offset(16, 4, 0) == 0); // 16 % 4 = 0, no remainder
+ASSERT(determine_tile_x_offset(16, 4, 3) == 0); // 16 % 4 = 0, no remainder
+
+//tile_col is less than the remainder
+ASSERT(determine_tile_x_offset(17, 4, 0) == 1); // 17 % 4 = 1, tile_col < remainder
+ASSERT(determine_tile_x_offset(18, 5, 1) == 1); // 18 % 5 = 3, tile_col < remainder
+
+//tile_col is equal to or greater than the remainder
+ASSERT(determine_tile_x_offset(17, 4, 1) == 0); // 17 % 4 = 1, tile_col == remainder
+ASSERT(determine_tile_x_offset(18, 5, 3) == 0); // 18 % 5 = 3, tile_col == remainder
+
+// Edge case: width smaller than n
+ASSERT(determine_tile_x_offset(3, 4, 0) == 1); // 3 % 4 = 3, tile_col < remainder
+
+// Special case: width is 0
+ASSERT(determine_tile_x_offset(0, 4, 0) == 0); // 0 % 4 = 0, no remainder
+
+}
+
+void  test_determine_tile_y_offset(TestObjs *objs) {
+
+//height is perfectly divisible by n (no remainder)
+ASSERT(determine_tile_y_offset(16, 4, 0) == 0); // 16 % 4 = 0, no remainder
+ASSERT(determine_tile_y_offset(16, 4, 3) == 0); // 16 % 4 = 0, no remainder
+
+//tile_row is less than the remainder
+ASSERT(determine_tile_y_offset(17, 4, 0) == 1); // 17 % 4 = 1, tile_row < remainder
+ASSERT(determine_tile_y_offset(18, 5, 1) == 1); // 18 % 5 = 3, tile_row < remainder
+
+//tile_row is equal to or greater than the remainder
+ASSERT(determine_tile_y_offset(17, 4, 1) == 0); // 17 % 4 = 1, tile_row == remainder
+ASSERT(determine_tile_y_offset(18, 5, 3) == 0); // 18 % 5 = 3, tile_row == remainder
+
+//Edge case: height smaller than n
+ASSERT(determine_tile_y_offset(3, 4, 0) == 1); // 3 % 4 = 3, tile_row < remainder
+
+//Special case: height is 0
+ASSERT(determine_tile_y_offset(0, 4, 0) == 0); // 0 % 4 = 0, no remainder
 
 }
 
