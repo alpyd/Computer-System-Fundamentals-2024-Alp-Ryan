@@ -523,3 +523,35 @@ void test_determine_tile_h(TestObjs *objs){
     ASSERT(determine_tile_h(177, 13, i) == 13);
   }
 }
+
+void test_make_pixel( TestObjs *objs){
+  //Test 0 Conditions and Max Conditions
+  ASSERT(make_pixel(0, 0, 0, 0) == 0);
+  ASSERT(make_pixel(0, 0, 0, 255) == 255);
+  ASSERT(make_pixel(0, 0, 255, 255) == 65535);
+  ASSERT(make_pixel(0, 255, 255, 255) == 16777215);
+  ASSERT(make_pixel(255, 255, 255, 255) == 4294967295);
+  ASSERT(make_pixel(255, 255, 255, 0) == 4294967295-255);
+  ASSERT(make_pixel(255, 255, 0, 0) == 4294967295-65535);
+  ASSERT(make_pixel(255, 0, 0, 0) == 4294967295-16777215);
+
+  //Test arbitrary values
+  ASSERT(make_pixel(32, 17, 143, 62) == 538021694);
+  ASSERT(make_pixel(55, 12, 196, 202) == 923583690);
+  ASSERT(make_pixel(25, 166, 43, 100) == 430320484);
+  ASSERT(make_pixel(44, 218, 12, 255) == 752487679);
+  ASSERT(make_pixel(23, 191, 173, 230) == 398437862);
+
+  //Test Overflow
+  ASSERT(make_pixel(256, 0, 0, 0 != 4294967296));
+}
+
+// void test_get_pixel( TestObjs *objs){
+
+// }
+// void test_set_pixel( TestObjs *objs){
+
+// }
+// void test_copy_tile( TestObjs *objs){
+
+// }
