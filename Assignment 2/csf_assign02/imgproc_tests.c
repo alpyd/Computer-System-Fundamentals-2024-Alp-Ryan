@@ -135,10 +135,7 @@ int main( int argc, char **argv ) {
   TEST( test_composite_basic );
   TEST( test_all_tiles_nonempty );
   TEST( test_determine_tile_x_offset);
-<<<<<<< HEAD
-=======
   TEST( test_determine_tile_y_offset);
->>>>>>> 0fe8fded2cbf1321f163bef142eb068b2b89cec0
 
   TEST_FINI();
 }
@@ -410,6 +407,21 @@ ASSERT(determine_tile_x_offset(3, 4, 0) == 1); // 3 % 4 = 3, tile_col < remainde
 // Special case: width is 0
 ASSERT(determine_tile_x_offset(0, 4, 0) == 0); // 0 % 4 = 0, no remainder
 
+int res_1 = determine_tile_x_offset(4, 2, 1);
+ASSERT(res_1 == 0);
+int res_2 = determine_tile_x_offset(5, 2, 0);
+ASSERT(res_2 == 1);
+int res_3 = determine_tile_x_offset(5, 2, 1);
+ASSERT(res_3 == 0);
+int res_4 = determine_tile_x_offset(0, 6, 0);
+ASSERT(res_4 == 0);
+int res_5 = determine_tile_x_offset(48, 7, 6);
+ASSERT(res_5 == 0);
+for(int i = 0; i < 6; i++){
+  int res_6 = determine_tile_x_offset(48, 7, i);
+  ASSERT(res_6 == 1);
+  }
+
 }
 
 void  test_determine_tile_y_offset(TestObjs *objs) {
@@ -441,29 +453,6 @@ void test_set_pixel(TestObjs *objs) {
 }
 
 void test_get_pixel(TestObjs *objs){
-
-}
-void test_determine_tile_x_offset(TestObjs * objs){
-  int res_1 = determine_tile_x_offset(4, 2, 1);
-  ASSERT(res_1 == 0);
-  int res_2 = determine_tile_x_offset(5, 2, 0);
-  ASSERT(res_2 == 1);
-  int res_3 = determine_tile_x_offset(5, 2, 1);
-  ASSERT(res_3 == 0);
-  int res_4 = determine_tile_x_offset(0, 6, 0);
-  ASSERT(res_4 == 0);
-  int res_5 = determine_tile_x_offset(48, 7, 6);
-  ASSERT(res_5 == 0);
-  for(int i = 0; i < 6; i++){
-    int res_6 = determine_tile_x_offset(48, 7, i);
-    ASSERT(res_6 == 1);
-  }
-
-
-
-}
-
-void test_determine_tile_y_offset(TestObjs *objs){
 
 }
 
