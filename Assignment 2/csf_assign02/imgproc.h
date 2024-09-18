@@ -62,8 +62,6 @@ void imgproc_grayscale( struct Image *input_img, struct Image *output_img );
 //   and overlay image do not have the same dimensions
 int imgproc_composite( struct Image *base_img, struct Image *overlay_img, struct Image *output_img );
 
-// TODO: add prototypes for your helper functions
-
 //Returns true (1) if value of n results in nonempty sized tiles
 int all_tiles_nonempty(int width, int height, int n);
 

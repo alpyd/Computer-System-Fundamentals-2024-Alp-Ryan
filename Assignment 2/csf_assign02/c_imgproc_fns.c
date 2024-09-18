@@ -4,117 +4,6 @@
 #include <assert.h>
 #include "imgproc.h"
 
-//Returns true (1) if value of n results in nonempty sized tiles
-int all_tiles_nonempty( int width, int height, int n ){
-  return (width / n > 0) && (height / n > 0);
-}
-
-int determine_tile_x_offset( int width, int n, int tile_col ){
-  int remainder = width % n;
-  if(tile_col < remainder){
-    return 1;
-  } else {
-    return 0;
-  }
-}
-
-int determine_tile_y_offset( int height, int n, int tile_row ){
-  int remainder = height % n;
-  if(tile_row < remainder){
-    return 1;
-  } else {
-    return 0;
-  }
-}
-
-int determine_tile_w( int width, int n, int tile_col ){
-  return width/n + determine_tile_x_offset(width, n, tile_col);
-}
-
-int determine_tile_h( int height, int n, int tile_row ){
-  return height/n + determine_tile_y_offset(height, n, tile_row);
-}
-
-uint32_t make_pixel(uint32_t r, uint32_t g, uint32_t b, uint32_t a) {
-    return (r << 24) | (g << 16) | (b << 8) | a;
-}
-
-uint32_t get_pixel(struct Image *img, int32_t x, int32_t y) {
-    return img->data[y * img->width + x];
-}
-
-void set_pixel(struct Image *img, int32_t x, int32_t y, uint32_t pixel) {
-    img->data[y * img->width + x] = pixel;
-}
-
-void copy_tile( struct Image *out_img, struct Image *img, int tile_row, int tile_col, int n ){
-  int tile_width = determine_tile_w(img->width, n, tile_col);
-  int tile_height = determine_tile_h(img->height, n, tile_row);
-
-  int left_most_pixel_x = 0;
-  for(int i = 0; i < tile_col; i++){
-    left_most_pixel_x += determine_tile_w(out_img->width, n, i);
-  }
-
-  int top_most_pixel_y = 0;
-  for(int j = 0; j < tile_row; j++){
-    top_most_pixel_y += determine_tile_h(out_img->height, n, j);
-  }
-
-  for (int h = 0; h < tile_height; h++) {
-    for (int w = 0; w < tile_width; w++) {
-      if (w*n < img->width && h*n < img->height) {
-          uint32_t pixel = get_pixel(img, w * n, h * n);
-          set_pixel(out_img, left_most_pixel_x + w, top_most_pixel_y + h, pixel);
-      }
-    }
-  }
-}
-
-uint32_t get_r(uint32_t pixel) { //shift 
-    return (pixel >> 24) & 0xFF;
-}
-
-uint32_t get_g(uint32_t pixel) {
-    return (pixel >> 16) & 0xFF;
-}
-
-uint32_t get_b(uint32_t pixel) {
-    return (pixel >> 8) & 0xFF;
-}
-
-uint32_t get_a(uint32_t pixel) {
-    return pixel & 0xFF;
-}
-
-uint32_t to_grayscale( uint32_t pixel ) {
-  uint32_t gray_value = ((79 * get_r(pixel)) + (128 * get_g(pixel)) + (49 * get_b(pixel))) / 256;
-  return make_pixel(gray_value, gray_value, gray_value, get_a(pixel));
-}
-
-
-uint32_t blend_components( uint32_t fg, uint32_t bg, uint32_t alpha ) {
-  return (alpha * fg + (255 - alpha) * bg) / 255; //computation for new color component
-}
-
-uint32_t blend_colors( uint32_t fg, uint32_t bg ) {
-  uint32_t fg_r = get_r(fg);
-  uint32_t fg_g = get_g(fg);
-  uint32_t fg_b = get_b(fg);
-  uint32_t fg_a = get_a(fg);  // alpha value for blending
-
-  uint32_t bg_r = get_r(bg);
-  uint32_t bg_g = get_g(bg);
-  uint32_t bg_b = get_b(bg);
-
-  // Blend each color component using the foreground alpha
-  uint32_t blended_r = blend_components(fg_r, bg_r, fg_a);
-  uint32_t blended_g = blend_components(fg_g, bg_g, fg_a);
-  uint32_t blended_b = blend_components(fg_b, bg_b, fg_a);
-
-  // return new pixel w/ alpha 255 (fully opaque)
-  return make_pixel(blended_r, blended_g, blended_b, 255);
-}
 
 // Mirror input image horizontally.
 // This transformation always succeeds.
@@ -243,4 +132,116 @@ int imgproc_composite( struct Image *base_img, struct Image *overlay_img, struct
     }
 
   return 1;
+}
+
+//Returns true (1) if value of n results in nonempty sized tiles
+int all_tiles_nonempty( int width, int height, int n ){
+  return (width / n > 0) && (height / n > 0);
+}
+
+int determine_tile_x_offset( int width, int n, int tile_col ){
+  int remainder = width % n;
+  if(tile_col < remainder){
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+int determine_tile_y_offset( int height, int n, int tile_row ){
+  int remainder = height % n;
+  if(tile_row < remainder){
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+int determine_tile_w( int width, int n, int tile_col ){
+  return width/n + determine_tile_x_offset(width, n, tile_col);
+}
+
+int determine_tile_h( int height, int n, int tile_row ){
+  return height/n + determine_tile_y_offset(height, n, tile_row);
+}
+
+uint32_t make_pixel(uint32_t r, uint32_t g, uint32_t b, uint32_t a) {
+    return (r << 24) | (g << 16) | (b << 8) | a;
+}
+
+uint32_t get_pixel(struct Image *img, int32_t x, int32_t y) {
+    return img->data[y * img->width + x];
+}
+
+void set_pixel(struct Image *img, int32_t x, int32_t y, uint32_t pixel) {
+    img->data[y * img->width + x] = pixel;
+}
+
+void copy_tile( struct Image *out_img, struct Image *img, int tile_row, int tile_col, int n ){
+  int tile_width = determine_tile_w(img->width, n, tile_col);
+  int tile_height = determine_tile_h(img->height, n, tile_row);
+
+  int left_most_pixel_x = 0;
+  for(int i = 0; i < tile_col; i++){
+    left_most_pixel_x += determine_tile_w(out_img->width, n, i);
+  }
+
+  int top_most_pixel_y = 0;
+  for(int j = 0; j < tile_row; j++){
+    top_most_pixel_y += determine_tile_h(out_img->height, n, j);
+  }
+
+  for (int h = 0; h < tile_height; h++) {
+    for (int w = 0; w < tile_width; w++) {
+      if (w*n < img->width && h*n < img->height) {
+          uint32_t pixel = get_pixel(img, w * n, h * n);
+          set_pixel(out_img, left_most_pixel_x + w, top_most_pixel_y + h, pixel);
+      }
+    }
+  }
+}
+
+uint32_t get_r(uint32_t pixel) { //shift 
+    return (pixel >> 24) & 0xFF;
+}
+
+uint32_t get_g(uint32_t pixel) {
+    return (pixel >> 16) & 0xFF;
+}
+
+uint32_t get_b(uint32_t pixel) {
+    return (pixel >> 8) & 0xFF;
+}
+
+uint32_t get_a(uint32_t pixel) {
+    return pixel & 0xFF;
+}
+
+uint32_t to_grayscale( uint32_t pixel ) {
+  uint32_t gray_value = ((79 * get_r(pixel)) + (128 * get_g(pixel)) + (49 * get_b(pixel))) / 256;
+  return make_pixel(gray_value, gray_value, gray_value, get_a(pixel));
+}
+
+
+uint32_t blend_components( uint32_t fg, uint32_t bg, uint32_t alpha ) {
+  return (alpha * fg + (255 - alpha) * bg) / 255; //computation for new color component
+}
+
+uint32_t blend_colors( uint32_t fg, uint32_t bg ) {
+  uint32_t fg_r = get_r(fg);
+  uint32_t fg_g = get_g(fg);
+  uint32_t fg_b = get_b(fg);
+  uint32_t fg_a = get_a(fg);  // alpha value for blending
+
+  uint32_t bg_r = get_r(bg);
+  uint32_t bg_g = get_g(bg);
+  uint32_t bg_b = get_b(bg);
+
+  // Blend each color component using the foreground alpha
+  uint32_t blended_r = blend_components(fg_r, bg_r, fg_a);
+  uint32_t blended_g = blend_components(fg_g, bg_g, fg_a);
+  uint32_t blended_b = blend_components(fg_b, bg_b, fg_a);
+
+  // return new pixel w/ alpha 255 (fully opaque)
+  return make_pixel(blended_r, blended_g, blended_b, 255);
 }

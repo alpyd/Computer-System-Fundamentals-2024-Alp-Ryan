@@ -98,6 +98,7 @@ void test_tile_basic( TestObjs *objs );
 void test_grayscale_basic( TestObjs *objs );
 void test_composite_basic( TestObjs *objs );
 // TODO: add prototypes for additional test functions
+
 void test_all_tiles_nonempty( TestObjs *objs);
 void test_determine_tile_x_offset( TestObjs *objs);
 void test_determine_tile_y_offset( TestObjs *objs);
@@ -126,12 +127,14 @@ int main( int argc, char **argv ) {
   // Run tests.
   // Make sure you add additional TEST() macro invocations
   // for any additional test functions you add.
+  
   TEST( test_mirror_h_basic );
   TEST( test_mirror_v_basic );
   TEST( test_tile_basic );
   TEST( test_grayscale_basic );
   TEST( test_composite_basic );
   TEST( test_all_tiles_nonempty );
+  TEST( test_determine_tile_x_offset);
 
   TEST_FINI();
 }
@@ -373,4 +376,43 @@ void test_all_tiles_nonempty(TestObjs *objs) {
 //ASSERT(all_tiles_nonempty(16, 16, 2) == 1);
 
 
+}
+
+void test_set_pixel(TestObjs *objs) {
+  //Add arbitrary value to all 4 corners
+  //Add across the rows
+  //Add in the middle/body
+}
+
+void test_get_pixel(TestObjs *objs){
+
+}
+void test_determine_tile_x_offset(TestObjs * objs){
+  int res_1 = determine_tile_x_offset(4, 2, 1);
+  ASSERT(res_1 == 0);
+  int res_2 = determine_tile_x_offset(5, 2, 0);
+  ASSERT(res_2 == 1);
+  int res_3 = determine_tile_x_offset(5, 2, 1);
+  ASSERT(res_3 == 0);
+  int res_4 = determine_tile_x_offset(0, 6, 0);
+  ASSERT(res_4 == 0);
+  int res_5 = determine_tile_x_offset(48, 7, 6);
+  ASSERT(res_5 == 0);
+  for(int i = 0; i < 6; i++){
+    int res_6 = determine_tile_x_offset(48, 7, i);
+    ASSERT(res_6 == 1);
+  }
+
+
+
+}
+
+void test_determine_tile_y_offset(TestObjs *objs){
+
+}
+
+void test_determine_tile_w(TestObjs *objs){
+}
+
+void test_determine_tile_h(TestObjs *objs){
 }
