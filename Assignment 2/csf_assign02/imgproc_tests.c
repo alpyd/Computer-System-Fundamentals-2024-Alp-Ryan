@@ -446,16 +446,6 @@ ASSERT(determine_tile_y_offset(0, 4, 0) == 0); // 0 % 4 = 0, no remainder
 
 }
 
-void test_set_pixel(TestObjs *objs) {
-  //Add arbitrary value to all 4 corners
-  //Add across the rows
-  //Add in the middle/body
-}
-
-void test_get_pixel(TestObjs *objs){
-
-}
-
 void test_determine_tile_w(TestObjs *objs){
   //Test 0 width case; n = 0 is not tested because tile already returns 0 for this case
   ASSERT(determine_tile_w(0, 4, 2) == 0);
@@ -546,12 +536,94 @@ void test_make_pixel( TestObjs *objs){
   ASSERT(make_pixel(256, 0, 0, 0 != 4294967296));
 }
 
-// void test_get_pixel( TestObjs *objs){
+void test_get_pixel( TestObjs *objs){
+  //Test on an image of 1x1 width
+  Picture single_pixel = {
+    TEST_COLORS,
+    1,
+    1,
+    " "
+  };
+  struct Image *test_single_pixel = picture_to_img( &single_pixel);
+  ASSERT(get_pixel(test_single_pixel, 0, 0) == 0x000000FF);
 
-// }
-// void test_set_pixel( TestObjs *objs){
+  //Test on a Larger Image
+  Picture test_image_mosaic = {
+    TEST_COLORS,
+    3, // width
+    3, // height
+    "mrg"
+    "c g"
+    "rgb"
+  };
 
-// }
+  struct Image *test_get_mosaic = picture_to_img( &test_image_mosaic);
+  ASSERT(get_pixel(test_get_mosaic, 0, 0) == 0xFF00FFFF);
+  ASSERT(get_pixel(test_get_mosaic, 0, 1) == 0xFF0000FF);
+  ASSERT(get_pixel(test_get_mosaic, 0, 2) == 0x00FF00FF);
+  ASSERT(get_pixel(test_get_mosaic, 1, 0) == 0x00FFFFFF);
+  ASSERT(get_pixel(test_get_mosaic, 1, 1) == 0x000000FF);
+  ASSERT(get_pixel(test_get_mosaic, 1, 2) == 0x00FF00FF);
+  ASSERT(get_pixel(test_get_mosaic, 2, 0) == 0xFF0000FF);
+  ASSERT(get_pixel(test_get_mosaic, 2, 1) == 0x00FF00FF);
+  ASSERT(get_pixel(test_get_mosaic, 2, 2) == 0x0000FFFF);
+}
+  
+void test_set_pixel( TestObjs *objs){
+    Picture single_pixel = {
+    TEST_COLORS,
+    1,
+    1,
+    " "
+  };
+  struct Image *test_single_pixel = picture_to_img( &single_pixel);
+  ASSERT(get_pixel(test_single_pixel, 0, 0) == 0x000000FF);
+  set_pixel(test_single_pixel, 0, 0, 0xFEEDBEEF);
+  ASSERT(get_pixel(test_single_pixel, 0, 0) == 0xFEEDBEEF);
+  set_pixel(test_single_pixel, 0, 0, 0xACABBACE);
+  ASSERT(get_pixel(test_single_pixel, 0, 0) == 0xACABBACE);
+  set_pixel(test_single_pixel, 0, 0, 0xDEAFACED);
+  ASSERT(get_pixel(test_single_pixel, 0, 0) == 0xDEAFACED);
+  set_pixel(test_single_pixel, 0, 0, 0xABADBEAD);
+  ASSERT(get_pixel(test_single_pixel, 0, 0) == 0xABADBEAD);
+
+
+
+
+
+
+  //Test on a Larger Image
+  Picture test_image_mosaic = {
+    TEST_COLORS,
+    3, // width
+    3, // height
+    "   "
+    "   "
+    "   "
+  };
+
+  struct Image *test_set_mosaic = picture_to_img( &test_image_mosaic);
+  set_pixel(test_set_mosaic, 0, 0, 0xFF00FFFF);
+  set_pixel(test_set_mosaic, 0, 1, 0xFF0000FF);
+  set_pixel(test_set_mosaic, 0, 2, 0x00FF00FF);
+  set_pixel(test_set_mosaic, 1, 0, 0x00FFFFFF);
+  set_pixel(test_set_mosaic, 1, 1, 0x0000FFFF);
+  set_pixel(test_set_mosaic, 1, 2, 0x00FF00FF);
+  set_pixel(test_set_mosaic, 2, 0, 0xFF0000FF);
+  set_pixel(test_set_mosaic, 2, 1, 0x00FF00FF);
+  set_pixel(test_set_mosaic, 2, 2, 0x0000FFFF);
+
+  ASSERT(get_pixel(test_set_mosaic, 0, 0) == 0xFF00FFFF);
+  ASSERT(get_pixel(test_set_mosaic, 0, 1) == 0xFF0000FF);
+  ASSERT(get_pixel(test_set_mosaic, 0, 2) == 0x00FF00FF);
+  ASSERT(get_pixel(test_set_mosaic, 1, 0) == 0x00FFFFFF);
+  ASSERT(get_pixel(test_set_mosaic, 1, 1) == 0x0000FFFF);
+  ASSERT(get_pixel(test_set_mosaic, 1, 2) == 0x00FF00FF);
+  ASSERT(get_pixel(test_set_mosaic, 2, 0) == 0xFF0000FF);
+  ASSERT(get_pixel(test_set_mosaic, 2, 1) == 0x00FF00FF);
+  ASSERT(get_pixel(test_set_mosaic, 2, 2) == 0x0000FFFF);
+} 
+
 // void test_copy_tile( TestObjs *objs){
 
 // }
