@@ -146,6 +146,7 @@ int main( int argc, char **argv ) {
   TEST( test_get_g);
   TEST( test_get_b);
   TEST( test_get_a);
+  TEST( test_to_grayscale);
 
   TEST_FINI();
 }
@@ -801,6 +802,51 @@ ASSERT(get_a(pixel) == 0xFF);
 //TODO: Add these tests to list of tests to run
 
 void test_to_grayscale( TestObjs *objs) {
+
+uint32_t pixel, gray_pixel, expected_gray;
+
+//Red pixel (R=255, G=0, B=0, A=255)
+pixel = 0xFF0000FF;
+gray_pixel = to_grayscale(pixel);
+expected_gray = ((79 * 255) + (128 * 0) + (49 * 0)) / 256; // expected grayscale value
+ASSERT(get_r(gray_pixel) == expected_gray);
+ASSERT(get_g(gray_pixel) == expected_gray);
+ASSERT(get_b(gray_pixel) == expected_gray);
+ASSERT(get_a(gray_pixel) == 0xFF);  // alpha should remain the same
+
+//Green pixel 50% opacity (R=0, G=255, B=0, A=128)
+pixel = 0x00FF0080; 
+gray_pixel = to_grayscale(pixel);
+expected_gray = ((79 * 0) + (128 * 255) + (49 * 0)) / 256; //expected grayscale value
+ASSERT(get_r(gray_pixel) == expected_gray);
+ASSERT(get_g(gray_pixel) == expected_gray);
+ASSERT(get_b(gray_pixel) == expected_gray);
+ASSERT(get_a(gray_pixel) == 0x80);  //alpha should remain the same
+
+//Edge case (R=0, G=0, B=0, A=255): black with full opacity
+pixel = 0x000000FF;
+gray_pixel = to_grayscale(pixel);
+ASSERT(get_r(gray_pixel) == 0x00);
+ASSERT(get_g(gray_pixel) == 0x00);
+ASSERT(get_b(gray_pixel) == 0x00);
+ASSERT(get_a(gray_pixel) == 0xFF);  //alpha should remain the same
+
+//Edge case (R=255, G=255, B=255, A=255): white with full opacity
+pixel = 0xFFFFFFFF; 
+gray_pixel = to_grayscale(pixel);
+ASSERT(get_r(gray_pixel) == 0xFF); 
+ASSERT(get_g(gray_pixel) == 0xFF);
+ASSERT(get_b(gray_pixel) == 0xFF);
+ASSERT(get_a(gray_pixel) == 0xFF);  //alpha should remain the same
+
+//Edge case (R=100, G=150, B=200, A=0): mixed color fully transparent
+pixel = 0x6496C800; 
+gray_pixel = to_grayscale(pixel);
+expected_gray = ((79 * 100) + (128 * 150) + (49 * 200)) / 256; //expected grayscale value
+ASSERT(get_r(gray_pixel) == expected_gray);
+ASSERT(get_g(gray_pixel) == expected_gray);
+ASSERT(get_b(gray_pixel) == expected_gray);
+ASSERT(get_a(gray_pixel) == 0x00);  //alpha should remain the same
 
 }
 
