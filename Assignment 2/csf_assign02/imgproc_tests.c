@@ -97,7 +97,6 @@ void test_mirror_v_basic( TestObjs *objs );
 void test_tile_basic( TestObjs *objs );
 void test_grayscale_basic( TestObjs *objs );
 void test_composite_basic( TestObjs *objs );
-// TODO: add prototypes for additional test functions
 
 void test_all_tiles_nonempty( TestObjs *objs);
 void test_determine_tile_x_offset( TestObjs *objs);
@@ -147,6 +146,8 @@ int main( int argc, char **argv ) {
   TEST( test_get_b);
   TEST( test_get_a);
   TEST( test_to_grayscale);
+  TEST( test_blend_components);
+  TEST( test_blend_colors);
 
   TEST_FINI();
 }
@@ -851,9 +852,62 @@ ASSERT(get_a(gray_pixel) == 0x00);  //alpha should remain the same
 }
 
 void test_blend_components( TestObjs *objs) {
+  //Ensure that 0 pixel returns 0 for both
+  ASSERT(blend_components(0, 0, 0) == 0);
+  ASSERT(blend_components(0, 0, 255) == 0);
 
+  //Ensure that the foreground replaces the background if it is opaque
+  ASSERT(blend_components(255, 0, 255) == 255);
+  //Ensure that the foreground does n ot replace the background if it is fully transparent
+  ASSERT(blend_components(255, 0, 0) == 0);
+
+  // Test random values to ensure that the formula works as intended  
+  ASSERT(blend_components(255, 0, 128) == 128);
+  ASSERT(blend_components(168, 84, 194) == 147);
+  ASSERT(blend_components(100, 200, 200) == 121);
+  ASSERT(blend_components(100, 200, 50) == 180);
+  ASSERT(blend_components(100, 133, 68) == 124);
+  ASSERT(blend_components(150, 150, 128) == 150);
+  ASSERT(blend_components(50, 180, 255) == 50);
+  ASSERT(blend_components(0, 255, 128) == 127);
+  ASSERT(blend_components(255, 255, 128) == 255);
+  ASSERT(blend_components(10, 240, 200) == 59);
+  ASSERT(blend_components(37, 119, 166) == 65);
+  ASSERT(blend_components(88, 234, 100) == 176);
 }
 
 void test_blend_colors( TestObjs *objs) {
+  uint32_t black_opaque = make_pixel(0, 0, 0, 255);
+  uint32_t black_transparent = make_pixel(0, 0, 0, 0);
 
+  uint32_t red_opaque = make_pixel(255, 0, 0, 255);
+  uint32_t red_transparent = make_pixel(255, 0, 0, 0);
+
+  uint32_t blue_semitransparent = make_pixel(0, 0, 255, 128);
+
+  //Test that two transparent pixels lead to opaque pixel with correct calculations
+  uint32_t result_1 = blend_colors(red_transparent, black_transparent);
+  ASSERT(result_1 == 0xFF);
+
+  uint32_t result_2 = blend_colors(black_transparent, black_transparent);
+  ASSERT(result_2 == 0xFF);
+
+  // Ensure that foreground blocks out background for fully opaque values
+  uint32_t result_3 = blend_colors(black_opaque, red_opaque);
+  ASSERT(result_3 == 0xFF);
+
+  uint32_t result_4 = blend_colors(red_opaque, black_opaque);
+  ASSERT(result_4 == 0xFF0000FF);
+
+  //Ensure that colors blend at max intesnity but half alpha on foreground
+  uint32_t result_5 = blend_colors(blue_semitransparent, red_opaque);
+  ASSERT(result_5 == 0x7F0080FF);
+
+  //Try to mix two random pixels
+  uint32_t random_pixel_fg = make_pixel(37, 125, 43, 147);
+  uint32_t random_pixel_bg = make_pixel(155, 23, 200, 255);
+  uint32_t result_6 = blend_colors(random_pixel_fg, random_pixel_bg);
+  ASSERT(result_6 == 0x56516DFF);
+
+  
 }
