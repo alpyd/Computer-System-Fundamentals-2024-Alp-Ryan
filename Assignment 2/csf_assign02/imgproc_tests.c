@@ -568,7 +568,7 @@ void test_get_pixel( TestObjs *objs){
     "c g"
     "rgb"
   };
-
+  // Make sure that all of the pixels are what the get function returns
   struct Image *test_get_mosaic = picture_to_img( &test_image_mosaic);
   ASSERT(get_pixel(test_get_mosaic, 0, 0) == 0xFF00FFFF);
   ASSERT(get_pixel(test_get_mosaic, 1, 0) == 0xFF0000FF);
@@ -582,6 +582,7 @@ void test_get_pixel( TestObjs *objs){
 }
   
 void test_set_pixel( TestObjs *objs){
+  // Test set pixel on a picture of a single image and ensure the values are the same
     Picture single_pixel = {
     TEST_COLORS,
     1,
@@ -609,6 +610,7 @@ void test_set_pixel( TestObjs *objs){
     "   "
   };
 
+  // Set all of the image pixels to the 3x3 grid and assert that the change was successful with get pixel
   struct Image *test_set_mosaic = picture_to_img( &test_image_mosaic);
   set_pixel(test_set_mosaic, 0, 0, 0xFF00FFFF);
   set_pixel(test_set_mosaic, 0, 1, 0xFF0000FF);
@@ -632,6 +634,7 @@ void test_set_pixel( TestObjs *objs){
 } 
 
 void test_copy_tile( TestObjs *objs){
+  //Create an input image to test the tile function
   Picture input_tile_picture = {
     TEST_COLORS,
     8, // width

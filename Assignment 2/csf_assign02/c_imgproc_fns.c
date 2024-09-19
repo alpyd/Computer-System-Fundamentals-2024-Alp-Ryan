@@ -66,11 +66,12 @@ void imgproc_mirror_v( struct Image *input_img, struct Image *output_img ) {
 //       be empty (i.e., have 0 width or height)
 
 int imgproc_tile( struct Image *input_img, int n, struct Image *output_img ) {
-  
+  // Return 0 if n is less than 1 or some tiles would be nonempty
   if (n < 1 || !all_tiles_nonempty(input_img->width, input_img->height, n)) {
     return 0;
   }
 
+  // Iterate through each row and column of the proposed tile and update the output_img using the copy_tile function.
   for(int r = 0; r < n; r++){
     for(int c = 0; c < n; c++){
       copy_tile(output_img, input_img, r, c, n);
@@ -134,12 +135,33 @@ int imgproc_composite( struct Image *base_img, struct Image *overlay_img, struct
   return 1;
 }
 
-//Returns true (1) if value of n results in nonempty sized tiles
+// Determine whether or not any tiles will be empty
+//
+// Parameters:
+//   width - width of the original image 
+//   height - height of the original image
+//   n - integer of number of tiles per row/column
+//
+// Returns:
+//   1 if all tiles would be nonempty and 0 if all times would be empty
+
 int all_tiles_nonempty( int width, int height, int n ){
+  //Ensure that the n value is less than the width as well as the height.
   return (width / n > 0) && (height / n > 0);
 }
 
+// Determine whether or not the tile would have an x offset
+//
+// Parameters:
+//   width - width of the original image 
+//   n - integer of number of tiles per row/column
+//   tile_col - index of the tile column in the new image
+//
+// Returns:
+//   1 if an offset is necessary and 0 if an offset is not required
+
 int determine_tile_x_offset( int width, int n, int tile_col ){
+  //See how many pixels in the width cannot be split equally and then see if the tile column index makes it eligible
   int remainder = width % n;
   if(tile_col < remainder){
     return 1;
@@ -148,7 +170,18 @@ int determine_tile_x_offset( int width, int n, int tile_col ){
   }
 }
 
+// Determine whether or not the tile would have an y offset
+//
+// Parameters:
+//   height - height of the original image 
+//   n - integer of number of tiles per row/column
+//   tile_row - index of the tile row in the new image
+//
+// Returns:
+//   1 if an offset is necessary and 0 if an offset is not required
+
 int determine_tile_y_offset( int height, int n, int tile_row ){
+  //See how many pixels in the height cannot be split equally and then see if the tile row index makes it eligible
   int remainder = height % n;
   if(tile_row < remainder){
     return 1;
@@ -157,11 +190,33 @@ int determine_tile_y_offset( int height, int n, int tile_row ){
   }
 }
 
+// Determines the tile width for a certain tile column index
+//
+// Parameters:
+//   width - width of the original image 
+//   n - integer of number of tiles per row/column
+//   tile_col - index of the tile column in the new image
+//
+// Returns:
+//   The tile width for the specific tile column index
+
 int determine_tile_w( int width, int n, int tile_col ){
+  //Returns the amount of pixels to split equally in addition to whether or not there is a pixel offset.
   return width/n + determine_tile_x_offset(width, n, tile_col);
 }
 
+// Determines the tile height for a certain tile row index
+//
+// Parameters:
+//   height - height of the original image 
+//   n - integer of number of tiles per row/column
+//   tile_row - index of the tile row in the new image
+//
+// Returns:
+//   The tile height for a specific tile row index
+
 int determine_tile_h( int height, int n, int tile_row ){
+  //Returns the amount of pixels to split equally in addition to whether or not there is a pixel offset.
   return height/n + determine_tile_y_offset(height, n, tile_row);
 }
 
@@ -177,10 +232,21 @@ void set_pixel(struct Image *img, int32_t x, int32_t y, uint32_t pixel) {
     img->data[y * img->width + x] = pixel;
 }
 
+// Copies the tile from the input image into the output images for a tile with a certain row and column index
+//
+// Parameters:
+//   out_img - pointer to output image
+//   img - pointer to input image
+//   tile_row - index of the tile row in the new image
+//   tile_col - index of the tile column in the new image
+//   n - the number of tiles in a row or column in an image
+
 void copy_tile( struct Image *out_img, struct Image *img, int tile_row, int tile_col, int n ){
+  //Determine the tile width and height using determine_tile_w and determine_tile_h
   int tile_width = determine_tile_w(img->width, n, tile_col);
   int tile_height = determine_tile_h(img->height, n, tile_row);
-
+  
+  // use the tile_width and tile_col and tile_row indices to determine the left and top most pixel of the frame
   int left_most_pixel_x = 0;
   for(int i = 0; i < tile_col; i++){
     left_most_pixel_x += determine_tile_w(out_img->width, n, i);
@@ -190,7 +256,7 @@ void copy_tile( struct Image *out_img, struct Image *img, int tile_row, int tile
   for(int j = 0; j < tile_row; j++){
     top_most_pixel_y += determine_tile_h(out_img->height, n, j);
   }
-
+  // For each pixel in the new image, copy the nth pixel from the original image into the specified pixel of the tile
   for (int h = 0; h < tile_height; h++) {
     for (int w = 0; w < tile_width; w++) {
       if (w*n < img->width && h*n < img->height) {
