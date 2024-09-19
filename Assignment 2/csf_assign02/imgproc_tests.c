@@ -861,15 +861,17 @@ void test_blend_components( TestObjs *objs) {
   //Ensure that the foreground does n ot replace the background if it is fully transparent
   ASSERT(blend_components(255, 0, 0) == 0);
 
-  // Test random values to ensure that the formula works as intended  
+  //Ensure that the values are halved when a max intensity and min intensity are blended
   ASSERT(blend_components(255, 0, 128) == 128);
+  ASSERT(blend_components(0, 255, 128) == 127);
+
+  // Test random values to ensure that the formula works as intended  
   ASSERT(blend_components(168, 84, 194) == 147);
   ASSERT(blend_components(100, 200, 200) == 121);
   ASSERT(blend_components(100, 200, 50) == 180);
   ASSERT(blend_components(100, 133, 68) == 124);
   ASSERT(blend_components(150, 150, 128) == 150);
   ASSERT(blend_components(50, 180, 255) == 50);
-  ASSERT(blend_components(0, 255, 128) == 127);
   ASSERT(blend_components(255, 255, 128) == 255);
   ASSERT(blend_components(10, 240, 200) == 59);
   ASSERT(blend_components(37, 119, 166) == 65);
