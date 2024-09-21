@@ -220,13 +220,20 @@ int determine_tile_h( int height, int n, int tile_row ){
   return height/n + determine_tile_y_offset(height, n, tile_row);
 }
 
+//Returns a uint32_t that represents a pixel with specific r, g, b, and alpha values
+
 uint32_t make_pixel(uint32_t r, uint32_t g, uint32_t b, uint32_t a) {
     return (r << 24) | (g << 16) | (b << 8) | a;
 }
 
+
+// Retrieves a pixel from an image at a provided x and y
+
 uint32_t get_pixel(struct Image *img, int32_t x, int32_t y) {
     return img->data[y * img->width + x];
 }
+
+// Sets a specified pixel on an image at a provided x and y in the Image struct
 
 void set_pixel(struct Image *img, int32_t x, int32_t y, uint32_t pixel) {
     img->data[y * img->width + x] = pixel;
@@ -267,21 +274,31 @@ void copy_tile( struct Image *out_img, struct Image *img, int tile_row, int tile
   }
 }
 
+// Returns the r value of a uint32_t pixel 
+
 uint32_t get_r(uint32_t pixel) { //shift 
     return (pixel >> 24) & 0xFF;
 }
+
+// Returns the g value of a uint32_t pixel 
 
 uint32_t get_g(uint32_t pixel) {
     return (pixel >> 16) & 0xFF;
 }
 
+// Returns the b value of a uint32_t pixel 
+
 uint32_t get_b(uint32_t pixel) {
     return (pixel >> 8) & 0xFF;
 }
 
+// Returns the alpha value of a uint32_t pixel 
+
 uint32_t get_a(uint32_t pixel) {
     return pixel & 0xFF;
 }
+
+// This method takes in a uint32_t pixel value and uses a grayscale equation value to return a grayscale version of the pixel
 
 uint32_t to_grayscale( uint32_t pixel ) {
   uint32_t gray_value = ((79 * get_r(pixel)) + (128 * get_g(pixel)) + (49 * get_b(pixel))) / 256;

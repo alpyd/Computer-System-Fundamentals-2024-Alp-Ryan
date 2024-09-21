@@ -385,53 +385,53 @@ void test_composite_basic( TestObjs *objs ) {
 
 void test_all_tiles_nonempty(TestObjs *objs) {
 
-//same width and height, valid tiling factor
-ASSERT(all_tiles_nonempty(16, 16, 2) == 1);
+  //same width and height, valid tiling factor
+  ASSERT(all_tiles_nonempty(16, 16, 2) == 1);
 
-//tiling factor fails for both height/width
-ASSERT(all_tiles_nonempty(16, 16, 17) == 0);
+  //tiling factor fails for both height/width
+  ASSERT(all_tiles_nonempty(16, 16, 17) == 0);
 
-//tiling factor fails for height only
-ASSERT(all_tiles_nonempty(20, 10, 11) == 0);
+  //tiling factor fails for height only
+  ASSERT(all_tiles_nonempty(20, 10, 11) == 0);
 
-//tiling factor fails for width only
-ASSERT(all_tiles_nonempty(12, 15, 15) == 0);
+  //tiling factor fails for width only
+  ASSERT(all_tiles_nonempty(12, 15, 15) == 0);
 
 }
 
 void test_determine_tile_x_offset(TestObjs *objs) {
 
-//width is perfectly divisible by n (no remainder)
-ASSERT(determine_tile_x_offset(16, 4, 0) == 0); // 16 % 4 = 0, no remainder
-ASSERT(determine_tile_x_offset(16, 4, 3) == 0); // 16 % 4 = 0, no remainder
+  //width is perfectly divisible by n (no remainder)
+  ASSERT(determine_tile_x_offset(16, 4, 0) == 0); // 16 % 4 = 0, no remainder
+  ASSERT(determine_tile_x_offset(16, 4, 3) == 0); // 16 % 4 = 0, no remainder
 
-//tile_col is less than the remainder
-ASSERT(determine_tile_x_offset(17, 4, 0) == 1); // 17 % 4 = 1, tile_col < remainder
-ASSERT(determine_tile_x_offset(18, 5, 1) == 1); // 18 % 5 = 3, tile_col < remainder
+  //tile_col is less than the remainder
+  ASSERT(determine_tile_x_offset(17, 4, 0) == 1); // 17 % 4 = 1, tile_col < remainder
+  ASSERT(determine_tile_x_offset(18, 5, 1) == 1); // 18 % 5 = 3, tile_col < remainder
 
-//tile_col is equal to or greater than the remainder
-ASSERT(determine_tile_x_offset(17, 4, 1) == 0); // 17 % 4 = 1, tile_col == remainder
-ASSERT(determine_tile_x_offset(18, 5, 3) == 0); // 18 % 5 = 3, tile_col == remainder
+  //tile_col is equal to or greater than the remainder
+  ASSERT(determine_tile_x_offset(17, 4, 1) == 0); // 17 % 4 = 1, tile_col == remainder
+  ASSERT(determine_tile_x_offset(18, 5, 3) == 0); // 18 % 5 = 3, tile_col == remainder
 
-// Edge case: width smaller than n
-ASSERT(determine_tile_x_offset(3, 4, 0) == 1); // 3 % 4 = 3, tile_col < remainder
+  // Edge case: width smaller than n
+  ASSERT(determine_tile_x_offset(3, 4, 0) == 1); // 3 % 4 = 3, tile_col < remainder
 
-// Special case: width is 0
-ASSERT(determine_tile_x_offset(0, 4, 0) == 0); // 0 % 4 = 0, no remainder
+  // Special case: width is 0
+  ASSERT(determine_tile_x_offset(0, 4, 0) == 0); // 0 % 4 = 0, no remainder
 
-int res_1 = determine_tile_x_offset(4, 2, 1);
-ASSERT(res_1 == 0);
-int res_2 = determine_tile_x_offset(5, 2, 0);
-ASSERT(res_2 == 1);
-int res_3 = determine_tile_x_offset(5, 2, 1);
-ASSERT(res_3 == 0);
-int res_4 = determine_tile_x_offset(0, 6, 0);
-ASSERT(res_4 == 0);
-int res_5 = determine_tile_x_offset(48, 7, 6);
-ASSERT(res_5 == 0);
-for(int i = 0; i < 6; i++){
-  int res_6 = determine_tile_x_offset(48, 7, i);
-  ASSERT(res_6 == 1);
+  int res_1 = determine_tile_x_offset(4, 2, 1);
+  ASSERT(res_1 == 0);
+  int res_2 = determine_tile_x_offset(5, 2, 0);
+  ASSERT(res_2 == 1);
+  int res_3 = determine_tile_x_offset(5, 2, 1);
+  ASSERT(res_3 == 0);
+  int res_4 = determine_tile_x_offset(0, 6, 0);
+  ASSERT(res_4 == 0);
+  int res_5 = determine_tile_x_offset(48, 7, 6);
+  ASSERT(res_5 == 0);
+  for(int i = 0; i < 6; i++){
+    int res_6 = determine_tile_x_offset(48, 7, i);
+    ASSERT(res_6 == 1);
   }
 
 }
@@ -720,137 +720,135 @@ void test_copy_tile( TestObjs *objs){
 
 void test_get_r( TestObjs *objs) {
 
-//Expected red value: 0xFF
-uint32_t pixel = 0xFF336699;
-ASSERT(get_r(pixel) == 0xFF);
+  //Expected red value: 0xFF
+  uint32_t pixel = 0xFF336699;
+  ASSERT(get_r(pixel) == 0xFF);
 
-//Test with pixel having red as 0xAA: 0xAA112233
-pixel = 0xAA112233;
-ASSERT(get_r(pixel) == 0xAA);
+  //Test with pixel having red as 0xAA: 0xAA112233
+  pixel = 0xAA112233;
+  ASSERT(get_r(pixel) == 0xAA);
 
-//Test with pixel where red part is 0x00: 0x00334455
-pixel = 0x00334455;
-ASSERT(get_r(pixel) == 0x00);
+  //Test with pixel where red part is 0x00: 0x00334455
+  pixel = 0x00334455;
+  ASSERT(get_r(pixel) == 0x00);
 
-//Edge case: all parts set to 0: 0x00000000
-pixel = 0x00000000;
-ASSERT(get_r(pixel) == 0x00);
+  //Edge case: all parts set to 0: 0x00000000
+  pixel = 0x00000000;
+  ASSERT(get_r(pixel) == 0x00);
 
-//Edge case: all 8 bit parts set to maximum: 0xFFFFFFFF
-pixel = 0xFFFFFFFF;
-ASSERT(get_r(pixel) == 0xFF);
+  //Edge case: all 8 bit parts set to maximum: 0xFFFFFFFF
+  pixel = 0xFFFFFFFF;
+  ASSERT(get_r(pixel) == 0xFF);
 
 }
 
 void test_get_g( TestObjs *objs) {
 
-uint32_t pixel = 0xFF336699;
-ASSERT(get_g(pixel) == 0x33);
+  uint32_t pixel = 0xFF336699;
+  ASSERT(get_g(pixel) == 0x33);
 
-//Test with green set as 0xBB
-pixel = 0x11BB2233;
-ASSERT(get_g(pixel) == 0xBB);
+  //Test with green set as 0xBB
+  pixel = 0x11BB2233;
+  ASSERT(get_g(pixel) == 0xBB);
 
-//Test with pixel where green part is 0x00: 0xFF003355
-pixel = 0xFF003355;
-ASSERT(get_g(pixel) == 0x00);
+  //Test with pixel where green part is 0x00: 0xFF003355
+  pixel = 0xFF003355;
+  ASSERT(get_g(pixel) == 0x00);
 
-//Edge case: all bits set to 0: 0x00000000
-pixel = 0x00000000;
-ASSERT(get_g(pixel) == 0x00);
+  //Edge case: all bits set to 0: 0x00000000
+  pixel = 0x00000000;
+  ASSERT(get_g(pixel) == 0x00);
 
-//Edge case: all bits set to maximum: 0xFFFFFFFF
-pixel = 0xFFFFFFFF;
-ASSERT(get_g(pixel) == 0xFF);
+  //Edge case: all bits set to maximum: 0xFFFFFFFF
+  pixel = 0xFFFFFFFF;
+  ASSERT(get_g(pixel) == 0xFF);
 
 }
 
 void test_get_b( TestObjs *objs) {
 
-uint32_t pixel = 0xFF336699;
-ASSERT(get_b(pixel) == 0x66); //expected is 3rd pair (bits 8-15)
+  uint32_t pixel = 0xFF336699;
+  ASSERT(get_b(pixel) == 0x66); //expected is 3rd pair (bits 8-15)
 
-//Test with blue part as 0xCC: 0x11BBCC33
-pixel = 0x11BBCC33;
-ASSERT(get_b(pixel) == 0xCC);
+  //Test with blue part as 0xCC: 0x11BBCC33
+  pixel = 0x11BBCC33;
+  ASSERT(get_b(pixel) == 0xCC);
 
-//Edge case: all bits set to 0: 0x00000000
-pixel = 0x00000000;
-ASSERT(get_b(pixel) == 0x00);
+  //Edge case: all bits set to 0: 0x00000000
+  pixel = 0x00000000;
+  ASSERT(get_b(pixel) == 0x00);
 
-//Edge case: all bits set to maximum: 0xFFFFFFFF
-pixel = 0xFFFFFFFF;
-ASSERT(get_b(pixel) == 0xFF);
+  //Edge case: all bits set to maximum: 0xFFFFFFFF
+  pixel = 0xFFFFFFFF;
+  ASSERT(get_b(pixel) == 0xFF);
 
 }
 
 void test_get_a( TestObjs *objs) {
 
-uint32_t pixel = 0xFF336699;
-ASSERT(get_a(pixel) == 0x99); //expected is bits (0-7) = 99 in hex
+  uint32_t pixel = 0xFF336699;
+  ASSERT(get_a(pixel) == 0x99); //expected is bits (0-7) = 99 in hex
 
-//Test with pixel having alpha as 0xDD: 0x11BB22DD
-pixel = 0x11BB22DD;
-ASSERT(get_a(pixel) == 0xDD);
+  //Test with pixel having alpha as 0xDD: 0x11BB22DD
+  pixel = 0x11BB22DD;
+  ASSERT(get_a(pixel) == 0xDD);
 
-// Edge case: all channels set to 0: 0x00000000
-pixel = 0x00000000;
-ASSERT(get_a(pixel) == 0x00);
+  // Edge case: all channels set to 0: 0x00000000
+  pixel = 0x00000000;
+  ASSERT(get_a(pixel) == 0x00);
 
-// Edge case: all channels set to maximum: 0xFFFFFFFF
-pixel = 0xFFFFFFFF;
-ASSERT(get_a(pixel) == 0xFF);
+  // Edge case: all channels set to maximum: 0xFFFFFFFF
+  pixel = 0xFFFFFFFF;
+  ASSERT(get_a(pixel) == 0xFF);
 
 }
 
-//TODO: Add these tests to list of tests to run
-
 void test_to_grayscale( TestObjs *objs) {
 
-uint32_t pixel, gray_pixel, expected_gray;
+  uint32_t pixel, gray_pixel, expected_gray;
 
-//Red pixel (R=255, G=0, B=0, A=255)
-pixel = 0xFF0000FF;
-gray_pixel = to_grayscale(pixel);
-expected_gray = ((79 * 255) + (128 * 0) + (49 * 0)) / 256; // expected grayscale value
-ASSERT(get_r(gray_pixel) == expected_gray);
-ASSERT(get_g(gray_pixel) == expected_gray);
-ASSERT(get_b(gray_pixel) == expected_gray);
-ASSERT(get_a(gray_pixel) == 0xFF);  // alpha should remain the same
+  //Red pixel (R=255, G=0, B=0, A=255)
+  pixel = 0xFF0000FF;
+  gray_pixel = to_grayscale(pixel);
+  expected_gray = ((79 * 255) + (128 * 0) + (49 * 0)) / 256; // expected grayscale value
+  ASSERT(get_r(gray_pixel) == expected_gray);
+  ASSERT(get_g(gray_pixel) == expected_gray);
+  ASSERT(get_b(gray_pixel) == expected_gray);
+  ASSERT(get_a(gray_pixel) == 0xFF);  // alpha should remain the same
 
-//Green pixel 50% opacity (R=0, G=255, B=0, A=128)
-pixel = 0x00FF0080; 
-gray_pixel = to_grayscale(pixel);
-expected_gray = ((79 * 0) + (128 * 255) + (49 * 0)) / 256; //expected grayscale value
-ASSERT(get_r(gray_pixel) == expected_gray);
-ASSERT(get_g(gray_pixel) == expected_gray);
-ASSERT(get_b(gray_pixel) == expected_gray);
-ASSERT(get_a(gray_pixel) == 0x80);  //alpha should remain the same
+  //Green pixel 50% opacity (R=0, G=255, B=0, A=128)
+  pixel = 0x00FF0080; 
+  gray_pixel = to_grayscale(pixel);
+  expected_gray = ((79 * 0) + (128 * 255) + (49 * 0)) / 256; //expected grayscale value
+  ASSERT(get_r(gray_pixel) == expected_gray);
+  ASSERT(get_g(gray_pixel) == expected_gray);
+  ASSERT(get_b(gray_pixel) == expected_gray);
+  ASSERT(get_a(gray_pixel) == 0x80);  //alpha should remain the same
 
-//Edge case (R=0, G=0, B=0, A=255): black with full opacity
-pixel = 0x000000FF;
-gray_pixel = to_grayscale(pixel);
-ASSERT(get_r(gray_pixel) == 0x00);
-ASSERT(get_g(gray_pixel) == 0x00);
-ASSERT(get_b(gray_pixel) == 0x00);
-ASSERT(get_a(gray_pixel) == 0xFF);  //alpha should remain the same
+  //Edge case (R=0, G=0, B=0, A=255): black with full opacity
+  pixel = 0x000000FF;
+  gray_pixel = to_grayscale(pixel);
+  ASSERT(get_r(gray_pixel) == 0x00);
+  ASSERT(get_g(gray_pixel) == 0x00);
+  ASSERT(get_b(gray_pixel) == 0x00);
+  ASSERT(get_a(gray_pixel) == 0xFF);  //alpha should remain the same
 
-//Edge case (R=255, G=255, B=255, A=255): white with full opacity
-pixel = 0xFFFFFFFF; 
-gray_pixel = to_grayscale(pixel);
-ASSERT(get_r(gray_pixel) == 0xFF); 
-ASSERT(get_g(gray_pixel) == 0xFF);
-ASSERT(get_b(gray_pixel) == 0xFF);
-ASSERT(get_a(gray_pixel) == 0xFF);  //alpha should remain the same
+  //Edge case (R=255, G=255, B=255, A=255): white with full opacity
+  pixel = 0xFFFFFFFF; 
+  gray_pixel = to_grayscale(pixel);
+  ASSERT(get_r(gray_pixel) == 0xFF); 
+  ASSERT(get_g(gray_pixel) == 0xFF);
+  ASSERT(get_b(gray_pixel) == 0xFF);
+  ASSERT(get_a(gray_pixel) == 0xFF);  //alpha should remain the same
 
-//Edge case (R=100, G=150, B=200, A=0): mixed color fully transparent
-pixel = 0x6496C800; 
-gray_pixel = to_grayscale(pixel);
-expected_gray = ((79 * 100) + (128 * 150) + (49 * 200)) / 256; //expected grayscale value
-ASSERT(get_r(gray_pixel) == expected_gray);
-ASSERT(get_g(gray_pixel) == expected_gray);
-ASSERT(get_b(gray_pixel) == expected_gray);
-ASSERT(get_a(gray_pixel) == 0x00);  //alpha should remain the same
+  //Edge case (R=100, G=150, B=200, A=0): mixed color fully transparent
+  pixel = 0x6496C800; 
+  gray_pixel = to_grayscale(pixel);
+  expected_gray = ((79 * 100) + (128 * 150) + (49 * 200)) / 256; //expected grayscale value
+  ASSERT(get_r(gray_pixel) == expected_gray);
+  ASSERT(get_g(gray_pixel) == expected_gray);
+  ASSERT(get_b(gray_pixel) == expected_gray);
+  ASSERT(get_a(gray_pixel) == 0x00);  //alpha should remain the same
 
 }
 
