@@ -16,6 +16,190 @@
  */
 
 /*
+ * uint32_t get_pixel(struct Image *img, int32_t x, int32_t y);
+ * 
+ * Register Use:
+ *   %rdi - pointer to struct Image
+ *   %esi - x coordinate (int32_t)
+ *   %edx - y coordinate (int32_t)
+ * 	 %r10 - Used to compute the pixel index
+ *   %eax - pixel value to return
+ */
+.globl get_pixel
+
+get_pixel:
+
+    # Calculate y * img->width
+    movl IMAGE_WIDTH_OFFSET(%rdi), %r10d   # Load img->width into r10d
+    imull %edx, %r10d                      # Multiply y (edx) * width (r10d)
+
+    # Add x to the result (y * img->width + x)
+    addl %esi, %r10d                       # r10d = y * width + x
+
+    # Load the base address of img->data
+    mov IMAGE_DATA_OFFSET(%rdi), %rdi       # Load img->data (address)
+
+    # Retrieve the pixel at img->data[y * width + x]
+    movl (%rdi, %r10, 4), %eax              # Load the pixel at img->data[index]
+
+    ret
+
+
+/*
+ * void set_pixel(struct Image *img, int32_t x, int32_t y, uint32_t pixel) 
+ *   img->data[y * img->width + x] = pixel;
+ *
+ * Register Use:
+ *  %rdi - pointer to struct Image (input_img)
+ *  %esi - x coordinate (int32_t)
+ *  %edx - y coordinate (int32_t)
+ *  %ecx - pixel parameter
+ *  %eax - hold pixel value
+ *  %r10 - used for index computation (y * width + x)
+ */
+.globl set_pixel
+set_pixel:
+
+   # Move the pixel value from %ecx to %eax
+    movl %ecx, %eax                          # Move pixel value into eax
+
+    # Calculate y * img->width
+    movl IMAGE_WIDTH_OFFSET(%rdi), %r10     # Load img->width into r10
+    imull %edx, %r10                         # Multiply y (edx) * width (r10)
+
+    # Add x to the result (y * img->width + x)
+    addl %esi, %r10                          # r10 = y * width + x
+
+    # Load the base address of img->data
+    mov IMAGE_DATA_OFFSET(%rdi), %rdi       # Load img->data (address)
+
+    # Store the pixel value at img->data[y * width + x]
+    movl %eax, (%rdi, %r10, 4)               # Store pixel at img->data[index]
+
+    ret
+
+/*
+ * uint32_t get_r(uint32_t pixel) 
+ *  return (pixel >> 24) & 0xFF;
+ *
+ * Register Use:
+ *  %rdi - uint32_t pixel parameter
+ *  %eax - return value (R)
+ *  
+ */
+.globl get_r
+get_r:
+
+    # Shift pixel right by 24 bits and mask with 0xFF to get the R value
+    movl %edi, %eax            # Move pixel to eax
+    shrl $24, %eax             # Shift right by 24
+    andl $0xFF, %eax           # Mask with 0xFF
+    ret
+
+
+/*
+ * uint32_t get_g(uint32_t pixel) 
+ *  return (pixel >> 16) & 0xFF;
+ *
+ * Register Use:
+ *  %rdi - uint32_t pixel parameter
+ *  %eax - return value (G)
+ *  
+ */
+.globl get_g
+get_g:
+
+    # Shift pixel right by 16 bits and mask with 0xFF to get the G value
+    movl %edi, %eax            # Move pixel to eax
+    shrl $16, %eax             # Shift right by 16
+    andl $0xFF, %eax           # Mask with 0xFF
+    ret
+
+/*
+ * uint32_t get_b(uint32_t pixel) 
+ *  return (pixel >> 8) & 0xFF;
+ *
+ * Register Use:
+ *  %rdi - uint32_t pixel parameter
+ *  %eax - return value (B)
+ *  
+ */
+.globl get_b
+get_b:
+
+    # Shift pixel right by 8 bits and mask with 0xFF to get the B value
+    movl %edi, %eax            # Move pixel to eax
+    shrl $8, %eax              # Shift right by 8
+    andl $0xFF, %eax           # Mask with 0xFF
+    ret
+
+/*
+ * uint32_t get_a(uint32_t pixel) 
+ *  return pixel & 0xFF;
+ *
+ * Register Use:
+ *  %rdi - uint32_t pixel parameter
+ *  %eax - return value (A)
+ *  
+ */
+.globl get_a
+get_a:
+
+    # Mask pixel with 0xFF to get the A value
+    movl %edi, %eax            # Move pixel to eax
+    andl $0xFF, %eax           # Mask with 0xFF
+    ret
+
+/*
+* uint32_t to_grayscale( uint32_t pixel ) 
+*  uint32_t gray_value = ((79 * get_r(pixel)) + (128 * get_g(pixel)) + (49 * get_b(pixel))) / 256;
+*  return make_pixel(gray_value, gray_value, gray_value, get_a(pixel));
+*  
+*  Register Use:
+*  %rdi - uint32_t pixel parameter
+*  
+*  
+*/
+.globl to_grayscale
+to_grayscale:
+
+# Get R, G, B, and A components from the pixel
+
+call get_r                  # Call get_r(pixel), result in %eax
+imull $79, %eax             # Multiply R value by 79
+movl %eax, %r10             # Store result in %r10 (for later use)
+
+call get_g                  # Call get_g(pixel), result in %eax
+imull $128, %eax            # Multiply G value by 128
+addl %eax, %r10             # Add to previous result in %r10
+
+call get_b                  # Call get_b(pixel), result in %eax
+imull $49, %eax             # Multiply B value by 49
+addl %eax, %r10             # Add to result in %r10
+
+# Now divide the total by 256 to get the gray value
+
+movl %r10, %eax             # Move sum into %eax
+sarl $8, %eax               # Arithmetic right shift by 8 (divide by 2^8=256)
+
+# Get the A value from the pixel
+call get_a                  # Call get_a(pixel), result in %ebx
+
+# Create the grayscale pixel using make_pixel(gray_value, gray_value, gray_value, a)
+movl %eax, %r10             # Move gray_value to %r10 (for pixel creation)
+movl %r10, %ecx             # Copy gray_value for green channel
+movl %r10, %edx             # Copy gray_value for blue channel
+
+#Now call make_pixel
+movl %r10, %rdi             # Move gray_value to %rdi (R)
+movl %ecx, %rsi             # Move gray_value to %rsi (G)
+movl %edx, %rdx             # Move gray_value to %rdx (B)
+movl %ebx, %rcx             # Move A value to %rcx (A)
+    
+call make_pixel             # Call make_pixel(R, G, B, A), stored in %eax
+ret                         # return %eax
+
+/*
  * Implementations of API functions
  */
 
