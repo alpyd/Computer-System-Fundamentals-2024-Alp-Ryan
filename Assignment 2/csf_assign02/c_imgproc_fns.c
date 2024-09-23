@@ -71,7 +71,8 @@ int imgproc_tile( struct Image *input_img, int n, struct Image *output_img ) {
     return 0;
   }
 
-  // Iterate through each row and column of the proposed tile and update the output_img using the copy_tile function.
+  // Iterate through each row and column of the proposed tile
+  // and update the output_img using the copy_tile function.
   for(int r = 0; r < n; r++){
     for(int c = 0; c < n; c++){
       copy_tile(output_img, input_img, r, c, n);
@@ -124,13 +125,13 @@ int imgproc_composite( struct Image *base_img, struct Image *overlay_img, struct
   }
   
   for (int r = 0; r < output_img->height; r++) {
-        for (int c = 0; c < output_img->width; c++) {
-            uint32_t foreground_pixel = get_pixel(overlay_img, c, r);
-            uint32_t background_pixel = get_pixel(base_img, c, r);
-            uint32_t blended_pixel = blend_colors(foreground_pixel, background_pixel);
-            set_pixel(output_img, c, r, blended_pixel);
-        }
+    for (int c = 0; c < output_img->width; c++) {
+      uint32_t foreground_pixel = get_pixel(overlay_img, c, r);
+      uint32_t background_pixel = get_pixel(base_img, c, r);
+      uint32_t blended_pixel = blend_colors(foreground_pixel, background_pixel);
+      set_pixel(output_img, c, r, blended_pixel);
     }
+  }
 
   return 1;
 }
@@ -161,7 +162,8 @@ int all_tiles_nonempty( int width, int height, int n ){
 //   1 if an offset is necessary and 0 if an offset is not required
 
 int determine_tile_x_offset( int width, int n, int tile_col ){
-  //See how many pixels in the width cannot be split equally and then see if the tile column index makes it eligible
+  //See how many pixels in the width cannot be split equally
+  // and then see if the tile column index makes it eligible
   int remainder = width % n;
   if(tile_col < remainder){
     return 1;
@@ -181,7 +183,8 @@ int determine_tile_x_offset( int width, int n, int tile_col ){
 //   1 if an offset is necessary and 0 if an offset is not required
 
 int determine_tile_y_offset( int height, int n, int tile_row ){
-  //See how many pixels in the height cannot be split equally and then see if the tile row index makes it eligible
+  // See how many pixels in the height cannot be split equally
+  // and then see if the tile row index makes it eligible
   int remainder = height % n;
   if(tile_row < remainder){
     return 1;
@@ -201,7 +204,8 @@ int determine_tile_y_offset( int height, int n, int tile_row ){
 //   The tile width for the specific tile column index
 
 int determine_tile_w( int width, int n, int tile_col ){
-  //Returns the amount of pixels to split equally in addition to whether or not there is a pixel offset.
+  //Returns the amount of pixels to split equally in
+  //addition to whether or not there is a pixel offset.
   return width/n + determine_tile_x_offset(width, n, tile_col);
 }
 
@@ -216,30 +220,32 @@ int determine_tile_w( int width, int n, int tile_col ){
 //   The tile height for a specific tile row index
 
 int determine_tile_h( int height, int n, int tile_row ){
-  //Returns the amount of pixels to split equally in addition to whether or not there is a pixel offset.
+  //Returns the amount of pixels to split equally in addition
+  //to whether or not there is a pixel offset.
   return height/n + determine_tile_y_offset(height, n, tile_row);
 }
 
 //Returns a uint32_t that represents a pixel with specific r, g, b, and alpha values
 
 uint32_t make_pixel(uint32_t r, uint32_t g, uint32_t b, uint32_t a) {
-    return (r << 24) | (g << 16) | (b << 8) | a;
+  return (r << 24) | (g << 16) | (b << 8) | a;
 }
 
 
 // Retrieves a pixel from an image at a provided x and y
 
 uint32_t get_pixel(struct Image *img, int32_t x, int32_t y) {
-    return img->data[y * img->width + x];
+  return img->data[y * img->width + x];
 }
 
 // Sets a specified pixel on an image at a provided x and y in the Image struct
 
 void set_pixel(struct Image *img, int32_t x, int32_t y, uint32_t pixel) {
-    img->data[y * img->width + x] = pixel;
+  img->data[y * img->width + x] = pixel;
 }
 
-// Copies the tile from the input image into the output images for a tile with a certain row and column index
+// Copies the tile from the input image into the output images
+// for a tile with a certain row and column index
 //
 // Parameters:
 //   out_img - pointer to output image
@@ -253,7 +259,8 @@ void copy_tile( struct Image *out_img, struct Image *img, int tile_row, int tile
   int tile_width = determine_tile_w(img->width, n, tile_col);
   int tile_height = determine_tile_h(img->height, n, tile_row);
   
-  // use the tile_width and tile_col and tile_row indices to determine the left and top most pixel of the frame
+  // use the tile_width and tile_col and tile_row indices to
+  // determine the left and top most pixel of the frame
   int left_most_pixel_x = 0;
   for(int i = 0; i < tile_col; i++){
     left_most_pixel_x += determine_tile_w(out_img->width, n, i);
@@ -263,12 +270,13 @@ void copy_tile( struct Image *out_img, struct Image *img, int tile_row, int tile
   for(int j = 0; j < tile_row; j++){
     top_most_pixel_y += determine_tile_h(out_img->height, n, j);
   }
-  // For each pixel in the new image, copy the nth pixel from the original image into the specified pixel of the tile
+  // For each pixel in the new image, copy the nth pixel from
+  // the original image into the specified pixel of the tile
   for (int h = 0; h < tile_height; h++) {
     for (int w = 0; w < tile_width; w++) {
       if (w*n < img->width && h*n < img->height) {
-          uint32_t pixel = get_pixel(img, w * n, h * n);
-          set_pixel(out_img, left_most_pixel_x + w, top_most_pixel_y + h, pixel);
+        uint32_t pixel = get_pixel(img, w * n, h * n);
+        set_pixel(out_img, left_most_pixel_x + w, top_most_pixel_y + h, pixel);
       }
     }
   }
@@ -277,28 +285,29 @@ void copy_tile( struct Image *out_img, struct Image *img, int tile_row, int tile
 // Returns the r value of a uint32_t pixel 
 
 uint32_t get_r(uint32_t pixel) { //shift 
-    return (pixel >> 24) & 0xFF;
+  return (pixel >> 24) & 0xFF;
 }
 
 // Returns the g value of a uint32_t pixel 
 
 uint32_t get_g(uint32_t pixel) {
-    return (pixel >> 16) & 0xFF;
+  return (pixel >> 16) & 0xFF;
 }
 
 // Returns the b value of a uint32_t pixel 
 
 uint32_t get_b(uint32_t pixel) {
-    return (pixel >> 8) & 0xFF;
+  return (pixel >> 8) & 0xFF;
 }
 
 // Returns the alpha value of a uint32_t pixel 
 
 uint32_t get_a(uint32_t pixel) {
-    return pixel & 0xFF;
+  return pixel & 0xFF;
 }
 
-// This method takes in a uint32_t pixel value and uses a grayscale equation value to return a grayscale version of the pixel
+// This method takes in a uint32_t pixel value and uses a grayscale equation 
+// value to return a grayscale version of the pixel
 
 uint32_t to_grayscale( uint32_t pixel ) {
   uint32_t gray_value = ((79 * get_r(pixel)) + (128 * get_g(pixel)) + (49 * get_b(pixel))) / 256;
