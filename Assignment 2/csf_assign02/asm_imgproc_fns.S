@@ -472,22 +472,6 @@ gray_x_loop_end:
 gray_y_loop_end:
     ret
 
-
-
-      for(int x = 0; x < input_img->width; x++) {
-    for(int y = 0; y < input_img->height; y++) {
-
-      uint32_t pixel = get_pixel(input_img, x, y);
-
-      //convert current pixel to grayscale version
-      uint32_t grayed_pixel = to_grayscale(pixel);
-
-      //set current pixel to grayed version in output
-      set_pixel(output_img, x, y, grayed_pixel);
-
-    }
-  }
-
 /*
  * int imgproc_composite( struct Image *base_img, struct Image *overlay_img );
  *
