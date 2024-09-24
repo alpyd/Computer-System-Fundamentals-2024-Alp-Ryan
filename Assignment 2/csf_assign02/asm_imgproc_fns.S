@@ -215,8 +215,93 @@ ret                         # return %eax
  */
 	.globl imgproc_mirror_h
 imgproc_mirror_h:
-	/* TODO: implement */
-	ret
+    # Initialize y counter variable
+    movl $0 %edx
+
+h_outer_y_loop:
+    # Load Image height into %r10
+    movl IMAGE_HEIGHT_OFFSET(%rdi), %r10
+
+    # Compare y with the total width
+    cmpq %edx, %r10     
+
+    # If y >= Image height, end the outer loop
+    jae h_y_loop_end
+
+    # Intiailze x counter variable
+    movl $0 %esi
+
+h_inner_x_loop:
+    # Load Image width into %r10
+    movl IMAGE_WIDTH_OFFSET(%rdi), %r10
+
+    # Compare x with total variable
+    cmpq %esi, %r10
+
+    # If x ?= Image width, end the inner loop
+    jae h_x_loop_end
+
+    # Get pixel of the input image at the input image 
+    call get_pixel
+
+    # Move the pixel into the pixel parameter for set_pixel
+    movl %eax, %ecx
+
+    # Store the original width value and original input image pointer
+    movl %esi, %r10
+    movq %rdi, %r11
+
+    # Update the %esi register to hold the inversed width
+    movl $0, %esi
+    addl IMAGE_WIDTH_OFFSET(%rdi), %esi
+    subl %1 %esi
+    subl %r10, %esi
+
+    # Add the output image pointer into the input image pointer for set_pixel
+    movq %rsi, %rdi
+
+    # Set the pixel at the provided position
+    call set_pixel
+
+    # Restore the original width value and original input image pointer
+    movl %r10, %esi
+    movq %r11, %rdi
+
+    # Increase the x counter and jump in the loop again
+    incl %esi
+    jmp h_inner_x_loop
+
+h_x_loop_end:
+    incl %edx
+    jmp h_outer_y_loop
+
+h_y_loop_end:
+    ret
+    
+
+	/*
+     * Register Use:
+ * uint32_t get_pixel(struct Image *img, int32_t x, int32_t y);
+ * 
+ * Register Use:
+ *   %rdi - pointer to struct Image
+ *   %esi - x coordinate (int32_t)
+ *   %edx - y coordinate (int32_t)
+ * 	 %r10 - Used to compute the pixel index
+ *   %eax - pixel value to return
+ *
+
+  * void set_pixel(struct Image *img, int32_t x, int32_t y, uint32_t pixel) 
+ *   img->data[y * img->width + x] = pixel;
+ *
+ * Register Use:
+ *  %rdi - pointer to struct Image (input_img)
+ *  %esi - x coordinate (int32_t)
+ *  %edx - y coordinate (int32_t)
+ *  %ecx - pixel parameter
+ *  %eax - hold pixel value
+ *  %r10 - used for index computation (y * width + x)
+    */
 
 /*
  * void imgproc_mirror_v( struct Image *input_img, struct Image *output_img );
@@ -230,8 +315,68 @@ imgproc_mirror_h:
  */
 	.globl imgproc_mirror_v
 imgproc_mirror_v:
-	/* TODO: implement */
-	ret
+    # Initialize y counter variable
+    movl $0 %edx
+
+v_outer_y_loop:
+    # Load Image height into %r10
+    movl IMAGE_HEIGHT_OFFSET(%rdi), %r10
+
+    # Compare y with the total width
+    cmpq %edx, %r10     
+
+    # If y >= Image height, end the outer loop
+    jae v_y_loop_end
+
+    # Intiailze x counter variable
+    movl $0 %esi
+
+v_inner_x_loop:
+    # Load Image width into %r10
+    movl IMAGE_WIDTH_OFFSET(%rdi), %r10
+
+    # Compare x with total variable
+    cmpq %esi, %r10
+
+    # If x ?= Image width, end the inner loop
+    jae h_x_loop_end
+
+    # Get pixel of the input image at the input image 
+    call get_pixel
+
+    # Move the pixel into the pixel parameter for set_pixel
+    movl %eax, %ecx
+
+    # Store the original height value and original input image pointer
+    movl %edx, %r10
+    movq %rdi, %r11
+
+    # Update the %edx register to hold the inversed height
+    movl $0, %edx
+    addl IMAGE_WIDTH_OFFSET(%rdi), %edx
+    subl %1 %edx
+    subl %r10, %edx
+
+    # Add the output image pointer into the input image pointer for set_pixel
+    movq %rsi, %rdi
+
+    # Set the pixel at the provided position
+    call set_pixel
+
+    # Restore the original width value and original input image pointer
+    movl %r10, %esi
+    movq %r11, %rdi
+
+    # Increase the x counter and jump in the loop again
+    incl %esi
+    jmp v_inner_x_loop
+
+v_x_loop_end:
+    incl %edx
+    jmp v_outer_y_loop
+
+v_y_loop_end:
+    ret
 
 /*
  * int imgproc_tile( struct Image *input_img, int n, struct Image *output_img );
