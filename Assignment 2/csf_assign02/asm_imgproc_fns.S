@@ -190,7 +190,7 @@ movl %eax, %r10             # Move gray_value to %r10 (for pixel creation)
 movl %r10, %ecx             # Copy gray_value for green channel
 movl %r10, %edx             # Copy gray_value for blue channel
 
-#Now call make_pixel
+# Now call make_pixel
 movl %r10, %rdi             # Move gray_value to %rdi (R)
 movl %ecx, %rsi             # Move gray_value to %rsi (G)
 movl %edx, %rdx             # Move gray_value to %rdx (B)
@@ -339,7 +339,7 @@ v_inner_x_loop:
     cmpq %esi, %r10
 
     # If x ?= Image width, end the inner loop
-    jae h_x_loop_end
+    jae v_x_loop_end
 
     # Get pixel of the input image at the input image 
     call get_pixel
@@ -414,8 +414,79 @@ imgproc_tile:
  */
 	.globl imgproc_grayscale
 imgproc_grayscale:
-	/* TODO: implement */
-	ret
+    # Initialize y counter variable
+    movl $0 %edx
+
+gray_outer_y_loop:
+    # Load Image height into %r10
+    movl IMAGE_HEIGHT_OFFSET(%rdi), %r10
+
+    # Compare y with the total width
+    cmpq %edx, %r10     
+
+    # If y >= Image height, end the outer loop
+    jae gray_y_loop_end
+
+    # Intiailze x counter variable
+    movl $0 %esi
+
+gray_inner_x_loop:
+    # Load Image width into %r10
+    movl IMAGE_WIDTH_OFFSET(%rdi), %r10
+
+    # Compare x with total variable
+    cmpq %esi, %r10
+
+    # If x ?= Image width, end the inner loop
+    jae gray_x_loop_end
+
+    call get_pixel
+
+
+    movq %rdi, %r11
+    movq %eax, %rdi
+
+    # Get pixel of the input image at the input image 
+    call to_grayscale
+
+    # Move the pixel into the pixel parameter for set_pixel
+    movl %eax, %ecx
+
+    # Add the output image pointer into the input image pointer for set_pixel
+    movq %rsi, %rdi
+
+    # Set the pixel at the provided position
+    call set_pixel
+
+    # Restore the original input image pointer
+    movq %r11, %rdi
+
+    # Increase the x counter and jump in the loop again
+    incl %esi
+    jmp gray_inner_x_loop
+
+gray_x_loop_end:
+    incl %edx
+    jmp gray_outer_y_loop
+
+gray_y_loop_end:
+    ret
+
+
+
+      for(int x = 0; x < input_img->width; x++) {
+    for(int y = 0; y < input_img->height; y++) {
+
+      uint32_t pixel = get_pixel(input_img, x, y);
+
+      //convert current pixel to grayscale version
+      uint32_t grayed_pixel = to_grayscale(pixel);
+
+      //set current pixel to grayed version in output
+      set_pixel(output_img, x, y, grayed_pixel);
+
+    }
+  }
 
 /*
  * int imgproc_composite( struct Image *base_img, struct Image *overlay_img );
