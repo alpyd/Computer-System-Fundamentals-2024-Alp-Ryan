@@ -32,13 +32,13 @@
 make_pixel:
 
 movl %edi, %eax  # place r into temp register
-shl $24, %eax    # left shift r by 24
-shl $16, %esi    # left shift g by 16
-shl $8, %edx     # left shift b by 8
+shll $24, %eax    # left shift r by 24
+shll $16, %esi    # left shift g by 16
+shll $8, %edx     # left shift b by 8
 
-or %esi, %eax # store (r << 24) | (g << 16) in %eax
-or %edx, %eax # store (r << 24) | (g << 16) | (b << 8) in %eax
-or %ecx, %eax # or with a to get final result
+or %esi, %eax    # store (r << 24) | (g << 16) in %eax
+or %edx, %eax    # store (r << 24) | (g << 16) | (b << 8) in %eax
+or %ecx, %eax    # or with a to get final result
 
 ret
 
@@ -49,29 +49,35 @@ ret
  *   %rdi - pointer to struct Image
  *   %esi - x coordinate (int32_t)
  *   %edx - y coordinate (int32_t)
- * 	 %r10 - Used to compute the pixel index
+ *   %r10 - Used to compute the pixel index
  *   %eax - pixel value to return
+ *   %r12, %r14 - callee-saved registers (need to be pushed and popped)
  */
 .globl get_pixel
 
 get_pixel:
+    # Push callee-saved registers
+    pushq %r12
+    pushq %r14
 
     # Calculate y * img->width
-    movq %rdi, %r12
-    movl IMAGE_WIDTH_OFFSET(%r12), %r14d
-    movl %r14d, %r10d   # Load img->width into r10d
-    imull %edx, %r10d                      # Multiply y (edx) * width (r10d)
+    movq %rdi, %r12                         # Save img pointer in r12
+    movl IMAGE_WIDTH_OFFSET(%r12), %r14d    # Load img->width into r14d
+    movl %r14d, %r10d                       # Move img->width into r10d
+    imull %edx, %r10d                       # Multiply y (edx) * width (r10d)
 
     # Add x to the result (y * img->width + x)
-    addl %esi, %r10d                       # r10d = y * width + x
+    addl %esi, %r10d                        # r10d = y * width + x
 
     # Load the base address of img->data
-    mov IMAGE_DATA_OFFSET(%rdi), %rdi       # Load img->data (address)
+    mov IMAGE_DATA_OFFSET(%r12), %rdi       # Load img->data (address)
 
     # Retrieve the pixel at img->data[y * width + x]
     movl (%rdi, %r10, 4), %eax              # Load the pixel at img->data[index]
 
-    movq %r12, %rdi
+    # Restore callee-saved registers
+    popq %r14
+    popq %r12
 
     ret
 
@@ -85,32 +91,40 @@ get_pixel:
  *  %esi - x coordinate (int32_t)
  *  %edx - y coordinate (int32_t)
  *  %ecx - pixel parameter
- *  %eax - hold pixel value
+ *  %eax - holds pixel value
  *  %r10 - used for index computation (y * width + x)
+ *  %r12, %r13 - callee-saved registers used for computations
  */
 .globl set_pixel
 set_pixel:
 
-   # Move the pixel value from %ecx to %eax
+    # Push callee-saved registers
+    pushq %r12
+    pushq %r13
+
+    # Move the pixel value from %ecx to %eax
     movl %ecx, %eax                          # Move pixel value into eax
 
     # Calculate y * img->width
-    movq %rdi, %r12
-    movl IMAGE_WIDTH_OFFSET(%r12), %r13d
-    movl %r14d, %r13d   # Load img->width into r10d
-
-    imull %edx, %r10d                         # Multiply y (edx) * width (r10)
+    movq %rdi, %r12                          # Save img pointer in %r12
+    movl IMAGE_WIDTH_OFFSET(%r12), %r13d     # Load img->width into %r13d
+    imull %edx, %r13d                        # Multiply y (edx) * width (%r13d)
 
     # Add x to the result (y * img->width + x)
-    addl %esi, %r10d                          # r10 = y * width + x
+    addl %esi, %r13d                         # r13d = y * width + x
 
     # Load the base address of img->data
-    mov IMAGE_DATA_OFFSET(%rdi), %rdi       # Load img->data (address)
+    movq IMAGE_DATA_OFFSET(%r12), %r12        # Load img->data (address) into %r12
 
     # Store the pixel value at img->data[y * width + x]
-    movl %eax, (%rdi, %r10, 4)               # Store pixel at img->data[index]
+    movl %eax, (%r12, %r13, 4)               # Store pixel at img->data[index]
+
+    # Pop callee-saved registers
+    popq %r13
+    popq %r12
 
     ret
+
 
 /*
  * uint32_t get_r(uint32_t pixel) 
@@ -230,8 +244,9 @@ movq %rcx, %rsi             # Move gray_value to %rsi (G)
 movq %rdx, %rdx             # Move gray_value to %rdx (B)
 movq %rbx, %rcx             # Move A value to %rcx (A)
     
-# call make_pixel             # Call make_pixel(R, G, B, A), stored in %eax
+call make_pixel             # Call make_pixel(R, G, B, A), stored in %eax
 ret                         # return %eax
+
 
 /*
  * Implementations of API functions
