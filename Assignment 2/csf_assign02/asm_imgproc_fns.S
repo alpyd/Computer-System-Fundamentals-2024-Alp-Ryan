@@ -15,6 +15,33 @@
  * them visible to the test code.
  */
 
+
+/*
+ * uint32_t make_pixel(uint32_t r, uint32_t g, uint32_t b, uint32_t a) 
+ * return (r << 24) | (g << 16) | (b << 8) | a;
+ * 
+ * Register Use:
+ *   %edi - r
+ *   %esi - g
+ *   %edx - b
+ *   %ecx - a
+ *   %eax - Used as temp in computation, also pixel value to return
+ */
+.globl make_pixel
+
+make_pixel:
+
+movl %edi, %eax  # place r into temp register
+shl $24, %eax    # left shift r by 24
+shl $16, %esi    # left shift g by 16
+shl $8, %edx     # left shift b by 8
+
+or %esi, %eax # store (r << 24) | (g << 16) in %eax
+or %edx, %eax # store (r << 24) | (g << 16) | (b << 8) in %eax
+or %ecx, %eax # or with a to get final result
+
+ret
+
 /*
  * uint32_t get_pixel(struct Image *img, int32_t x, int32_t y);
  * 
