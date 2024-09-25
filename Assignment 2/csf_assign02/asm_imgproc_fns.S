@@ -30,7 +30,9 @@
 get_pixel:
 
     # Calculate y * img->width
-    movl IMAGE_WIDTH_OFFSET(%rdi), %r10d   # Load img->width into r10d
+    movq %rdi, %r12
+    movl IMAGE_WIDTH_OFFSET(%r12), %r14d
+    movl %r14d, %r10d   # Load img->width into r10d
     imull %edx, %r10d                      # Multiply y (edx) * width (r10d)
 
     # Add x to the result (y * img->width + x)
@@ -41,6 +43,8 @@ get_pixel:
 
     # Retrieve the pixel at img->data[y * width + x]
     movl (%rdi, %r10, 4), %eax              # Load the pixel at img->data[index]
+
+    movq %r12, %rdi
 
     ret
 
@@ -64,11 +68,14 @@ set_pixel:
     movl %ecx, %eax                          # Move pixel value into eax
 
     # Calculate y * img->width
-    movl IMAGE_WIDTH_OFFSET(%rdi), %r10     # Load img->width into r10
-    imull %edx, %r10                         # Multiply y (edx) * width (r10)
+    movq %rdi, %r12
+    movl IMAGE_WIDTH_OFFSET(%r12), %r13d
+    movl %r14d, %r13d   # Load img->width into r10d
+
+    imull %edx, %r10d                         # Multiply y (edx) * width (r10)
 
     # Add x to the result (y * img->width + x)
-    addl %esi, %r10                          # r10 = y * width + x
+    addl %esi, %r10d                          # r10 = y * width + x
 
     # Load the base address of img->data
     mov IMAGE_DATA_OFFSET(%rdi), %rdi       # Load img->data (address)
@@ -167,36 +174,36 @@ to_grayscale:
 
 call get_r                  # Call get_r(pixel), result in %eax
 imull $79, %eax             # Multiply R value by 79
-movl %eax, %r10             # Store result in %r10 (for later use)
+movl %eax, %r10d             # Store result in %r10 (for later use)
 
 call get_g                  # Call get_g(pixel), result in %eax
 imull $128, %eax            # Multiply G value by 128
-addl %eax, %r10             # Add to previous result in %r10
+addl %eax, %r10d             # Add to previous result in %r10
 
 call get_b                  # Call get_b(pixel), result in %eax
 imull $49, %eax             # Multiply B value by 49
-addl %eax, %r10             # Add to result in %r10
+addl %eax, %r10d             # Add to result in %r10
 
 # Now divide the total by 256 to get the gray value
 
-movl %r10, %eax             # Move sum into %eax
+movl %r10d, %eax             # Move sum into %eax
 sarl $8, %eax               # Arithmetic right shift by 8 (divide by 2^8=256)
 
 # Get the A value from the pixel
 call get_a                  # Call get_a(pixel), result in %ebx
 
 # Create the grayscale pixel using make_pixel(gray_value, gray_value, gray_value, a)
-movl %eax, %r10             # Move gray_value to %r10 (for pixel creation)
-movl %r10, %ecx             # Copy gray_value for green channel
-movl %r10, %edx             # Copy gray_value for blue channel
+movl %eax, %r10d             # Move gray_value to %r10 (for pixel creation)
+movl %r10d, %ecx             # Copy gray_value for green channel
+movl %r10d, %edx             # Copy gray_value for blue channel
 
 # Now call make_pixel
-movl %r10, %rdi             # Move gray_value to %rdi (R)
-movl %ecx, %rsi             # Move gray_value to %rsi (G)
-movl %edx, %rdx             # Move gray_value to %rdx (B)
-movl %ebx, %rcx             # Move A value to %rcx (A)
+movq %r10, %rdi             # Move gray_value to %rdi (R)
+movq %rcx, %rsi             # Move gray_value to %rsi (G)
+movq %rdx, %rdx             # Move gray_value to %rdx (B)
+movq %rbx, %rcx             # Move A value to %rcx (A)
     
-call make_pixel             # Call make_pixel(R, G, B, A), stored in %eax
+# call make_pixel             # Call make_pixel(R, G, B, A), stored in %eax
 ret                         # return %eax
 
 /*
@@ -215,28 +222,27 @@ ret                         # return %eax
  */
 	.globl imgproc_mirror_h
 imgproc_mirror_h:
+    movq %rdi, %r12
+    movq %rsi, %r15
     # Initialize y counter variable
-    movl $0 %edx
+    movl $0, %edx
 
 h_outer_y_loop:
-    # Load Image height into %r10
-    movl IMAGE_HEIGHT_OFFSET(%rdi), %r10
-
-    # Compare y with the total width
-    cmpq %edx, %r10     
+    
+    movl IMAGE_HEIGHT_OFFSET(%r12), %r13d
+    # Compare y with the total height
+    cmpl %r13d, %edx  
 
     # If y >= Image height, end the outer loop
     jae h_y_loop_end
 
     # Intiailze x counter variable
-    movl $0 %esi
+    movl $0, %esi
 
 h_inner_x_loop:
-    # Load Image width into %r10
-    movl IMAGE_WIDTH_OFFSET(%rdi), %r10
-
     # Compare x with total variable
-    cmpq %esi, %r10
+    movl IMAGE_WIDTH_OFFSET(%r12), %r13d
+    cmpl %r13d, %esi
 
     # If x ?= Image width, end the inner loop
     jae h_x_loop_end
@@ -248,23 +254,24 @@ h_inner_x_loop:
     movl %eax, %ecx
 
     # Store the original width value and original input image pointer
-    movl %esi, %r10
+    movl %esi, %r14d
     movq %rdi, %r11
 
     # Update the %esi register to hold the inversed width
     movl $0, %esi
-    addl IMAGE_WIDTH_OFFSET(%rdi), %esi
-    subl %1 %esi
-    subl %r10, %esi
+    movl IMAGE_WIDTH_OFFSET(%r12), %r13d
+    addl %r13d, %esi
+    subl $1, %esi
+    subl %r14d, %esi
 
     # Add the output image pointer into the input image pointer for set_pixel
-    movq %rsi, %rdi
+    movq %r15, %rdi
 
     # Set the pixel at the provided position
     call set_pixel
 
     # Restore the original width value and original input image pointer
-    movl %r10, %esi
+    movl %r14d, %esi
     movq %r11, %rdi
 
     # Increase the x counter and jump in the loop again
@@ -276,6 +283,7 @@ h_x_loop_end:
     jmp h_outer_y_loop
 
 h_y_loop_end:
+    movq %r15, %rsi
     ret
     
 
@@ -316,27 +324,27 @@ h_y_loop_end:
 	.globl imgproc_mirror_v
 imgproc_mirror_v:
     # Initialize y counter variable
-    movl $0 %edx
+    movl $0, %edx
 
 v_outer_y_loop:
     # Load Image height into %r10
-    movl IMAGE_HEIGHT_OFFSET(%rdi), %r10
+    movl IMAGE_HEIGHT_OFFSET(%rdi), %r10d
 
     # Compare y with the total width
-    cmpq %edx, %r10     
+    cmpl %edx, %r10d   
 
     # If y >= Image height, end the outer loop
     jae v_y_loop_end
 
     # Intiailze x counter variable
-    movl $0 %esi
+    movl $0, %esi
 
 v_inner_x_loop:
     # Load Image width into %r10
-    movl IMAGE_WIDTH_OFFSET(%rdi), %r10
+    movl IMAGE_WIDTH_OFFSET(%rdi), %r10d
 
     # Compare x with total variable
-    cmpq %esi, %r10
+    cmpl %esi, %r10d
 
     # If x ?= Image width, end the inner loop
     jae v_x_loop_end
@@ -348,23 +356,23 @@ v_inner_x_loop:
     movl %eax, %ecx
 
     # Store the original height value and original input image pointer
-    movl %edx, %r10
+    movl %edx, %r10d
     movq %rdi, %r11
 
     # Update the %edx register to hold the inversed height
     movl $0, %edx
     addl IMAGE_WIDTH_OFFSET(%rdi), %edx
-    subl %1 %edx
-    subl %r10, %edx
+    subl $1, %edx
+    subl %r10d, %edx
 
     # Add the output image pointer into the input image pointer for set_pixel
-    movq %rsi, %rdi
+    movq %r15, %rdi
 
     # Set the pixel at the provided position
     call set_pixel
 
     # Restore the original width value and original input image pointer
-    movl %r10, %esi
+    movl %r10d, %esi
     movq %r11, %rdi
 
     # Increase the x counter and jump in the loop again
@@ -415,27 +423,27 @@ imgproc_tile:
 	.globl imgproc_grayscale
 imgproc_grayscale:
     # Initialize y counter variable
-    movl $0 %edx
+    movl $0, %edx
 
 gray_outer_y_loop:
     # Load Image height into %r10
-    movl IMAGE_HEIGHT_OFFSET(%rdi), %r10
+    movl IMAGE_HEIGHT_OFFSET(%rdi), %r10d
 
     # Compare y with the total width
-    cmpq %edx, %r10     
+    cmpl %edx, %r10d    
 
     # If y >= Image height, end the outer loop
     jae gray_y_loop_end
 
     # Intiailze x counter variable
-    movl $0 %esi
+    movl $0, %esi
 
 gray_inner_x_loop:
     # Load Image width into %r10
-    movl IMAGE_WIDTH_OFFSET(%rdi), %r10
+    movl IMAGE_WIDTH_OFFSET(%rdi), %r10d
 
     # Compare x with total variable
-    cmpq %esi, %r10
+    cmpl %esi, %r10d
 
     # If x ?= Image width, end the inner loop
     jae gray_x_loop_end
@@ -444,7 +452,7 @@ gray_inner_x_loop:
 
 
     movq %rdi, %r11
-    movq %eax, %rdi
+    movq %rax, %rdi
 
     # Get pixel of the input image at the input image 
     call to_grayscale
