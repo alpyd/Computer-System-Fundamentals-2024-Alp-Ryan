@@ -104,13 +104,13 @@ void test_mirror_v_basic( TestObjs *objs );
 // void test_determine_tile_w( TestObjs *objs);
 // void test_determine_tile_h( TestObjs *objs);
 // void test_make_pixel( TestObjs *objs);
-// void test_get_pixel( TestObjs *objs);
-// void test_set_pixel( TestObjs *objs);
+void test_get_pixel( TestObjs *objs);
+void test_set_pixel( TestObjs *objs);
 // void test_copy_tile( TestObjs *objs);
-// void test_get_r( TestObjs *objs);
-// void test_get_g( TestObjs *objs);
-// void test_get_b( TestObjs *objs);
-// void test_get_a( TestObjs *objs);
+void test_get_r( TestObjs *objs);
+void test_get_g( TestObjs *objs);
+void test_get_b( TestObjs *objs);
+void test_get_a( TestObjs *objs);
 // void test_to_grayscale( TestObjs *objs);
 // void test_blend_components( TestObjs *objs);
 // void test_blend_colors( TestObjs *objs);
@@ -138,13 +138,13 @@ int main( int argc, char **argv ) {
   // TEST( test_determine_tile_w);
   // TEST( test_determine_tile_h);
   // TEST( test_make_pixel);
-  // TEST( test_get_pixel);
-  // TEST( test_set_pixel);
+  TEST( test_get_pixel);
+  TEST( test_set_pixel);
   // TEST( test_copy_tile);
-  // TEST( test_get_r);
-  // TEST( test_get_g);
-  // TEST( test_get_b);
-  // TEST( test_get_a);
+  TEST( test_get_r);
+  TEST( test_get_g);
+  TEST( test_get_b);
+  TEST( test_get_a);
   // TEST( test_to_grayscale);
   // TEST( test_blend_components);
   // TEST( test_blend_colors);
@@ -548,90 +548,90 @@ void test_mirror_v_basic( TestObjs *objs ) {
 //   ASSERT(make_pixel(256, 0, 0, 0 != 4294967296));
 // }
 
-// void test_get_pixel( TestObjs *objs){
-//   //Test on an image of 1x1 width
-//   Picture single_pixel = {
-//     TEST_COLORS,
-//     1,
-//     1,
-//     " "
-//   };
-//   struct Image *test_single_pixel = picture_to_img( &single_pixel);
-//   ASSERT(get_pixel(test_single_pixel, 0, 0) == 0x000000FF);
+void test_get_pixel( TestObjs *objs){
+  //Test on an image of 1x1 width
+  Picture single_pixel = {
+    TEST_COLORS,
+    1,
+    1,
+    " "
+  };
+  struct Image *test_single_pixel = picture_to_img( &single_pixel);
+  ASSERT(get_pixel(test_single_pixel, 0, 0) == 0x000000FF);
 
-//   //Test on a Larger Image
-//   Picture test_image_mosaic = {
-//     TEST_COLORS,
-//     3, // width
-//     3, // height
-//     "mrg"
-//     "c g"
-//     "rgb"
-//   };
-//   // Make sure that all of the pixels are what the get function returns
-//   struct Image *test_get_mosaic = picture_to_img( &test_image_mosaic);
-//   ASSERT(get_pixel(test_get_mosaic, 0, 0) == 0xFF00FFFF);
-//   ASSERT(get_pixel(test_get_mosaic, 1, 0) == 0xFF0000FF);
-//   ASSERT(get_pixel(test_get_mosaic, 2, 0) == 0x00FF00FF);
-//   ASSERT(get_pixel(test_get_mosaic, 0, 1) == 0x00FFFFFF);
-//   ASSERT(get_pixel(test_get_mosaic, 1, 1) == 0x000000FF);
-//   ASSERT(get_pixel(test_get_mosaic, 2, 1) == 0x00FF00FF);
-//   ASSERT(get_pixel(test_get_mosaic, 0, 2) == 0xFF0000FF);
-//   ASSERT(get_pixel(test_get_mosaic, 1, 2) == 0x00FF00FF);
-//   ASSERT(get_pixel(test_get_mosaic, 2, 2) == 0x0000FFFF);
-// }
+  //Test on a Larger Image
+  Picture test_image_mosaic = {
+    TEST_COLORS,
+    3, // width
+    3, // height
+    "mrg"
+    "c g"
+    "rgb"
+  };
+  // Make sure that all of the pixels are what the get function returns
+  struct Image *test_get_mosaic = picture_to_img( &test_image_mosaic);
+  ASSERT(get_pixel(test_get_mosaic, 0, 0) == 0xFF00FFFF);
+  ASSERT(get_pixel(test_get_mosaic, 1, 0) == 0xFF0000FF);
+  ASSERT(get_pixel(test_get_mosaic, 2, 0) == 0x00FF00FF);
+  ASSERT(get_pixel(test_get_mosaic, 0, 1) == 0x00FFFFFF);
+  ASSERT(get_pixel(test_get_mosaic, 1, 1) == 0x000000FF);
+  ASSERT(get_pixel(test_get_mosaic, 2, 1) == 0x00FF00FF);
+  ASSERT(get_pixel(test_get_mosaic, 0, 2) == 0xFF0000FF);
+  ASSERT(get_pixel(test_get_mosaic, 1, 2) == 0x00FF00FF);
+  ASSERT(get_pixel(test_get_mosaic, 2, 2) == 0x0000FFFF);
+}
   
-// void test_set_pixel( TestObjs *objs){
-//   // Test set pixel on a picture of a single image and ensure the values are the same
-//     Picture single_pixel = {
-//     TEST_COLORS,
-//     1,
-//     1,
-//     " "
-//   };
-//   struct Image *test_single_pixel = picture_to_img( &single_pixel);
-//   ASSERT(get_pixel(test_single_pixel, 0, 0) == 0x000000FF);
-//   set_pixel(test_single_pixel, 0, 0, 0xFEEDBEEF);
-//   ASSERT(get_pixel(test_single_pixel, 0, 0) == 0xFEEDBEEF);
-//   set_pixel(test_single_pixel, 0, 0, 0xACABBACE);
-//   ASSERT(get_pixel(test_single_pixel, 0, 0) == 0xACABBACE);
-//   set_pixel(test_single_pixel, 0, 0, 0xDEAFACED);
-//   ASSERT(get_pixel(test_single_pixel, 0, 0) == 0xDEAFACED);
-//   set_pixel(test_single_pixel, 0, 0, 0xABADBEAD);
-//   ASSERT(get_pixel(test_single_pixel, 0, 0) == 0xABADBEAD);
+void test_set_pixel( TestObjs *objs){
+  // Test set pixel on a picture of a single image and ensure the values are the same
+    Picture single_pixel = {
+    TEST_COLORS,
+    1,
+    1,
+    " "
+  };
+  struct Image *test_single_pixel = picture_to_img( &single_pixel);
+  ASSERT(get_pixel(test_single_pixel, 0, 0) == 0x000000FF);
+  set_pixel(test_single_pixel, 0, 0, 0xFEEDBEEF);
+  ASSERT(get_pixel(test_single_pixel, 0, 0) == 0xFEEDBEEF);
+  set_pixel(test_single_pixel, 0, 0, 0xACABBACE);
+  ASSERT(get_pixel(test_single_pixel, 0, 0) == 0xACABBACE);
+  set_pixel(test_single_pixel, 0, 0, 0xDEAFACED);
+  ASSERT(get_pixel(test_single_pixel, 0, 0) == 0xDEAFACED);
+  set_pixel(test_single_pixel, 0, 0, 0xABADBEAD);
+  ASSERT(get_pixel(test_single_pixel, 0, 0) == 0xABADBEAD);
 
-//   //Test on a Larger Image
-//   Picture test_image_mosaic = {
-//     TEST_COLORS,
-//     3, // width
-//     3, // height
-//     "   "
-//     "   "
-//     "   "
-//   };
+  //Test on a Larger Image
+  Picture test_image_mosaic = {
+    TEST_COLORS,
+    3, // width
+    3, // height
+    "   "
+    "   "
+    "   "
+  };
 
-//   // Set all of the image pixels to the 3x3 grid and assert that the change was successful with get pixel
-//   struct Image *test_set_mosaic = picture_to_img( &test_image_mosaic);
-//   set_pixel(test_set_mosaic, 0, 0, 0xFF00FFFF);
-//   set_pixel(test_set_mosaic, 0, 1, 0xFF0000FF);
-//   set_pixel(test_set_mosaic, 0, 2, 0x00FF00FF);
-//   set_pixel(test_set_mosaic, 1, 0, 0x00FFFFFF);
-//   set_pixel(test_set_mosaic, 1, 1, 0x0000FFFF);
-//   set_pixel(test_set_mosaic, 1, 2, 0x00FF00FF);
-//   set_pixel(test_set_mosaic, 2, 0, 0xFF0000FF);
-//   set_pixel(test_set_mosaic, 2, 1, 0x00FF00FF);
-//   set_pixel(test_set_mosaic, 2, 2, 0x0000FFFF);
+  // Set all of the image pixels to the 3x3 grid and assert that the change was successful with get pixel
+  struct Image *test_set_mosaic = picture_to_img( &test_image_mosaic);
+  set_pixel(test_set_mosaic, 0, 0, 0xFF00FFFF);
+  set_pixel(test_set_mosaic, 0, 1, 0xFF0000FF);
+  set_pixel(test_set_mosaic, 0, 2, 0x00FF00FF);
+  set_pixel(test_set_mosaic, 1, 0, 0x00FFFFFF);
+  set_pixel(test_set_mosaic, 1, 1, 0x0000FFFF);
+  set_pixel(test_set_mosaic, 1, 2, 0x00FF00FF);
+  set_pixel(test_set_mosaic, 2, 0, 0xFF0000FF);
+  set_pixel(test_set_mosaic, 2, 1, 0x00FF00FF);
+  set_pixel(test_set_mosaic, 2, 2, 0x0000FFFF);
 
-//   ASSERT(get_pixel(test_set_mosaic, 0, 0) == 0xFF00FFFF);
-//   ASSERT(get_pixel(test_set_mosaic, 0, 1) == 0xFF0000FF);
-//   ASSERT(get_pixel(test_set_mosaic, 0, 2) == 0x00FF00FF);
-//   ASSERT(get_pixel(test_set_mosaic, 1, 0) == 0x00FFFFFF);
-//   ASSERT(get_pixel(test_set_mosaic, 1, 1) == 0x0000FFFF);
-//   ASSERT(get_pixel(test_set_mosaic, 1, 2) == 0x00FF00FF);
-//   ASSERT(get_pixel(test_set_mosaic, 2, 0) == 0xFF0000FF);
-//   ASSERT(get_pixel(test_set_mosaic, 2, 1) == 0x00FF00FF);
-//   ASSERT(get_pixel(test_set_mosaic, 2, 2) == 0x0000FFFF);
-// } 
+  ASSERT(get_pixel(test_set_mosaic, 0, 0) == 0xFF00FFFF);
+  ASSERT(get_pixel(test_set_mosaic, 0, 1) == 0xFF0000FF);
+  ASSERT(get_pixel(test_set_mosaic, 0, 2) == 0x00FF00FF);
+  ASSERT(get_pixel(test_set_mosaic, 1, 0) == 0x00FFFFFF);
+  ASSERT(get_pixel(test_set_mosaic, 1, 1) == 0x0000FFFF);
+  ASSERT(get_pixel(test_set_mosaic, 1, 2) == 0x00FF00FF);
+  ASSERT(get_pixel(test_set_mosaic, 2, 0) == 0xFF0000FF);
+  ASSERT(get_pixel(test_set_mosaic, 2, 1) == 0x00FF00FF);
+  ASSERT(get_pixel(test_set_mosaic, 2, 2) == 0x0000FFFF);
+} 
 
 // void test_copy_tile( TestObjs *objs){
 //   //Create an input image to test the tile function
@@ -718,90 +718,90 @@ void test_mirror_v_basic( TestObjs *objs ) {
 //   ASSERT(get_pixel(copy_odd_output_n3, 0, 3) == 0x00000FF);
 // }
 
-// void test_get_r( TestObjs *objs) {
+void test_get_r( TestObjs *objs) {
 
-//   //Expected red value: 0xFF
-//   uint32_t pixel = 0xFF336699;
-//   ASSERT(get_r(pixel) == 0xFF);
+  //Expected red value: 0xFF
+  uint32_t pixel = 0xFF336699;
+  ASSERT(get_r(pixel) == 0xFF);
 
-//   //Test with pixel having red as 0xAA: 0xAA112233
-//   pixel = 0xAA112233;
-//   ASSERT(get_r(pixel) == 0xAA);
+  //Test with pixel having red as 0xAA: 0xAA112233
+  pixel = 0xAA112233;
+  ASSERT(get_r(pixel) == 0xAA);
 
-//   //Test with pixel where red part is 0x00: 0x00334455
-//   pixel = 0x00334455;
-//   ASSERT(get_r(pixel) == 0x00);
+  //Test with pixel where red part is 0x00: 0x00334455
+  pixel = 0x00334455;
+  ASSERT(get_r(pixel) == 0x00);
 
-//   //Edge case: all parts set to 0: 0x00000000
-//   pixel = 0x00000000;
-//   ASSERT(get_r(pixel) == 0x00);
+  //Edge case: all parts set to 0: 0x00000000
+  pixel = 0x00000000;
+  ASSERT(get_r(pixel) == 0x00);
 
-//   //Edge case: all 8 bit parts set to maximum: 0xFFFFFFFF
-//   pixel = 0xFFFFFFFF;
-//   ASSERT(get_r(pixel) == 0xFF);
+  //Edge case: all 8 bit parts set to maximum: 0xFFFFFFFF
+  pixel = 0xFFFFFFFF;
+  ASSERT(get_r(pixel) == 0xFF);
 
-// }
+}
 
-// void test_get_g( TestObjs *objs) {
+void test_get_g( TestObjs *objs) {
 
-//   uint32_t pixel = 0xFF336699;
-//   ASSERT(get_g(pixel) == 0x33);
+  uint32_t pixel = 0xFF336699;
+  ASSERT(get_g(pixel) == 0x33);
 
-//   //Test with green set as 0xBB
-//   pixel = 0x11BB2233;
-//   ASSERT(get_g(pixel) == 0xBB);
+  //Test with green set as 0xBB
+  pixel = 0x11BB2233;
+  ASSERT(get_g(pixel) == 0xBB);
 
-//   //Test with pixel where green part is 0x00: 0xFF003355
-//   pixel = 0xFF003355;
-//   ASSERT(get_g(pixel) == 0x00);
+  //Test with pixel where green part is 0x00: 0xFF003355
+  pixel = 0xFF003355;
+  ASSERT(get_g(pixel) == 0x00);
 
-//   //Edge case: all bits set to 0: 0x00000000
-//   pixel = 0x00000000;
-//   ASSERT(get_g(pixel) == 0x00);
+  //Edge case: all bits set to 0: 0x00000000
+  pixel = 0x00000000;
+  ASSERT(get_g(pixel) == 0x00);
 
-//   //Edge case: all bits set to maximum: 0xFFFFFFFF
-//   pixel = 0xFFFFFFFF;
-//   ASSERT(get_g(pixel) == 0xFF);
+  //Edge case: all bits set to maximum: 0xFFFFFFFF
+  pixel = 0xFFFFFFFF;
+  ASSERT(get_g(pixel) == 0xFF);
 
-// }
+}
 
-// void test_get_b( TestObjs *objs) {
+void test_get_b( TestObjs *objs) {
 
-//   uint32_t pixel = 0xFF336699;
-//   ASSERT(get_b(pixel) == 0x66); //expected is 3rd pair (bits 8-15)
+  uint32_t pixel = 0xFF336699;
+  ASSERT(get_b(pixel) == 0x66); //expected is 3rd pair (bits 8-15)
 
-//   //Test with blue part as 0xCC: 0x11BBCC33
-//   pixel = 0x11BBCC33;
-//   ASSERT(get_b(pixel) == 0xCC);
+  //Test with blue part as 0xCC: 0x11BBCC33
+  pixel = 0x11BBCC33;
+  ASSERT(get_b(pixel) == 0xCC);
 
-//   //Edge case: all bits set to 0: 0x00000000
-//   pixel = 0x00000000;
-//   ASSERT(get_b(pixel) == 0x00);
+  //Edge case: all bits set to 0: 0x00000000
+  pixel = 0x00000000;
+  ASSERT(get_b(pixel) == 0x00);
 
-//   //Edge case: all bits set to maximum: 0xFFFFFFFF
-//   pixel = 0xFFFFFFFF;
-//   ASSERT(get_b(pixel) == 0xFF);
+  //Edge case: all bits set to maximum: 0xFFFFFFFF
+  pixel = 0xFFFFFFFF;
+  ASSERT(get_b(pixel) == 0xFF);
 
-// }
+}
 
-// void test_get_a( TestObjs *objs) {
+void test_get_a( TestObjs *objs) {
 
-//   uint32_t pixel = 0xFF336699;
-//   ASSERT(get_a(pixel) == 0x99); //expected is bits (0-7) = 99 in hex
+  uint32_t pixel = 0xFF336699;
+  ASSERT(get_a(pixel) == 0x99); //expected is bits (0-7) = 99 in hex
 
-//   //Test with pixel having alpha as 0xDD: 0x11BB22DD
-//   pixel = 0x11BB22DD;
-//   ASSERT(get_a(pixel) == 0xDD);
+  //Test with pixel having alpha as 0xDD: 0x11BB22DD
+  pixel = 0x11BB22DD;
+  ASSERT(get_a(pixel) == 0xDD);
 
-//   // Edge case: all channels set to 0: 0x00000000
-//   pixel = 0x00000000;
-//   ASSERT(get_a(pixel) == 0x00);
+  // Edge case: all channels set to 0: 0x00000000
+  pixel = 0x00000000;
+  ASSERT(get_a(pixel) == 0x00);
 
-//   // Edge case: all channels set to maximum: 0xFFFFFFFF
-//   pixel = 0xFFFFFFFF;
-//   ASSERT(get_a(pixel) == 0xFF);
+  // Edge case: all channels set to maximum: 0xFFFFFFFF
+  pixel = 0xFFFFFFFF;
+  ASSERT(get_a(pixel) == 0xFF);
 
-// }
+}
 
 // void test_to_grayscale( TestObjs *objs) {
 

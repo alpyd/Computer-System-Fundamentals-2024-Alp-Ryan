@@ -75,6 +75,8 @@ get_pixel:
     # Retrieve the pixel at img->data[y * width + x]
     movl (%rdi, %r10, 4), %eax              # Load the pixel at img->data[index]
 
+    movq %r12, %rdi
+
     # Restore callee-saved registers
     popq %r14
     popq %r12
@@ -365,15 +367,16 @@ h_y_loop_end:
  */
 	.globl imgproc_mirror_v
 imgproc_mirror_v:
+    movq %rdi, %r12
+    movq %rsi, %r15
     # Initialize y counter variable
     movl $0, %edx
 
 v_outer_y_loop:
-    # Load Image height into %r10
-    movl IMAGE_HEIGHT_OFFSET(%rdi), %r10d
-
-    # Compare y with the total width
-    cmpl %edx, %r10d   
+    
+    movl IMAGE_HEIGHT_OFFSET(%r12), %r13d
+    # Compare y with the total height
+    cmpl %r13d, %edx  
 
     # If y >= Image height, end the outer loop
     jae v_y_loop_end
@@ -382,11 +385,9 @@ v_outer_y_loop:
     movl $0, %esi
 
 v_inner_x_loop:
-    # Load Image width into %r10
-    movl IMAGE_WIDTH_OFFSET(%rdi), %r10d
-
     # Compare x with total variable
-    cmpl %esi, %r10d
+    movl IMAGE_WIDTH_OFFSET(%r12), %r13d
+    cmpl %r13d, %esi
 
     # If x ?= Image width, end the inner loop
     jae v_x_loop_end
@@ -398,14 +399,15 @@ v_inner_x_loop:
     movl %eax, %ecx
 
     # Store the original height value and original input image pointer
-    movl %edx, %r10d
+    movl %edx, %r14d
     movq %rdi, %r11
 
-    # Update the %edx register to hold the inversed height
+    # Update the %esi register to hold the inversed width
     movl $0, %edx
-    addl IMAGE_WIDTH_OFFSET(%rdi), %edx
+    movl IMAGE_HEIGHT_OFFSET(%r12), %r13d
+    addl %r13d, %edx
     subl $1, %edx
-    subl %r10d, %edx
+    subl %r14d, %edx
 
     # Add the output image pointer into the input image pointer for set_pixel
     movq %r15, %rdi
@@ -414,7 +416,7 @@ v_inner_x_loop:
     call set_pixel
 
     # Restore the original width value and original input image pointer
-    movl %r10d, %esi
+    movl %r14d, %edx
     movq %r11, %rdi
 
     # Increase the x counter and jump in the loop again
@@ -426,7 +428,10 @@ v_x_loop_end:
     jmp v_outer_y_loop
 
 v_y_loop_end:
+    movq %r15, %rsi
     ret
+    # Initialize y counter variable
+    movl $0, %edx
 
 /*
  * int imgproc_tile( struct Image *input_img, int n, struct Image *output_img );
