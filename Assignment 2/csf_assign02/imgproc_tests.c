@@ -103,7 +103,7 @@ void test_mirror_v_basic( TestObjs *objs );
 // void test_determine_tile_y_offset( TestObjs *objs);
 // void test_determine_tile_w( TestObjs *objs);
 // void test_determine_tile_h( TestObjs *objs);
-// void test_make_pixel( TestObjs *objs);
+void test_make_pixel( TestObjs *objs);
 void test_get_pixel( TestObjs *objs);
 void test_set_pixel( TestObjs *objs);
 // void test_copy_tile( TestObjs *objs);
@@ -111,7 +111,7 @@ void test_get_r( TestObjs *objs);
 void test_get_g( TestObjs *objs);
 void test_get_b( TestObjs *objs);
 void test_get_a( TestObjs *objs);
-// void test_to_grayscale( TestObjs *objs);
+void test_to_grayscale( TestObjs *objs);
 // void test_blend_components( TestObjs *objs);
 // void test_blend_colors( TestObjs *objs);
 
@@ -137,7 +137,7 @@ int main( int argc, char **argv ) {
   // TEST( test_determine_tile_y_offset);
   // TEST( test_determine_tile_w);
   // TEST( test_determine_tile_h);
-  // TEST( test_make_pixel);
+  TEST( test_make_pixel);
   TEST( test_get_pixel);
   TEST( test_set_pixel);
   // TEST( test_copy_tile);
@@ -145,7 +145,7 @@ int main( int argc, char **argv ) {
   TEST( test_get_g);
   TEST( test_get_b);
   TEST( test_get_a);
-  // TEST( test_to_grayscale);
+  TEST( test_to_grayscale);
   // TEST( test_blend_components);
   // TEST( test_blend_colors);
 
@@ -526,27 +526,27 @@ void test_mirror_v_basic( TestObjs *objs ) {
 //   }
 // }
 
-// void test_make_pixel( TestObjs *objs){
-//   //Test 0 Conditions and Max Conditions
-//   ASSERT(make_pixel(0, 0, 0, 0) == 0);
-//   ASSERT(make_pixel(0, 0, 0, 255) == 255);
-//   ASSERT(make_pixel(0, 0, 255, 255) == 65535);
-//   ASSERT(make_pixel(0, 255, 255, 255) == 16777215);
-//   ASSERT(make_pixel(255, 255, 255, 255) == 4294967295);
-//   ASSERT(make_pixel(255, 255, 255, 0) == 4294967295-255);
-//   ASSERT(make_pixel(255, 255, 0, 0) == 4294967295-65535);
-//   ASSERT(make_pixel(255, 0, 0, 0) == 4294967295-16777215);
+void test_make_pixel( TestObjs *objs){
+  //Test 0 Conditions and Max Conditions
+  ASSERT(make_pixel(0, 0, 0, 0) == 0);
+  ASSERT(make_pixel(0, 0, 0, 255) == 255);
+  ASSERT(make_pixel(0, 0, 255, 255) == 65535);
+  ASSERT(make_pixel(0, 255, 255, 255) == 16777215);
+  ASSERT(make_pixel(255, 255, 255, 255) == 4294967295);
+  ASSERT(make_pixel(255, 255, 255, 0) == 4294967295-255);
+  ASSERT(make_pixel(255, 255, 0, 0) == 4294967295-65535);
+  ASSERT(make_pixel(255, 0, 0, 0) == 4294967295-16777215);
 
-//   //Test arbitrary values
-//   ASSERT(make_pixel(32, 17, 143, 62) == 538021694);
-//   ASSERT(make_pixel(55, 12, 196, 202) == 923583690);
-//   ASSERT(make_pixel(25, 166, 43, 100) == 430320484);
-//   ASSERT(make_pixel(44, 218, 12, 255) == 752487679);
-//   ASSERT(make_pixel(23, 191, 173, 230) == 398437862);
+  //Test arbitrary values
+  ASSERT(make_pixel(32, 17, 143, 62) == 538021694);
+  ASSERT(make_pixel(55, 12, 196, 202) == 923583690);
+  ASSERT(make_pixel(25, 166, 43, 100) == 430320484);
+  ASSERT(make_pixel(44, 218, 12, 255) == 752487679);
+  ASSERT(make_pixel(23, 191, 173, 230) == 398437862);
 
-//   //Test Overflow
-//   ASSERT(make_pixel(256, 0, 0, 0 != 4294967296));
-// }
+  //Test Overflow
+  ASSERT(make_pixel(256, 0, 0, 0 != 4294967296));
+}
 
 void test_get_pixel( TestObjs *objs){
   //Test on an image of 1x1 width
@@ -803,54 +803,54 @@ void test_get_a( TestObjs *objs) {
 
 }
 
-// void test_to_grayscale( TestObjs *objs) {
+void test_to_grayscale( TestObjs *objs) {
 
-//   uint32_t pixel, gray_pixel, expected_gray;
+  uint32_t pixel, gray_pixel, expected_gray;
 
-//   //Red pixel (R=255, G=0, B=0, A=255)
-//   pixel = 0xFF0000FF;
-//   gray_pixel = to_grayscale(pixel);
-//   expected_gray = ((79 * 255) + (128 * 0) + (49 * 0)) / 256; // expected grayscale value
-//   ASSERT(get_r(gray_pixel) == expected_gray);
-//   ASSERT(get_g(gray_pixel) == expected_gray);
-//   ASSERT(get_b(gray_pixel) == expected_gray);
-//   ASSERT(get_a(gray_pixel) == 0xFF);  // alpha should remain the same
+  //Red pixel (R=255, G=0, B=0, A=255)
+  pixel = 0xFF0000FF;
+  gray_pixel = to_grayscale(pixel);
+  expected_gray = ((79 * 255) + (128 * 0) + (49 * 0)) / 256; // expected grayscale value
+  ASSERT(get_r(gray_pixel) == expected_gray);
+  ASSERT(get_g(gray_pixel) == expected_gray);
+  ASSERT(get_b(gray_pixel) == expected_gray);
+  ASSERT(get_a(gray_pixel) == 0xFF);  // alpha should remain the same
 
-//   //Green pixel 50% opacity (R=0, G=255, B=0, A=128)
-//   pixel = 0x00FF0080; 
-//   gray_pixel = to_grayscale(pixel);
-//   expected_gray = ((79 * 0) + (128 * 255) + (49 * 0)) / 256; //expected grayscale value
-//   ASSERT(get_r(gray_pixel) == expected_gray);
-//   ASSERT(get_g(gray_pixel) == expected_gray);
-//   ASSERT(get_b(gray_pixel) == expected_gray);
-//   ASSERT(get_a(gray_pixel) == 0x80);  //alpha should remain the same
+  //Green pixel 50% opacity (R=0, G=255, B=0, A=128)
+  pixel = 0x00FF0080; 
+  gray_pixel = to_grayscale(pixel);
+  expected_gray = ((79 * 0) + (128 * 255) + (49 * 0)) / 256; //expected grayscale value
+  ASSERT(get_r(gray_pixel) == expected_gray);
+  ASSERT(get_g(gray_pixel) == expected_gray);
+  ASSERT(get_b(gray_pixel) == expected_gray);
+  ASSERT(get_a(gray_pixel) == 0x80);  //alpha should remain the same
 
-//   //Edge case (R=0, G=0, B=0, A=255): black with full opacity
-//   pixel = 0x000000FF;
-//   gray_pixel = to_grayscale(pixel);
-//   ASSERT(get_r(gray_pixel) == 0x00);
-//   ASSERT(get_g(gray_pixel) == 0x00);
-//   ASSERT(get_b(gray_pixel) == 0x00);
-//   ASSERT(get_a(gray_pixel) == 0xFF);  //alpha should remain the same
+  //Edge case (R=0, G=0, B=0, A=255): black with full opacity
+  pixel = 0x000000FF;
+  gray_pixel = to_grayscale(pixel);
+  ASSERT(get_r(gray_pixel) == 0x00);
+  ASSERT(get_g(gray_pixel) == 0x00);
+  ASSERT(get_b(gray_pixel) == 0x00);
+  ASSERT(get_a(gray_pixel) == 0xFF);  //alpha should remain the same
 
-//   //Edge case (R=255, G=255, B=255, A=255): white with full opacity
-//   pixel = 0xFFFFFFFF; 
-//   gray_pixel = to_grayscale(pixel);
-//   ASSERT(get_r(gray_pixel) == 0xFF); 
-//   ASSERT(get_g(gray_pixel) == 0xFF);
-//   ASSERT(get_b(gray_pixel) == 0xFF);
-//   ASSERT(get_a(gray_pixel) == 0xFF);  //alpha should remain the same
+  //Edge case (R=255, G=255, B=255, A=255): white with full opacity
+  pixel = 0xFFFFFFFF; 
+  gray_pixel = to_grayscale(pixel);
+  ASSERT(get_r(gray_pixel) == 0xFF); 
+  ASSERT(get_g(gray_pixel) == 0xFF);
+  ASSERT(get_b(gray_pixel) == 0xFF);
+  ASSERT(get_a(gray_pixel) == 0xFF);  //alpha should remain the same
 
-//   //Edge case (R=100, G=150, B=200, A=0): mixed color fully transparent
-//   pixel = 0x6496C800; 
-//   gray_pixel = to_grayscale(pixel);
-//   expected_gray = ((79 * 100) + (128 * 150) + (49 * 200)) / 256; //expected grayscale value
-//   ASSERT(get_r(gray_pixel) == expected_gray);
-//   ASSERT(get_g(gray_pixel) == expected_gray);
-//   ASSERT(get_b(gray_pixel) == expected_gray);
-//   ASSERT(get_a(gray_pixel) == 0x00);  //alpha should remain the same
+  //Edge case (R=100, G=150, B=200, A=0): mixed color fully transparent
+  pixel = 0x6496C800; 
+  gray_pixel = to_grayscale(pixel);
+  expected_gray = ((79 * 100) + (128 * 150) + (49 * 200)) / 256; //expected grayscale value
+  ASSERT(get_r(gray_pixel) == expected_gray);
+  ASSERT(get_g(gray_pixel) == expected_gray);
+  ASSERT(get_b(gray_pixel) == expected_gray);
+  ASSERT(get_a(gray_pixel) == 0x00);  //alpha should remain the same
 
-// }
+}
 
 // void test_blend_components( TestObjs *objs) {
 //   //Ensure that 0 pixel returns 0 for both
