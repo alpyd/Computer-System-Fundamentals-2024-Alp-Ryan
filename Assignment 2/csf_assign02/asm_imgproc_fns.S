@@ -217,27 +217,27 @@ to_grayscale:
 
 call get_r                  # Call get_r(pixel), result in %eax
 imull $79, %eax             # Multiply R value by 79
-movl %eax, %r10d             # Store result in %r10 (for later use)
+movl %eax, %r12d             # Store result in %r12 (for later use)
 
 call get_g                  # Call get_g(pixel), result in %eax
 imull $128, %eax            # Multiply G value by 128
-addl %eax, %r10d             # Add to previous result in %r10
+addl %eax, %r12d             # Add to previous result in %r10
 
 call get_b                  # Call get_b(pixel), result in %eax
 imull $49, %eax             # Multiply B value by 49
-addl %eax, %r10d             # Add to result in %r10
+addl %eax, %r12d             # Add to result in %r10
 
 # Now divide the total by 256 to get the gray value
 
-sarl $8, %r10d               # Arithmetic right shift by 8 (divide by 2^8=256)
+sarl $8, %r12d               # Arithmetic right shift by 8 (divide by 2^8=256)
 
 # Get the A value from the pixel
 call get_a                  # Call get_a(pixel), result in %ebx
 
 # Create the grayscale pixel using make_pixel(gray_value, gray_value, gray_value, a)
-movl %r10d, %esi             # Copy gray_value for green channel
-movl %r10d, %edx             # Copy gray_value for blue channel
-movl %r10d, %edi             # Move gray_value to %rdi (R)
+movl %r12d, %esi             # Copy gray_value for green channel
+movl %r12d, %edx             # Copy gray_value for blue channel
+movl %r12d, %edi             # Move gray_value to %rdi (R)
 movl %eax, %ecx             # Move A value to %rcx (A)
     
 call make_pixel             # Call make_pixel(R, G, B, A), stored in %eax
@@ -463,15 +463,16 @@ imgproc_tile:
  */
 	.globl imgproc_grayscale
 imgproc_grayscale:
+    movq %rdi, %r14
+    movq %rsi, %r15
     # Initialize y counter variable
     movl $0, %edx
 
 gray_outer_y_loop:
-    # Load Image height into %r10
-    movl IMAGE_HEIGHT_OFFSET(%rdi), %r10d
-
-    # Compare y with the total width
-    cmpl %edx, %r10d    
+    
+    movl IMAGE_HEIGHT_OFFSET(%r14), %r13d
+    # Compare y with the total height
+    cmpl %r13d, %edx  
 
     # If y >= Image height, end the outer loop
     jae gray_y_loop_end
@@ -480,35 +481,37 @@ gray_outer_y_loop:
     movl $0, %esi
 
 gray_inner_x_loop:
-    # Load Image width into %r10
-    movl IMAGE_WIDTH_OFFSET(%rdi), %r10d
-
     # Compare x with total variable
-    cmpl %esi, %r10d
+    movl IMAGE_WIDTH_OFFSET(%r14), %r13d
+    cmpl %r13d, %esi
+
 
     # If x ?= Image width, end the inner loop
     jae gray_x_loop_end
 
+    # Get pixel of the input image at the input image 
     call get_pixel
 
 
-    movq %rdi, %r11
-    movq %rax, %rdi
+    movl %edx, %r10d
+    movl %esi, %r11d
 
-    # Get pixel of the input image at the input image 
-    call to_grayscale
+    # Move the pixel into the pixel parameter for to_grayscale
+    movl %eax, %edi
 
-    # Move the pixel into the pixel parameter for set_pixel
+    # Store the original height value and original input image pointer
+    call to_grayscale 
+
     movl %eax, %ecx
-
+    
     # Add the output image pointer into the input image pointer for set_pixel
-    movq %rsi, %rdi
+    movq %r15, %rdi
+
+    movl %r10d, %edx
+    movl %r11d, %esi
 
     # Set the pixel at the provided position
     call set_pixel
-
-    # Restore the original input image pointer
-    movq %r11, %rdi
 
     # Increase the x counter and jump in the loop again
     incl %esi
@@ -519,7 +522,10 @@ gray_x_loop_end:
     jmp gray_outer_y_loop
 
 gray_y_loop_end:
+    movq %r15, %rsi
     ret
+    # Initialize y counter variable
+    movl $0, %edx
 
 /*
  * int imgproc_composite( struct Image *base_img, struct Image *overlay_img );

@@ -95,7 +95,7 @@ void destroy_img( struct Image *img );
 void test_mirror_h_basic( TestObjs *objs );
 void test_mirror_v_basic( TestObjs *objs );
 // void test_tile_basic( TestObjs *objs );
-// void test_grayscale_basic( TestObjs *objs );
+void test_grayscale_basic( TestObjs *objs );
 // void test_composite_basic( TestObjs *objs );
 
 // void test_all_tiles_nonempty( TestObjs *objs);
@@ -130,7 +130,7 @@ int main( int argc, char **argv ) {
   TEST( test_mirror_h_basic );
   TEST( test_mirror_v_basic );
   // TEST( test_tile_basic );
-  // TEST( test_grayscale_basic );
+  TEST( test_grayscale_basic );
   // TEST( test_composite_basic );
   // TEST( test_all_tiles_nonempty );
   // TEST( test_determine_tile_x_offset);
@@ -334,52 +334,52 @@ void test_mirror_v_basic( TestObjs *objs ) {
 //   destroy_img( smiley_tile_3_expected );
 // }
 
-// void test_grayscale_basic( TestObjs *objs ) {
-//   Picture smiley_grayscale_pic = {
-//     TEST_COLORS_GRAYSCALE,
-//     16, // width
-//     10, // height
-//     "    mrrrggbc    "
-//     "   c        b   "
-//     "  r   r  b   c  "
-//     " b            b "
-//     " b            r "
-//     " g   b    c   r "
-//     "  c   ggrb   b  "
-//     "   m        c   "
-//     "    gggrrbmc    "
-//     "                "
-//   };
+void test_grayscale_basic( TestObjs *objs ) {
+  Picture smiley_grayscale_pic = {
+    TEST_COLORS_GRAYSCALE,
+    16, // width
+    10, // height
+    "    mrrrggbc    "
+    "   c        b   "
+    "  r   r  b   c  "
+    " b            b "
+    " b            r "
+    " g   b    c   r "
+    "  c   ggrb   b  "
+    "   m        c   "
+    "    gggrrbmc    "
+    "                "
+  };
 
-//   struct Image *smiley_grayscale_expected = picture_to_img( &smiley_grayscale_pic );
+  struct Image *smiley_grayscale_expected = picture_to_img( &smiley_grayscale_pic );
 
-//   imgproc_grayscale( objs->smiley, objs->smiley_out );
+  imgproc_grayscale( objs->smiley, objs->smiley_out );
 
-//   ASSERT( images_equal( smiley_grayscale_expected, objs->smiley_out ) );
+  ASSERT( images_equal( smiley_grayscale_expected, objs->smiley_out ) );
 
-//   destroy_img( smiley_grayscale_expected );
-// }
+  destroy_img( smiley_grayscale_expected );
+}
 
-// void test_composite_basic( TestObjs *objs ) {
-//   imgproc_composite( objs->smiley, objs->overlay, objs->smiley_out );
+void test_composite_basic( TestObjs *objs ) {
+  imgproc_composite( objs->smiley, objs->overlay, objs->smiley_out );
 
-//   // for all of the fully-transparent pixels in the overlay image,
-//   // the result image should have a pixel identical to the corresponding
-//   // pixel in the base image
-//   for ( int i = 0; i < 160; ++i ) {
-//     if ( objs->overlay->data[i] == 0x00000000 )
-//       ASSERT( objs->smiley->data[i] == objs->smiley_out->data[i] );
-//   }
+  // for all of the fully-transparent pixels in the overlay image,
+  // the result image should have a pixel identical to the corresponding
+  // pixel in the base image
+  for ( int i = 0; i < 160; ++i ) {
+    if ( objs->overlay->data[i] == 0x00000000 )
+      ASSERT( objs->smiley->data[i] == objs->smiley_out->data[i] );
+  }
 
-//   // check the computed colors for the partially transparent or
-//   // fully opaque colors in the overlay image
-//   ASSERT( 0xFF0000FF == objs->smiley_out->data[82] );
-//   ASSERT( 0x800000FF == objs->smiley_out->data[83] );
-//   ASSERT( 0x00FF00FF == objs->smiley_out->data[84] );
-//   ASSERT( 0x00807FFF == objs->smiley_out->data[85] );
-//   ASSERT( 0x0000FFFF == objs->smiley_out->data[86] );
-//   ASSERT( 0x000080FF == objs->smiley_out->data[87] );
-// }
+  // check the computed colors for the partially transparent or
+  // fully opaque colors in the overlay image
+  ASSERT( 0xFF0000FF == objs->smiley_out->data[82] );
+  ASSERT( 0x800000FF == objs->smiley_out->data[83] );
+  ASSERT( 0x00FF00FF == objs->smiley_out->data[84] );
+  ASSERT( 0x00807FFF == objs->smiley_out->data[85] );
+  ASSERT( 0x0000FFFF == objs->smiley_out->data[86] );
+  ASSERT( 0x000080FF == objs->smiley_out->data[87] );
+}
 
 // //TESTS FOR HELPER FUNCTIONS
 
