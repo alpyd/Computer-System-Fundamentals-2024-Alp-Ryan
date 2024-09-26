@@ -229,22 +229,16 @@ addl %eax, %r10d             # Add to result in %r10
 
 # Now divide the total by 256 to get the gray value
 
-movl %r10d, %eax             # Move sum into %eax
-sarl $8, %eax               # Arithmetic right shift by 8 (divide by 2^8=256)
+sarl $8, %r10d               # Arithmetic right shift by 8 (divide by 2^8=256)
 
 # Get the A value from the pixel
 call get_a                  # Call get_a(pixel), result in %ebx
 
 # Create the grayscale pixel using make_pixel(gray_value, gray_value, gray_value, a)
-movl %eax, %r10d             # Move gray_value to %r10 (for pixel creation)
-movl %r10d, %ecx             # Copy gray_value for green channel
+movl %r10d, %esi             # Copy gray_value for green channel
 movl %r10d, %edx             # Copy gray_value for blue channel
-
-# Now call make_pixel
-movq %r10, %rdi             # Move gray_value to %rdi (R)
-movq %rcx, %rsi             # Move gray_value to %rsi (G)
-movq %rdx, %rdx             # Move gray_value to %rdx (B)
-movq %rbx, %rcx             # Move A value to %rcx (A)
+movl %r10d, %edi             # Move gray_value to %rdi (R)
+movl %eax, %ecx             # Move A value to %rcx (A)
     
 call make_pixel             # Call make_pixel(R, G, B, A), stored in %eax
 ret                         # return %eax
