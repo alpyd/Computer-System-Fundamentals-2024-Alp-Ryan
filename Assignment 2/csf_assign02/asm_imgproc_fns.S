@@ -513,6 +513,8 @@ gray_inner_x_loop:
     # Set the pixel at the provided position
     call set_pixel
 
+    movq %r14, %rdi
+
     # Increase the x counter and jump in the loop again
     incl %esi
     jmp gray_inner_x_loop
