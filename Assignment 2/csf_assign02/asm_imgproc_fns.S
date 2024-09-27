@@ -10,13 +10,6 @@
 #define IMAGE_DATA_OFFSET    8
 
 /*
- * TODO: define your helper functions here.
- * Don't forget to use the .globl directive to make
- * them visible to the test code.
- */
-
-
-/*
  * uint32_t make_pixel(uint32_t r, uint32_t g, uint32_t b, uint32_t a) 
  * return (r << 24) | (g << 16) | (b << 8) | a;
  * 
@@ -64,20 +57,35 @@ get_pixel:
     pushq %r14
 
     # Calculate y * img->width
-    movq %rdi, %r12                         # Save img pointer in r12
-    movl IMAGE_WIDTH_OFFSET(%r12), %r14d    # Load img->width into r14d
-    movl %r14d, %r10d                       # Move img->width into r10d
-    imull %edx, %r10d                       # Multiply y (edx) * width (r10d)
+
+    # Save img pointer in r12
+    movq %rdi, %r12   
+
+    # Load img->width into r14d
+    movl IMAGE_WIDTH_OFFSET(%r12), %r14d   
+
+    # Move img->width into r10d 
+    movl %r14d, %r10d  
+
+    # Multiply y (edx) * width (r10d)                     
+    imull %edx, %r10d                       
 
     # Add x to the result (y * img->width + x)
-    addl %esi, %r10d                        # r10d = y * width + x
+
+    # r10d = y * width + x
+    addl %esi, %r10d                        
 
     # Load the base address of img->data
-    mov IMAGE_DATA_OFFSET(%r12), %rdi       # Load img->data (address)
+
+    # Load img->data (address)
+    mov IMAGE_DATA_OFFSET(%r12), %rdi       
 
     # Retrieve the pixel at img->data[y * width + x]
-    movl (%rdi, %r10, 4), %eax              # Load the pixel at img->data[index]
 
+    # Load the pixel at img->data[index]
+    movl (%rdi, %r10, 4), %eax             
+
+    # Restore the img pointer to rdi
     movq %r12, %rdi
 
     # Restore callee-saved registers
@@ -114,21 +122,35 @@ set_pixel:
     pushq %r13
 
     # Move the pixel value from %ecx to %eax
-    movl %ecx, %eax                          # Move pixel value into eax
+
+    # Move pixel value into eax
+    movl %ecx, %eax                          
 
     # Calculate y * img->width
-    movq %rdi, %r12                          # Save img pointer in %r12
-    movl IMAGE_WIDTH_OFFSET(%r12), %r13d     # Load img->width into %r13d
-    imull %edx, %r13d                        # Multiply y (edx) * width (%r13d)
+
+    # Save img pointer in %r12
+    movq %rdi, %r12   
+
+    # Load img->width into %r13d                       
+    movl IMAGE_WIDTH_OFFSET(%r12), %r13d 
+
+    # Multiply y (edx) * width (%r13d)    
+    imull %edx, %r13d                        
 
     # Add x to the result (y * img->width + x)
-    addl %esi, %r13d                         # r13d = y * width + x
+
+    # r13d = y * width + x
+    addl %esi, %r13d                         
 
     # Load the base address of img->data
-    movq IMAGE_DATA_OFFSET(%r12), %r12        # Load img->data (address) into %r12
+
+    # Load img->data (address) into %r12
+    movq IMAGE_DATA_OFFSET(%r12), %r12        
 
     # Store the pixel value at img->data[y * width + x]
-    movl %eax, (%r12, %r13, 4)               # Store pixel at img->data[index]
+
+    # Store pixel at img->data[index]
+    movl %eax, (%r12, %r13, 4)               
 
     # Pop callee-saved registers
     popq %r13
@@ -151,11 +173,17 @@ set_pixel:
  */
 .globl get_r
 get_r:
-
     # Shift pixel right by 24 bits and mask with 0xFF to get the R value
-    movl %edi, %eax            # Move pixel to eax
-    shrl $24, %eax             # Shift right by 24
-    andl $0xFF, %eax           # Mask with 0xFF
+
+    # Move pixel to eax
+    movl %edi, %eax      
+
+    # Shift right by 24
+    shrl $24, %eax       
+
+    # Mask with 0xFF
+    andl $0xFF, %eax   
+
     ret
 
 
@@ -170,11 +198,17 @@ get_r:
  */
 .globl get_g
 get_g:
-
     # Shift pixel right by 16 bits and mask with 0xFF to get the G value
-    movl %edi, %eax            # Move pixel to eax
-    shrl $16, %eax             # Shift right by 16
-    andl $0xFF, %eax           # Mask with 0xFF
+
+    # Move pixel to eax
+    movl %edi, %eax  
+
+    # Shift right by 16
+    shrl $16, %eax 
+
+    # Mask with 0xFF            
+    andl $0xFF, %eax     
+
     ret
 
 /*
@@ -188,11 +222,17 @@ get_g:
  */
 .globl get_b
 get_b:
-
     # Shift pixel right by 8 bits and mask with 0xFF to get the B value
-    movl %edi, %eax            # Move pixel to eax
-    shrl $8, %eax              # Shift right by 8
-    andl $0xFF, %eax           # Mask with 0xFF
+
+    # Move pixel to eax
+    movl %edi, %eax     
+
+    # Shift right by 8       
+    shrl $8, %eax  
+
+    # Mask with 0xFF            
+    andl $0xFF, %eax   
+
     ret
 
 /*
@@ -206,10 +246,14 @@ get_b:
  */
 .globl get_a
 get_a:
-
     # Mask pixel with 0xFF to get the A value
-    movl %edi, %eax            # Move pixel to eax
-    andl $0xFF, %eax           # Mask with 0xFF
+
+    # Move pixel to eax
+    movl %edi, %eax        
+
+    # Mask with 0xFF
+    andl $0xFF, %eax   
+
     ret
 
 /*
@@ -225,40 +269,66 @@ get_a:
 .globl to_grayscale
 to_grayscale:
 
-pushq %r12                   # push callee-saved registers
+    # Push callee-saved registers
+    pushq %r12                   
 
-# Get R, G, B, and A components from the pixel
+    # Get R, G, B, and A components from the pixel
 
-call get_r                   # Call get_r(pixel), result in %eax
-imull $79, %eax              # Multiply R value by 79
-movl %eax, %r12d             # Store result in %r12 (for later use)
+    # Call get_r(pixel), result in %eax
+    call get_r  
 
-call get_g                   # Call get_g(pixel), result in %eax
-imull $128, %eax             # Multiply G value by 128
-addl %eax, %r12d             # Add to previous result in %r10
+    # Multiply R value by 79                 
+    imull $79, %eax 
 
-call get_b                   # Call get_b(pixel), result in %eax
-imull $49, %eax              # Multiply B value by 49
-addl %eax, %r12d             # Add to result in %r10
+    # Store result in %r12 (for later use)             
+    movl %eax, %r12d      
+     
+    # Call get_g(pixel), result in %eax
+    call get_g     
 
-# Now divide the total by 256 to get the gray value
+    # Multiply G value by 128
+    imull $128, %eax  
 
-sarl $8, %r12d               # Arithmetic right shift by 8 (divide by 2^8=256)
+    # Add to previous result in %r10
+    addl %eax, %r12d            
 
-# Get the A value from the pixel
-call get_a                  # Call get_a(pixel), result in %ebx
+    # Call get_b(pixel), result in %eax
+    call get_b  
 
-# Create the grayscale pixel using make_pixel(gray_value, gray_value, gray_value, a)
-movl %r12d, %esi             # Copy gray_value for green channel
-movl %r12d, %edx             # Copy gray_value for blue channel
-movl %r12d, %edi             # Move gray_value to %rdi (R)
-movl %eax, %ecx             # Move A value to %rcx (A)
+    # Multiply B value by 49                 
+    imull $49, %eax 
+
+    # Add to result in %r10             
+    addl %eax, %r12d             
+
+    # Now divide the total by 256 to get the gray value using an arithmetic right shift by 8 
+    sarl $8, %r12d               
+
+    # Get the A value from the pixel by calling get_a(pixel), result in %ebx
+    call get_a                  
+
+    # Create the grayscale pixel using make_pixel(gray_value, gray_value, gray_value, a)
+
+    # Copy gray_value for green channel
+    movl %r12d, %esi 
+
+    # Copy gray_value for blue channel            
+    movl %r12d, %edx 
+
+    # Move gray_value to %rdi (R)            
+    movl %r12d, %edi 
+
+    # Move A value to %rcx (A)           
+    movl %eax, %ecx             
     
-call make_pixel             # Call make_pixel(R, G, B, A), stored in %eax
+    # Call make_pixel(R, G, B, A), stored in %eax
+    call make_pixel    
 
-popq %r12                   # Pop callee-saved register
+    # Pop callee-saved register         
+    popq %r12                   
 
-ret                         # return %eax
+     # return %eax
+    ret                        
 
 
 /*
@@ -274,6 +344,12 @@ ret                         # return %eax
  * Parameters:
  *   %rdi - pointer to original struct Image
  *   %rsi - pointer to output struct Image
+ * Registers:
+ *   %r11 - used to restore the original input image
+ *   %r12 - callee-saved register to hold original struct Image
+ *   %r13 - callee-saved register to hold image widths and heights
+ *   %r14 - callee-saved register to hold original x value
+ *   %r15 - callee-saved register to hold output struct Image
  */
 	.globl imgproc_mirror_h
 imgproc_mirror_h:
@@ -283,17 +359,22 @@ imgproc_mirror_h:
 
     # Push callee-saved registers
     pushq %r12
+    pushq %r13
+    pushq %r14
     pushq %r15
 
-    # Move pointers to the input and output images into callee-saved registers
+    # Move pointers to the input and output images into callee-saved registers r12 and r15
     movq %rdi, %r12
     movq %rsi, %r15
 
     # Initialize y counter variable
     movl $0, %edx
 
+# Outer Loop to compare y value with height
 h_outer_y_loop:
+    # Move image height into r13d
     movl IMAGE_HEIGHT_OFFSET(%r12), %r13d
+
     # Compare y with the total height
     cmpl %r13d, %edx  
 
@@ -303,9 +384,12 @@ h_outer_y_loop:
     # Initialize x counter variable
     movl $0, %esi
 
+# Inner loop to execute body of code
 h_inner_x_loop:
-    # Compare x with total width
+    # Move image width into r13d 
     movl IMAGE_WIDTH_OFFSET(%r12), %r13d
+
+    # Compare x with total width
     cmpl %r13d, %esi
 
     # If x >= Image width, end the inner loop
@@ -317,38 +401,53 @@ h_inner_x_loop:
     # Move the pixel into the pixel parameter for set_pixel
     movl %eax, %ecx
 
-    # Store the original x position
+    # Store the original x position in r14d
     movl %esi, %r14d
+
+    # Store the input image pointer in r11
     movq %rdi, %r11
 
     # Update %esi to hold the inversed width
     movl $0, %esi
+
+    # Move image width into r13d 
     movl IMAGE_WIDTH_OFFSET(%r12), %r13d
+
+    # Add image width to %esi
     addl %r13d, %esi
+
+    # Subtract (1 + original_x) from esi
     subl $1, %esi
     subl %r14d, %esi
 
-    # Prepare for the set_pixel call
-    movq %r15, %rdi  # output image pointer
+    # Prepare for the set_pixel call by setting r15 to output image pointer
+    movq %r15, %rdi  
 
     # Set the pixel at the computed position
     call set_pixel
 
     # Restore the original x position
     movl %r14d, %esi
-    movq %r11, %rdi  # restore input image pointer
+
+     # Restore input image pointer
+    movq %r11, %rdi 
 
     # Increment x counter and loop again
     incl %esi
     jmp h_inner_x_loop
 
+# Code to reset the inner loop once inner body is finished
 h_x_loop_end:
+    # At the end of the x loop, increment y and start the loop again
     incl %edx
     jmp h_outer_y_loop
 
+# Code to run once outer loop is finished
 h_y_loop_end:
     # Restore callee-saved registers
     popq %r15
+    popq %r14
+    popq %r13
     popq %r12
 
     # Aligning stack pointer
@@ -365,23 +464,38 @@ h_y_loop_end:
  * Parameters:
  *   %rdi - pointer to original struct Image
  *   %rsi - pointer to output struct Image
+ * Registers:
+ *   %r12 - callee-saved register to hold original struct Image
+ *   %r13 - callee-saved register to hold image widths and heights
+ *   %r14 - callee-saved register to hold original y value
+ *   %r15 - callee-saved register to hold output struct Image
  */
+
 	.globl imgproc_mirror_v
 imgproc_mirror_v:
+    # Adjust the stack to maintain 16-byte alignment
+    subq $8, %rsp
+
     # Push callee-saved registers
     pushq %r12
     pushq %r13
+    pushq %r14
     pushq %r15
 
-    # Move pointers to the input and output images into callee-saved registers
+    # Move pointer to the input image into %r12 
     movq %rdi, %r12
+
+    # Move pointer to output image into callee-saved registers
     movq %rsi, %r15
 
     # Initialize y counter variable
     movl $0, %edx
 
+# Code to determine whether outer loop should iterate again
 v_outer_y_loop:
-    movl IMAGE_HEIGHT_OFFSET(%r12), %r13d  # Store height in %r13
+    # Store height in %r13d
+    movl IMAGE_HEIGHT_OFFSET(%r12), %r13d  
+
     # Compare y with the total height
     cmpl %r13d, %edx  
 
@@ -392,8 +506,10 @@ v_outer_y_loop:
     movl $0, %esi
 
 v_inner_x_loop:
+    # Update image width in %r13d
+    movl IMAGE_WIDTH_OFFSET(%r12), %r13d  
+
     # Compare x with total width
-    movl IMAGE_WIDTH_OFFSET(%r12), %r13d  # Update width in %r13
     cmpl %r13d, %esi
 
     # If x >= Image width, end the inner loop
@@ -405,40 +521,58 @@ v_inner_x_loop:
     # Move the pixel into the pixel parameter for set_pixel
     movl %eax, %ecx
 
-    # Store the original y value and original input image pointer
+    # Store the original y value in %r14d 
     movl %edx, %r14d
-    movq %rdi, %r11
 
     # Update %edx to hold the inversed height
     movl $0, %edx
-    movl IMAGE_HEIGHT_OFFSET(%r12), %r13d  # Reusing %r13
+
+    # Update image height in %r13d
+    movl IMAGE_HEIGHT_OFFSET(%r12), %r13d 
+
+    # Compute inversed y value by first adding y height
     addl %r13d, %edx
+
+    # Subtract (1 + original_y) from the inversed height
     subl $1, %edx
     subl %r14d, %edx
 
-    # Prepare for the set_pixel call
-    movq %r15, %rdi  # output image pointer
+    # Prepare for the set_pixel call by moving output image in %rdi
+    movq %r15, %rdi  
 
     # Set the pixel at the computed position
     call set_pixel
 
-    # Restore the original y value and original input image pointer
+    # Restore the original y value into %edx 
     movl %r14d, %edx
-    movq %r11, %rdi  # restore input image pointer
+
+    # Restore input image pointer into %rdi
+    movq %r12, %rdi  
 
     # Increment x counter and loop again
     incl %esi
+
+    # Repeat the loop
     jmp v_inner_x_loop
 
+# Describes what to do once the inner loop ends
 v_x_loop_end:
+    # Increae y pixel value by 1
     incl %edx
+
+    # Restart check for outer loop
     jmp v_outer_y_loop
 
+# Describes what to do once the loop ends
 v_y_loop_end:
     # Restore callee-saved registers
     popq %r15
+    popq %r14
     popq %r13
     popq %r12
+
+    # Restore the stack pointer
+    addq $8, %rsp
 
     ret  # return
 
@@ -463,7 +597,7 @@ v_y_loop_end:
  */
 	.globl imgproc_tile
 imgproc_tile:
-	/* TODO: implement (this stub implementation just returns 0) */
+	/* Will be implemented in Assignment 3, right now returns 0 */
 	xorl %eax, %eax
 	ret
 
@@ -476,26 +610,35 @@ imgproc_tile:
  * Parameters:
  *   %rdi - pointer to original struct Image
  *   %rsi - pointer to output struct Image
+
+ * Registers:
+ *   %r10 - Used to hold original x value
+ *   %r11 - Used to hold original y value
+ *   %r13 - callee-saved register to hold image widths and heights 
+ *   %r14 - callee-saved register to hold original struct Image
+ *   %r15 - callee-saved register to hold output struct Image
  */
 	.globl imgproc_grayscale
 imgproc_grayscale:
-
-    # Aligning stack pointer
-    subq $8, %rsp
-
-    # Push callee-saved registers (r14, r15)
+    # Push callee-saved registers (r13, r14, r15)
+    pushq %r13
     pushq %r14
     pushq %r15
 
-    # Move pointers to the input and output images into callee-saved registers
-    movq %rdi, %r14  # %r14 holds the input image pointer
-    movq %rsi, %r15  # %r15 holds the output image pointer
+    # Move input image pointer into %r14 
+    movq %rdi, %r14 
+
+    # Move output image pointer into %r15
+    movq %rsi, %r15
 
     # Initialize y counter variable
     movl $0, %edx
 
+# Outer loop checks to see whether to proceed to go to inner loop
 gray_outer_y_loop:
+    # Store image height into %r13d
     movl IMAGE_HEIGHT_OFFSET(%r14), %r13d
+
     # Compare y with the total height
     cmpl %r13d, %edx  
 
@@ -505,9 +648,12 @@ gray_outer_y_loop:
     # Initialize x counter variable
     movl $0, %esi
 
+# Proceed to the inner loop and execute the body of code
 gray_inner_x_loop:
-    # Compare x with total variable
+    # Storage image width into %r13d
     movl IMAGE_WIDTH_OFFSET(%r14), %r13d
+
+    # Compare x with total width variable
     cmpl %r13d, %esi
 
     # If x >= Image width, end the inner loop
@@ -516,7 +662,10 @@ gray_inner_x_loop:
     # Get pixel of the input image at the current coordinates 
     call get_pixel
 
+    # Move the original y value into %r10d
     movl %edx, %r10d
+
+    # Move the original x value into %r11d
     movl %esi, %r11d
 
     # Move the pixel into the pixel parameter for to_grayscale
@@ -525,34 +674,44 @@ gray_inner_x_loop:
     # Call the to_grayscale function
     call to_grayscale 
 
+    # Move the returned pixel into %ecx for set_pixel
     movl %eax, %ecx
     
     # Add the output image pointer into the input image pointer for set_pixel
     movq %r15, %rdi
 
+    # Restore the original y value
     movl %r10d, %edx
+
+    # Restore the original x value
     movl %r11d, %esi
 
     # Set the pixel at the provided position
     call set_pixel
 
+    # Move the original input value into %rdi
     movq %r14, %rdi
 
     # Increase the x counter and jump in the loop again
     incl %esi
+
+    # Repeat the loop
     jmp gray_inner_x_loop
 
+# Code to execute once the outer loop finishes
 gray_x_loop_end:
+    # Increae the y value by 1
     incl %edx
+
+    # Reset the outer loop 
     jmp gray_outer_y_loop
 
+# Code to execute once the loop ends
 gray_y_loop_end:
     # Pop callee-saved registers
     popq %r15
     popq %r14
-
-    # Aligning stack pointer
-    addq $8, %rsp
+    popq %r13
 
     ret
 
@@ -575,7 +734,7 @@ gray_y_loop_end:
  */
 	.globl imgproc_composite
 imgproc_composite:
-	/* TODO: implement (this stub implementation just returns 0) */
+	/* Will be implemented in Assignment 3, right now returns 0 */
 	xorl %eax, %eax
 	ret
 
