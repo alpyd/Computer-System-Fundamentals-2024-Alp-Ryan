@@ -105,7 +105,7 @@ void test_get_b( TestObjs *objs);
 void test_get_a( TestObjs *objs);
 void test_to_grayscale( TestObjs *objs);
 
-//Assignment 3 Test Functions
+// Assignment 3 Test Functions
 
 // void test_tile_basic( TestObjs *objs );
 // void test_composite_basic( TestObjs *objs );
@@ -141,6 +141,8 @@ int main( int argc, char **argv ) {
   TEST( test_get_b);
   TEST( test_get_a);
   TEST( test_to_grayscale);
+
+  // Assignment 3 Test Functions Commented Out
 
   // TEST( test_tile_basic );
   // TEST( test_composite_basic );
@@ -586,6 +588,9 @@ void test_to_grayscale( TestObjs *objs) {
   ASSERT(get_a(gray_pixel) == 0x00);  //alpha should remain the same
 
 }
+
+// Assignment 3 Test Functions Commented Out
+
 
 // void test_composite_basic( TestObjs *objs ) {
 //   imgproc_composite( objs->smiley, objs->overlay, objs->smiley_out );
