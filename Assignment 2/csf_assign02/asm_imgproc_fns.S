@@ -31,9 +31,6 @@
 
 make_pixel:
 
-# Adjust the stack to maintain 16-byte alignment
-subq $8, %rsp
-
 movl %edi, %eax  # place r into temp register
 shll $24, %eax    # left shift r by 24
 shll $16, %esi    # left shift g by 16
@@ -42,9 +39,6 @@ shll $8, %edx     # left shift b by 8
 or %esi, %eax    # store (r << 24) | (g << 16) in %eax
 or %edx, %eax    # store (r << 24) | (g << 16) | (b << 8) in %eax
 or %ecx, %eax    # or with a to get final result
-
-# Restore the stack pointer
-addq $8, %rsp
 
 ret
 
