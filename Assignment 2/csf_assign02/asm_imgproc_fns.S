@@ -277,6 +277,10 @@ ret                         # return %eax
  */
 	.globl imgproc_mirror_h
 imgproc_mirror_h:
+
+    # Aligning stack pointer
+    subq $8, %rsp
+
     # Push callee-saved registers
     pushq %r12
     pushq %r15
@@ -347,34 +351,11 @@ h_y_loop_end:
     popq %r15
     popq %r12
 
+    # Aligning stack pointer
+    addq $8, %rsp
     ret  # return
 
     
-
-	/*
-     * Register Use:
- * uint32_t get_pixel(struct Image *img, int32_t x, int32_t y);
- * 
- * Register Use:
- *   %rdi - pointer to struct Image
- *   %esi - x coordinate (int32_t)
- *   %edx - y coordinate (int32_t)
- * 	 %r10 - Used to compute the pixel index
- *   %eax - pixel value to return
- *
-
-  * void set_pixel(struct Image *img, int32_t x, int32_t y, uint32_t pixel) 
- *   img->data[y * img->width + x] = pixel;
- *
- * Register Use:
- *  %rdi - pointer to struct Image (input_img)
- *  %esi - x coordinate (int32_t)
- *  %edx - y coordinate (int32_t)
- *  %ecx - pixel parameter
- *  %eax - hold pixel value
- *  %r10 - used for index computation (y * width + x)
-    */
-
 /*
  * void imgproc_mirror_v( struct Image *input_img, struct Image *output_img );
  *
@@ -498,6 +479,10 @@ imgproc_tile:
  */
 	.globl imgproc_grayscale
 imgproc_grayscale:
+
+    # Aligning stack pointer
+    subq $8, %rsp
+
     # Push callee-saved registers (r14, r15)
     pushq %r14
     pushq %r15
@@ -565,6 +550,9 @@ gray_y_loop_end:
     # Pop callee-saved registers
     popq %r15
     popq %r14
+
+    # Aligning stack pointer
+    addq $8, %rsp
 
     ret
 
