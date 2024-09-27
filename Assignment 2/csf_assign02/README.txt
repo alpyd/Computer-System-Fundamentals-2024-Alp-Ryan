@@ -10,5 +10,3 @@ Ryan worked on implementing the to_grayscale, make_pixel, set_pixel, get_r, get_
 
 An interesting implementation this project used was to copy all of the C lines of code and then translate their implementation in Assembly. After each line had been translated, then registers were updated to ensure that the code chunks worked cohesively.
 This approach helped overcome the challenges of writing code in Assembly.
-
-Additionally, we were unsure whether or not to leave unused unit tests for the tile and composite functions commented in the test file. This submission removes those tests to not incur style deductions, but a full file can also be submitted upon request.
