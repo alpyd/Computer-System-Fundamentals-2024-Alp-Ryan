@@ -9,6 +9,269 @@
 #define IMAGE_HEIGHT_OFFSET  4
 #define IMAGE_DATA_OFFSET    8
 
+
+/* Returns 1 if all tiles nonempty(true), 0 if any tiles would be empty (false)
+
+    Arguments:
+      - rdi: width (int)
+      - rsi: height (int)
+      - rdx: n (int)
+
+    Return:
+      - eax: 1 if all tiles are non-empty (true), 0 if any tiles would be empty (false)
+
+    Registers:
+      - rdi: width (input)
+      - rsi: height (input)
+      - rdx: n (input, divisor)
+      - eax: stores result of division and final return value
+      - edx: used for sign-extension of eax during division
+      - r9d: backup for n (divisor)
+      - r10d: stores width / n result
+      - r11d: stores height / n result
+*/
+
+.globl all_tiles_nonempty
+all_tiles_nonempty:
+
+# Align stack pointer (good style)
+subq $8, %rsp
+
+# If n == 0, return 0 (false)
+cmpl $0, %edx     # Test if %edx (n) is zero
+je .LFalseCondition  # If zero, jump to false condition
+
+# Save n to the stack (since %edx will be overwritten by cdq)
+movl %edx, %r9d      # Save the divisor n in %r9d
+
+# place width in eax for division
+movl %edi, %eax      # Move width to %eax (32-bit register)
+cdq                  # Sign-extend %eax into %edx for signed division
+
+# width / n
+idivl %r9d           # Signed division of %edx:%eax by %r9d (n)
+
+# store width / n
+movl %eax, %r10d     # Store result of width / n in %r10d
+
+# place height in eax for division
+movl %esi, %eax      # Move height to %eax (32-bit register)
+cdq                  # Sign-extend %eax into %edx for signed division
+
+# height / n
+idivl %r9d           # Signed division of %edx:%eax by %r9d (n)
+
+# store height / n
+movl %eax, %r11d     # Store result of height / n in %r11d
+
+# is width / n <= 0?
+cmpl $0, %r10d   # Test if width / n is zero or less
+jle .LFalseCondition # Jump if less than or equal to 0 (signed comparison)
+
+# is height / n <= 0?
+cmpl $0, %r11d   # Test if height / n is zero or less
+jle .LFalseCondition # Jump if less than or equal to 0 (signed comparison)
+
+# True case, place 1 in return reg
+movl $1, %eax
+jmp .Lreturn         # Jump to return
+
+.LFalseCondition:
+# False case, place 0 in return reg
+movl $0, %eax
+
+.Lreturn:
+# Restore stack pointer (good style)
+addq $8, %rsp
+ret
+
+
+/*
+// Returns:
+//   1 if an offset is necessary and 0 if an offset is not required
+
+int determine_tile_x_offset( int width, int n, int tile_col ){
+  //See how many pixels in the width cannot be split equally
+  // and then see if the tile column index makes it eligible
+  int remainder = width % n;
+  if(tile_col < remainder){
+    return 1;
+  } else {
+    return 0;
+  }
+} */
+
+.globl determine_tile_x_offset
+determine_tile_x_offset:
+
+# Arguments: width = %rdi, n = %rsi, tile_col = %rdx
+
+# Push callee-saved register
+pushq %r12         # Save the 64-bit register
+
+# Store tile_col in r12d
+movl %edx, %r12d
+
+# If n == 0, cannot divide by 0
+cmpl $0, %esi     # Test if %esi (n) is zero
+je .LnoXOffset  # If zero, jump to false condition
+
+# Move width into eax for division
+movl %edi, %eax
+
+# Clear edx for unsigned division
+xorl %edx, %edx    # Clear %edx
+
+# Divide width by n
+divl %esi          # Unsigned divide eax by n (%esi)
+
+# Quotient will be in %eax, remainder in %edx
+
+# Now, the remainder (width % n) is in %edx
+movl %edx, %r10d   # Store remainder in r10d
+
+# If tile_col (r12d) >= remainder, go to else
+cmpl %r10d, %r12d
+jge .LnoXOffset
+
+# If tile_col < remainder, return 1
+movl $1, %eax
+jmp .LendOfCode
+
+.LnoXOffset:
+movl $0, %eax
+
+.LendOfCode:
+popq %r12          # Restore saved register
+ret                # Return to caller
+
+
+/*
+// Returns:
+//   1 if an offset is necessary and 0 if an offset is not required
+
+int determine_tile_y_offset( int height, int n, int tile_row ){
+  // See how many pixels in the height cannot be split equally
+  // and then see if the tile row index makes it eligible
+  int remainder = height % n;
+  if(tile_row < remainder){
+    return 1;
+  } else {
+    return 0;
+  }
+} */
+
+.globl determine_tile_y_offset
+determine_tile_y_offset:
+
+# Arguments: height = %rdi, n = %rsi, tile_col = %rdx
+
+# Push callee-saved register
+pushq %r12         # Save the 64-bit register
+
+# Store tile_col in r12d
+movl %edx, %r12d
+
+# If n == 0, cannot divide by 0
+cmpl $0, %esi     # Test if %esi (n) is zero
+je .LnoYOffset  # If zero, jump to false condition
+
+# Move height into eax for division
+movl %edi, %eax
+
+# Clear edx for unsigned division
+xorl %edx, %edx    # Clear %edx
+
+# Divide height by n
+divl %esi          # Unsigned divide eax by n (%esi)
+
+# Quotient will be in %eax, remainder in %edx
+
+# Now, the remainder (height % n) is in %edx
+movl %edx, %r10d   # Store remainder in r10d
+
+# If tile_col (r12d) >= remainder, go to else
+cmpl %r10d, %r12d
+jge .LnoYOffset
+
+# If tile_col < remainder, return 1
+movl $1, %eax
+jmp .LreturnOffset
+
+.LnoYOffset:
+movl $0, %eax
+
+.LreturnOffset:
+popq %r12          # Restore saved register
+ret                # Return to caller
+
+
+/*
+// Returns:
+//   The tile width for the specific tile column index
+
+int determine_tile_w( int width, int n, int tile_col ){
+  //Returns the amount of pixels to split equally in
+  //addition to whether or not there is a pixel offset.
+  return width/n + determine_tile_x_offset(width, n, tile_col);
+}
+*/
+.globl determine_tile_w
+determine_tile_w:
+
+# Stack alignment
+subq $8, %rsp
+
+# Store total sum in %r12 callee-saved register
+pushq %r12
+
+# Save tile_col in callee-saved register
+pushq %r14
+movl %edx, %r14d  # Move tile_col into r14d
+
+# If n == 0, return 0 (false)
+cmpl $0, %esi     # Test if n is zero
+je .LnEqualsZero   # If zero, jump to false condition
+
+# place width in eax for division
+movl %edi, %eax    # Move width to %eax
+cdq                # Sign-extend %eax into %edx for signed division
+
+# width / n
+idivl %esi         # Signed division of %edx:%eax by %esi (n)
+
+# store width / n in %r12d
+movl %eax, %r12d
+
+# Call determine_tile_x_offset
+movl %edi, %edi    # width
+movl %esi, %esi    # n
+movl %r14d, %edx   # tile_col
+call determine_tile_x_offset
+
+# Add result from function call to sum
+addl %eax, %r12d
+
+# Move total into %eax for return
+movl %r12d, %eax  
+
+# Skip to end to return sum
+jmp .LreturnWidth
+
+.LnEqualsZero:
+movl $0, %eax      # If n is zero, return 0
+
+.LreturnWidth:
+# Restore callee-saved registers
+popq %r14          
+popq %r12          
+
+# Stack alignment
+addq $8, %rsp
+
+ret
+
+
 /*
  * uint32_t make_pixel(uint32_t r, uint32_t g, uint32_t b, uint32_t a) 
  * return (r << 24) | (g << 16) | (b << 8) | a;

@@ -109,10 +109,10 @@ void test_to_grayscale( TestObjs *objs);
 
 // void test_tile_basic( TestObjs *objs );
 // void test_composite_basic( TestObjs *objs );
-// void test_all_tiles_nonempty( TestObjs *objs);
-// void test_determine_tile_x_offset( TestObjs *objs);
-// void test_determine_tile_y_offset( TestObjs *objs);
-// void test_determine_tile_w( TestObjs *objs);
+void test_all_tiles_nonempty( TestObjs *objs);
+void test_determine_tile_x_offset( TestObjs *objs);
+void test_determine_tile_y_offset( TestObjs *objs);
+void test_determine_tile_w( TestObjs *objs);
 // void test_determine_tile_h( TestObjs *objs);
 // void test_copy_tile( TestObjs *objs);
 // void test_blend_components( TestObjs *objs);
@@ -146,10 +146,10 @@ int main( int argc, char **argv ) {
 
   // TEST( test_tile_basic );
   // TEST( test_composite_basic );
-  // TEST( test_all_tiles_nonempty );
-  // TEST( test_determine_tile_x_offset);
-  // TEST( test_determine_tile_y_offset);
-  // TEST( test_determine_tile_w);
+  TEST( test_all_tiles_nonempty );
+  TEST( test_determine_tile_x_offset);
+  TEST( test_determine_tile_y_offset);
+  TEST( test_determine_tile_w);
   // TEST( test_determine_tile_h);
   // TEST( test_copy_tile);
   // TEST( test_blend_components);
@@ -791,114 +791,116 @@ void test_to_grayscale( TestObjs *objs) {
 // }
 
 
-// void test_all_tiles_nonempty(TestObjs *objs) {
+void test_all_tiles_nonempty(TestObjs *objs) {
 
-//   //same width and height, valid tiling factor
-//   ASSERT(all_tiles_nonempty(16, 16, 2) == 1);
+   //same width and height, valid tiling factor
+   ASSERT(all_tiles_nonempty(16, 16, 2) == 1);
 
-//   //tiling factor fails for both height/width
-//   ASSERT(all_tiles_nonempty(16, 16, 17) == 0);
+   //tiling factor fails for both height/width
+   ASSERT(all_tiles_nonempty(16, 16, 17) == 0);
 
-//   //tiling factor fails for height only
-//   ASSERT(all_tiles_nonempty(20, 10, 11) == 0);
+   //tiling factor fails for height only
+   ASSERT(all_tiles_nonempty(20, 10, 11) == 0);
 
-//   //tiling factor fails for width only
-//   ASSERT(all_tiles_nonempty(12, 15, 15) == 0);
+   //tiling factor fails for width only
+   ASSERT(all_tiles_nonempty(12, 15, 15) == 0);
 
-// }
+ }
 
-// void test_determine_tile_x_offset(TestObjs *objs) {
+void test_determine_tile_x_offset(TestObjs *objs) {
 
-//   //width is perfectly divisible by n (no remainder)
-//   ASSERT(determine_tile_x_offset(16, 4, 0) == 0); // 16 % 4 = 0, no remainder
-//   ASSERT(determine_tile_x_offset(16, 4, 3) == 0); // 16 % 4 = 0, no remainder
+   // width is perfectly divisible by n (no remainder)
+   ASSERT(determine_tile_x_offset(16, 4, 0) == 0); // 16 % 4 = 0, no remainder
+   ASSERT(determine_tile_x_offset(16, 4, 3) == 0); // 16 % 4 = 0, no remainder
 
-//   //tile_col is less than the remainder
-//   ASSERT(determine_tile_x_offset(17, 4, 0) == 1); // 17 % 4 = 1, tile_col < remainder
-//   ASSERT(determine_tile_x_offset(18, 5, 1) == 1); // 18 % 5 = 3, tile_col < remainder
+   // tile_col is less than the remainder
+   ASSERT(determine_tile_x_offset(17, 4, 0) == 1); // 17 % 4 = 1, tile_col < remainder
+   ASSERT(determine_tile_x_offset(18, 5, 1) == 1); // 18 % 5 = 3, tile_col < remainder
 
-//   //tile_col is equal to or greater than the remainder
-//   ASSERT(determine_tile_x_offset(17, 4, 1) == 0); // 17 % 4 = 1, tile_col == remainder
-//   ASSERT(determine_tile_x_offset(18, 5, 3) == 0); // 18 % 5 = 3, tile_col == remainder
+   // tile_col is equal to or greater than the remainder
+   ASSERT(determine_tile_x_offset(17, 4, 1) == 0); // 17 % 4 = 1, tile_col == remainder
+   ASSERT(determine_tile_x_offset(18, 5, 3) == 0); // 18 % 5 = 3, tile_col == remainder
 
-//   // Edge case: width smaller than n
-//   ASSERT(determine_tile_x_offset(3, 4, 0) == 1); // 3 % 4 = 3, tile_col < remainder
+   // Edge case: width smaller than n
+   ASSERT(determine_tile_x_offset(3, 4, 0) == 1); // 3 % 4 = 3, tile_col < remainder
 
-//   // Special case: width is 0
-//   ASSERT(determine_tile_x_offset(0, 4, 0) == 0); // 0 % 4 = 0, no remainder
+   // Special case: width is 0
+   ASSERT(determine_tile_x_offset(0, 4, 0) == 0); // 0 % 4 = 0, no remainder
 
-//   int res_1 = determine_tile_x_offset(4, 2, 1);
-//   ASSERT(res_1 == 0);
-//   int res_2 = determine_tile_x_offset(5, 2, 0);
-//   ASSERT(res_2 == 1);
-//   int res_3 = determine_tile_x_offset(5, 2, 1);
-//   ASSERT(res_3 == 0);
-//   int res_4 = determine_tile_x_offset(0, 6, 0);
-//   ASSERT(res_4 == 0);
-//   int res_5 = determine_tile_x_offset(48, 7, 6);
-//   ASSERT(res_5 == 0);
-//   for(int i = 0; i < 6; i++){
-//     int res_6 = determine_tile_x_offset(48, 7, i);
-//     ASSERT(res_6 == 1);
-//   }
+   int res_1 = determine_tile_x_offset(4, 2, 1);
+   ASSERT(res_1 == 0);
+   int res_2 = determine_tile_x_offset(5, 2, 0);
+   ASSERT(res_2 == 1);
+   int res_3 = determine_tile_x_offset(5, 2, 1);
+   ASSERT(res_3 == 0);
+   int res_4 = determine_tile_x_offset(0, 6, 0);
+   ASSERT(res_4 == 0);
+   int res_5 = determine_tile_x_offset(48, 7, 6);
+   ASSERT(res_5 == 0);
+   for(int i = 0; i < 6; i++){
+     int res_6 = determine_tile_x_offset(48, 7, i);
+     ASSERT(res_6 == 1);
+   }
 
-// }
+}
 
-// void  test_determine_tile_y_offset(TestObjs *objs) {
+void test_determine_tile_y_offset(TestObjs *objs) {
 
-// //height is perfectly divisible by n (no remainder)
-// ASSERT(determine_tile_y_offset(16, 4, 0) == 0); // 16 % 4 = 0, no remainder
-// ASSERT(determine_tile_y_offset(16, 4, 3) == 0); // 16 % 4 = 0, no remainder
+// height is perfectly divisible by n (no remainder)
+ASSERT(determine_tile_y_offset(16, 4, 0) == 0); // 16 % 4 = 0, no remainder
+ASSERT(determine_tile_y_offset(16, 4, 3) == 0); // 16 % 4 = 0, no remainder
 
-// //tile_row is less than the remainder
-// ASSERT(determine_tile_y_offset(17, 4, 0) == 1); // 17 % 4 = 1, tile_row < remainder
-// ASSERT(determine_tile_y_offset(18, 5, 1) == 1); // 18 % 5 = 3, tile_row < remainder
+// tile_row is less than the remainder
+ASSERT(determine_tile_y_offset(17, 4, 0) == 1); // 17 % 4 = 1, tile_row < remainder
+ASSERT(determine_tile_y_offset(18, 5, 1) == 1); // 18 % 5 = 3, tile_row < remainder
 
-// //tile_row is equal to or greater than the remainder
-// ASSERT(determine_tile_y_offset(17, 4, 1) == 0); // 17 % 4 = 1, tile_row == remainder
-// ASSERT(determine_tile_y_offset(18, 5, 3) == 0); // 18 % 5 = 3, tile_row == remainder
+// tile_row is equal to or greater than the remainder
+ASSERT(determine_tile_y_offset(17, 4, 1) == 0); // 17 % 4 = 1, tile_row == remainder
+ASSERT(determine_tile_y_offset(18, 5, 3) == 0); // 18 % 5 = 3, tile_row == remainder
 
-// //Edge case: height smaller than n
-// ASSERT(determine_tile_y_offset(3, 4, 0) == 1); // 3 % 4 = 3, tile_row < remainder
+// Edge case: height smaller than n
+ASSERT(determine_tile_y_offset(3, 4, 0) == 1); // 3 % 4 = 3, tile_row < remainder
 
-// //Special case: height is 0
-// ASSERT(determine_tile_y_offset(0, 4, 0) == 0); // 0 % 4 = 0, no remainder
+// Special case: height is 0
+ASSERT(determine_tile_y_offset(0, 4, 0) == 0); // 0 % 4 = 0, no remainder
 
-// }
+}
 
-// void test_determine_tile_w(TestObjs *objs){
-//   //Test 0 width case; n = 0 is not tested because tile already returns 0 for this case
-//   ASSERT(determine_tile_w(0, 4, 2) == 0);
-//   ASSERT(determine_tile_w(0, 1, 0) == 0);
 
-//   //Test width = 1 case and not enough values in width
-//   ASSERT(determine_tile_w(1, 4, 0) == 1);
-//   ASSERT(determine_tile_w(1, 4, 2) == 0);
+void test_determine_tile_w(TestObjs *objs) {
+  // Test 0 width case; n = 0 is not tested because tile already returns 0 for this case
+  ASSERT(determine_tile_w(0, 4, 2) == 0);
+  ASSERT(determine_tile_w(0, 1, 0) == 0);
 
-//   //Test even width distributed across n
-//   for(int i = 0; i < 7; i++){
-//     ASSERT(determine_tile_w(42, 7, i) == 6);
-//   }
-//   for(int i = 0; i < 100; i++){
-//     ASSERT(determine_tile_w(10000, 100, i) == 100);
-//   }
-//   for(int i = 0; i < 10000; i++){
-//     ASSERT(determine_tile_w(10000, 10000, i) == 1);
-//   }
+  // Test width = 1 case and not enough values in width
+  ASSERT(determine_tile_w(1, 4, 0) == 1);
+  ASSERT(determine_tile_w(1, 4, 2) == 0);
 
-//   //Test uneven width distribution across n
-//   for(int i = 0; i < 6; i++){
-//     ASSERT(determine_tile_w(48, 7, i) == 7);
-//   }
-//   ASSERT(determine_tile_w(48, 7, 6) == 6);
+  // Test even width distributed across n
+  for (int i = 0; i < 7; i++) {
+    ASSERT(determine_tile_w(42, 7, i) == 6);
+  }
+  for (int i = 0; i < 100; i++) {
+    ASSERT(determine_tile_w(10000, 100, i) == 100);
+  }
+  for (int i = 0; i < 10000; i++) {
+    ASSERT(determine_tile_w(10000, 10000, i) == 1);
+  }
 
-//   for(int i = 0; i < 8; i++){
-//     ASSERT(determine_tile_w(177, 13, i) == 14);
-//   }
-//   for(int i = 8; i < 13; i++){
-//     ASSERT(determine_tile_w(177, 13, i) == 13);
-//   }
-// }
+  // Test uneven width distribution across n
+  for (int i = 0; i < 6; i++) {
+    ASSERT(determine_tile_w(48, 7, i) == 7);
+  }
+  ASSERT(determine_tile_w(48, 7, 6) == 6);
+
+  for (int i = 0; i < 8; i++) {
+    ASSERT(determine_tile_w(177, 13, i) == 14);
+  }
+  for (int i = 8; i < 13; i++) {
+    ASSERT(determine_tile_w(177, 13, i) == 13);
+  }
+}
+
 
 // void test_determine_tile_h(TestObjs *objs){
 //     //Test 0 height case; n = 0 is not tested because tile already returns 0 for this case
