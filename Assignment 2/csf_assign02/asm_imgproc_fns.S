@@ -273,7 +273,6 @@ ret
 
 /*
  *
-
 int determine_tile_h(int height, int n, int tile_row ){
   return height/n + determine_tile_y_offset(height, n, tile_row);
 } 
