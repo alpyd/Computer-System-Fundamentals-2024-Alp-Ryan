@@ -113,7 +113,7 @@ void test_all_tiles_nonempty( TestObjs *objs);
 void test_determine_tile_x_offset( TestObjs *objs);
 void test_determine_tile_y_offset( TestObjs *objs);
 void test_determine_tile_w( TestObjs *objs);
-// void test_determine_tile_h( TestObjs *objs);
+void test_determine_tile_h( TestObjs *objs);
 // void test_copy_tile( TestObjs *objs);
 // void test_blend_components( TestObjs *objs);
 // void test_blend_colors( TestObjs *objs);
@@ -150,7 +150,7 @@ int main( int argc, char **argv ) {
   TEST( test_determine_tile_x_offset);
   TEST( test_determine_tile_y_offset);
   TEST( test_determine_tile_w);
-  // TEST( test_determine_tile_h);
+  TEST( test_determine_tile_h);
   // TEST( test_copy_tile);
   // TEST( test_blend_components);
   // TEST( test_blend_colors);
@@ -902,36 +902,36 @@ void test_determine_tile_w(TestObjs *objs) {
 }
 
 
-// void test_determine_tile_h(TestObjs *objs){
-//     //Test 0 height case; n = 0 is not tested because tile already returns 0 for this case
-//   ASSERT(determine_tile_h(0, 4, 2) == 0);
-//   ASSERT(determine_tile_h(0, 1, 0) == 0);
+ void test_determine_tile_h(TestObjs *objs){
+   //Test 0 height case; n = 0 is not tested because tile already returns 0 for this case
+   ASSERT(determine_tile_h(0, 4, 2) == 0);
+   ASSERT(determine_tile_h(0, 1, 0) == 0);
 
-//   //Test height = 1 case and not enough values in height
-//   ASSERT(determine_tile_h(1, 4, 0) == 1);
-//   ASSERT(determine_tile_h(1, 4, 2) == 0);
+   //Test height = 1 case and not enough values in height
+   ASSERT(determine_tile_h(1, 4, 0) == 1);
+   ASSERT(determine_tile_h(1, 4, 2) == 0);
 
-//   //Test even height distributed across n
-//   for(int i = 0; i < 7; i++){
-//     ASSERT(determine_tile_h(42, 7, i) == 6);
-//   }
-//   for(int i = 0; i < 100; i++){
-//     ASSERT(determine_tile_h(10000, 100, i) == 100);
-//   }
-//   for(int i = 0; i < 10000; i++){
-//     ASSERT(determine_tile_h(10000, 10000, i) == 1);
-//   }
+  //Test even height distributed across n
+   for(int i = 0; i < 7; i++){
+     ASSERT(determine_tile_h(42, 7, i) == 6);
+   }
+   for(int i = 0; i < 100; i++){
+     ASSERT(determine_tile_h(10000, 100, i) == 100);
+   }
+   for(int i = 0; i < 10000; i++){
+     ASSERT(determine_tile_h(10000, 10000, i) == 1);
+   }
 
-//   //Test uneven height distribution across n
-//   for(int i = 0; i < 6; i++){
-//     ASSERT(determine_tile_h(48, 7, i) == 7);
-//   }
-//   ASSERT(determine_tile_h(48, 7, 6) == 6);
+  //Test uneven height distribution across n
+   for(int i = 0; i < 6; i++){
+    ASSERT(determine_tile_h(48, 7, i) == 7);
+   }
+  ASSERT(determine_tile_h(48, 7, 6) == 6);
 
-//   for(int i = 0; i < 8; i++){
-//     ASSERT(determine_tile_h(177, 13, i) == 14);
-//   }
-//   for(int i = 8; i < 13; i++){
-//     ASSERT(determine_tile_h(177, 13, i) == 13);
-//   }
-// }
+   for(int i = 0; i < 8; i++){
+     ASSERT(determine_tile_h(177, 13, i) == 14);
+   }
+   for(int i = 8; i < 13; i++){
+     ASSERT(determine_tile_h(177, 13, i) == 13);
+   }
+ }

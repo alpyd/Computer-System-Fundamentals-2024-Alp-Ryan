@@ -268,9 +268,69 @@ popq %r12
 
 # Stack alignment
 addq $8, %rsp
-
 ret
 
+
+/*
+ *
+
+int determine_tile_h(int height, int n, int tile_row ){
+  return height/n + determine_tile_y_offset(height, n, tile_row);
+} 
+*/
+.globl determine_tile_h
+determine_tile_h:
+
+# Stack alignment
+subq $8, %rsp
+
+# Store total sum in %r12 callee-saved register
+pushq %r12
+
+# Save tile_row in callee-saved register
+pushq %r14
+movl %edx, %r14d  # Move tile_row into r14d
+
+# If n == 0, return 0 (false)
+cmpl $0, %esi     # Test if n is zero
+je .LnEqualZero   # If zero, jump to false condition
+
+# place height in eax for division
+movl %edi, %eax    # Move height to %eax
+cdq                # Sign-extend %eax into %edx for signed division
+
+# height / n
+idivl %esi         # Signed division of %edx:%eax by %esi (n)
+
+# store height / n in %r12d
+movl %eax, %r12d
+
+# Call determine_tile_y_offset
+movl %edi, %edi    # height
+movl %esi, %esi    # n
+movl %r14d, %edx   # tile_row
+call determine_tile_y_offset
+
+# Add result from function call to sum
+addl %eax, %r12d
+
+# Move total into %eax for return
+movl %r12d, %eax  
+
+# Skip to end to return sum
+jmp .LreturnHeight
+
+.LnEqualZero:
+movl $0, %eax      # If n is zero, return 0
+
+.LreturnHeight:
+# Restore callee-saved registers
+popq %r14          
+popq %r12          
+
+# Stack alignment
+addq $8, %rsp
+ret
 
 /*
  * uint32_t make_pixel(uint32_t r, uint32_t g, uint32_t b, uint32_t a) 
