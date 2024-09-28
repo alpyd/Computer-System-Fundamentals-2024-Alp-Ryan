@@ -115,7 +115,7 @@ void test_determine_tile_y_offset( TestObjs *objs);
 void test_determine_tile_w( TestObjs *objs);
 void test_determine_tile_h( TestObjs *objs);
 // void test_copy_tile( TestObjs *objs);
-// void test_blend_components( TestObjs *objs);
+void test_blend_components( TestObjs *objs);
 // void test_blend_colors( TestObjs *objs);
 
 int main( int argc, char **argv ) {
@@ -152,7 +152,7 @@ int main( int argc, char **argv ) {
   TEST( test_determine_tile_w);
   TEST( test_determine_tile_h);
   // TEST( test_copy_tile);
-  // TEST( test_blend_components);
+  TEST( test_blend_components);
   // TEST( test_blend_colors);
 
   TEST_FINI();
@@ -702,32 +702,33 @@ void test_to_grayscale( TestObjs *objs) {
 //   destroy_img( copy_odd_output_n3 );
 // }
 
-// void test_blend_components( TestObjs *objs) {
-//   //Ensure that 0 pixel returns 0 for both
-//   ASSERT(blend_components(0, 0, 0) == 0);
-//   ASSERT(blend_components(0, 0, 255) == 0);
+ void test_blend_components( TestObjs *objs) {
+   
+   //Ensure that 0 pixel returns 0 for both
+   ASSERT(blend_components(0, 0, 0) == 0);
+   ASSERT(blend_components(0, 0, 255) == 0);
 
-//   //Ensure that the foreground replaces the background if it is opaque
-//   ASSERT(blend_components(255, 0, 255) == 255);
-//   //Ensure that the foreground does n ot replace the background if it is fully transparent
-//   ASSERT(blend_components(255, 0, 0) == 0);
+   //Ensure that the foreground replaces the background if it is opaque
+   ASSERT(blend_components(255, 0, 255) == 255);
+   //Ensure that the foreground does n ot replace the background if it is fully transparent
+  ASSERT(blend_components(255, 0, 0) == 0);
 
-//   //Ensure that the values are halved when a max intensity and min intensity are blended
-//   ASSERT(blend_components(255, 0, 128) == 128);
-//   ASSERT(blend_components(0, 255, 128) == 127);
+   //Ensure that the values are halved when a max intensity and min intensity are blended
+   ASSERT(blend_components(255, 0, 128) == 128);
+   ASSERT(blend_components(0, 255, 128) == 127);
 
-//   // Test random values to ensure that the formula works as intended  
-//   ASSERT(blend_components(168, 84, 194) == 147);
-//   ASSERT(blend_components(100, 200, 200) == 121);
-//   ASSERT(blend_components(100, 200, 50) == 180);
-//   ASSERT(blend_components(100, 133, 68) == 124);
-//   ASSERT(blend_components(150, 150, 128) == 150);
-//   ASSERT(blend_components(50, 180, 255) == 50);
-//   ASSERT(blend_components(255, 255, 128) == 255);
-//   ASSERT(blend_components(10, 240, 200) == 59);
-//   ASSERT(blend_components(37, 119, 166) == 65);
-//   ASSERT(blend_components(88, 234, 100) == 176);
-// }
+   // Test random values to ensure that the formula works as intended  
+   ASSERT(blend_components(168, 84, 194) == 147);
+   ASSERT(blend_components(100, 200, 200) == 121);
+   ASSERT(blend_components(100, 200, 50) == 180);
+   ASSERT(blend_components(100, 133, 68) == 124);
+   ASSERT(blend_components(150, 150, 128) == 150);
+   ASSERT(blend_components(50, 180, 255) == 50);
+   ASSERT(blend_components(255, 255, 128) == 255);
+   ASSERT(blend_components(10, 240, 200) == 59);
+   ASSERT(blend_components(37, 119, 166) == 65);
+   ASSERT(blend_components(88, 234, 100) == 176);
+ }
 
 // void test_blend_colors( TestObjs *objs) {
 //   uint32_t black_opaque = make_pixel(0, 0, 0, 255);

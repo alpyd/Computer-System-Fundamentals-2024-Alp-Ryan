@@ -332,6 +332,73 @@ addq $8, %rsp
 ret
 
 /*
+uint32_t blend_components( uint32_t fg, uint32_t bg, uint32_t alpha ) {
+  return (alpha * fg + (255 - alpha) * bg) / 255; //computation for new color component
+}
+*/
+.globl blend_components
+blend_components:
+
+    # Arguments: %rdi = fg, %rsi = bg, %rdx = alpha
+    # alpha * fg
+    movl    %edx, %eax         # Move alpha into %eax
+    imull   %edi, %eax         # Multiply alpha * fg, result in %eax
+
+    # (255 - alpha) * bg
+    movl    $255, %ecx         # Load 255 into %ecx
+    subl    %edx, %ecx         # Compute 255 - alpha, store in %ecx
+    imull   %esi, %ecx         # Multiply (255 - alpha) * bg, result in %ecx
+
+    # (alpha * fg + (255 - alpha) * bg)
+    addl    %ecx, %eax         # Add (alpha * fg) + ((255 - alpha) * bg)
+
+    # Divide by 255
+    xorl    %edx, %edx         # Clear %edx before division
+    movl    $255, %ecx         # Move 255 into %ecx for division
+    divl    %ecx               # Divide by 255, quotient in %eax
+    ret                        # Return result in %eax
+
+
+
+
+/*
+uint32_t blend_colors( uint32_t fg, uint32_t bg ) {
+  uint32_t fg_r = get_r(fg);
+  uint32_t fg_g = get_g(fg);
+  uint32_t fg_b = get_b(fg);
+  uint32_t fg_a = get_a(fg);  // alpha value for blending
+
+  uint32_t bg_r = get_r(bg);
+  uint32_t bg_g = get_g(bg);
+  uint32_t bg_b = get_b(bg);
+
+  // Blend each color component using the foreground alpha
+  uint32_t blended_r = blend_components(fg_r, bg_r, fg_a);
+  uint32_t blended_g = blend_components(fg_g, bg_g, fg_a);
+  uint32_t blended_b = blend_components(fg_b, bg_b, fg_a);
+
+  // return new pixel w/ alpha 255 (fully opaque)
+  return make_pixel(blended_r, blended_g, blended_b, 255);
+} */
+.globl blend_colors
+blend_colors:
+
+# Arguments: %rdi = fg, %rsi = bg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
  * uint32_t make_pixel(uint32_t r, uint32_t g, uint32_t b, uint32_t a) 
  * return (r << 24) | (g << 16) | (b << 8) | a;
  * 
@@ -356,6 +423,7 @@ or %edx, %eax    # store (r << 24) | (g << 16) | (b << 8) in %eax
 or %ecx, %eax    # or with a to get final result
 
 ret
+
 
 /*
  * uint32_t get_pixel(struct Image *img, int32_t x, int32_t y);
