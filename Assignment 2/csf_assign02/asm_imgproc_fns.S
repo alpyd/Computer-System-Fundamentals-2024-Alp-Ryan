@@ -987,9 +987,108 @@ v_y_loop_end:
  */
 	.globl imgproc_tile
 imgproc_tile:
-	/* Will be implemented in Assignment 3, right now returns 0 */
-	xorl %eax, %eax
+  subq $8, %rsp
+  pushq %r12
+  pushq %r13
+  pushq %r14
+  pushq %r15
+
+	cmpl $1, %esi
+  jl returnFalse
+
+  movq %rdi, %r12
+  movl %esi, %r13d
+  movq %rdx, %r14
+
+  movl IMAGE_WIDTH_OFFSET(%r12), %edi
+  movl IMAGE_HEIGHT_OFFSET(%r12), %esi
+  movl %esi, %edx
+
+  call all_tiles_nonempty
+
+  cmpl $0, %eax
+  je returnFalse
+
+  # Might not need these two
+  movq %r14, %rdi
+  movq %r12, %rsi
+
+  movl %r13d, %r8d
+
+  # Initialize row counter at 0
+  movl $0, %r13d 
+
+
+tile_outer_r_loop:
+  # Compare r with the tiling factor
+  cmpl %r8d, %r13d  
+
+  # If r >= n, end the outer loop
+  jae returnTrue
+
+  # Initialize column counter at 0
+  movl $0, %r15d
+
+tile_inner_c_loop:
+  # Compare c with tiling factor 
+  cmpl %r8d, %r15d
+
+  # If c >= n, end the inner loop
+  jae tile_c_loop_end
+
+  # Move output image pointer into %rdi
+  movq %r14, %rdi
+
+  # Move input image pointer into %rsi
+  movq %r12, %rsi
+
+  # Move current row value into %edx
+  movl %r13d, %edx
+
+  # Move current column value into %ecx
+  movl %r15d, %ecx
+
+  # Call copy_tile
+  # %r8d already holds the n value from above
+
+  call copy_tile
+
+  # Restore the original y value into %edx 
+  ; movl %r14d, %edx
+
+  # Restore input image pointer into %rdi
+  ; movq %r12, %rdi  
+
+  # Increment c counter and loop again
+  incl %r15d
+
+  # Repeat the loop
+  jmp tile_inner_c_loop
+
+# Describes what to do once the inner loop ends
+tile_c_loop_end:
+    # Increae r pixel value by 1
+    incl %r13d
+
+    # Restart check for outer loop
+    jmp tile_outer_r_loop
+
+returnFalse:
+  movl $0, %eax
+  jmp endFunction
+
+returnTrue:
+  movl $1, %eax
+
+endFunction:
+  popq %r15
+  popq %r14
+  popq %r13
+  popq %r12
+  addq $8, %rsp
 	ret
+
+
 
 /*
  * void imgproc_grayscale( struct Image *input_img, struct Image *output_img );
