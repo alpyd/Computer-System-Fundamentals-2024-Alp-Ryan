@@ -108,7 +108,7 @@ void test_to_grayscale( TestObjs *objs);
 // Assignment 3 Test Functions
 
 // void test_tile_basic( TestObjs *objs );
-// void test_composite_basic( TestObjs *objs );
+void test_composite_basic( TestObjs *objs );
 void test_all_tiles_nonempty( TestObjs *objs);
 void test_determine_tile_x_offset( TestObjs *objs);
 void test_determine_tile_y_offset( TestObjs *objs);
@@ -116,7 +116,7 @@ void test_determine_tile_w( TestObjs *objs);
 void test_determine_tile_h( TestObjs *objs);
 // void test_copy_tile( TestObjs *objs);
 void test_blend_components( TestObjs *objs);
-// void test_blend_colors( TestObjs *objs);
+void test_blend_colors( TestObjs *objs);
 
 int main( int argc, char **argv ) {
   // allow the specific test to execute to be specified as the
@@ -145,7 +145,7 @@ int main( int argc, char **argv ) {
   // Assignment 3 Test Functions Commented Out
 
   // TEST( test_tile_basic );
-  // TEST( test_composite_basic );
+  TEST( test_composite_basic );
   TEST( test_all_tiles_nonempty );
   TEST( test_determine_tile_x_offset);
   TEST( test_determine_tile_y_offset);
@@ -153,7 +153,7 @@ int main( int argc, char **argv ) {
   TEST( test_determine_tile_h);
   // TEST( test_copy_tile);
   TEST( test_blend_components);
-  // TEST( test_blend_colors);
+  TEST( test_blend_colors);
 
   TEST_FINI();
 }
@@ -592,26 +592,26 @@ void test_to_grayscale( TestObjs *objs) {
 // Assignment 3 Test Functions Commented Out
 
 
-// void test_composite_basic( TestObjs *objs ) {
-//   imgproc_composite( objs->smiley, objs->overlay, objs->smiley_out );
+void test_composite_basic( TestObjs *objs ) {
+   imgproc_composite( objs->smiley, objs->overlay, objs->smiley_out );
 
-//   // for all of the fully-transparent pixels in the overlay image,
-//   // the result image should have a pixel identical to the corresponding
-//   // pixel in the base image
-//   for ( int i = 0; i < 160; ++i ) {
-//     if ( objs->overlay->data[i] == 0x00000000 )
-//       ASSERT( objs->smiley->data[i] == objs->smiley_out->data[i] );
-//   }
+   // for all of the fully-transparent pixels in the overlay image,
+   // the result image should have a pixel identical to the corresponding
+   // pixel in the base image
+   for ( int i = 0; i < 160; ++i ) {
+     if ( objs->overlay->data[i] == 0x00000000 )
+       ASSERT( objs->smiley->data[i] == objs->smiley_out->data[i] );
+   }
 
-//   // check the computed colors for the partially transparent or
-//   // fully opaque colors in the overlay image
-//   ASSERT( 0xFF0000FF == objs->smiley_out->data[82] );
-//   ASSERT( 0x800000FF == objs->smiley_out->data[83] );
-//   ASSERT( 0x00FF00FF == objs->smiley_out->data[84] );
-//   ASSERT( 0x00807FFF == objs->smiley_out->data[85] );
-//   ASSERT( 0x0000FFFF == objs->smiley_out->data[86] );
-//   ASSERT( 0x000080FF == objs->smiley_out->data[87] );
-// }
+   // check the computed colors for the partially transparent or
+   // fully opaque colors in the overlay image
+   ASSERT( 0xFF0000FF == objs->smiley_out->data[82] );
+   ASSERT( 0x800000FF == objs->smiley_out->data[83] );
+   ASSERT( 0x00FF00FF == objs->smiley_out->data[84] );
+   ASSERT( 0x00807FFF == objs->smiley_out->data[85] );
+   ASSERT( 0x0000FFFF == objs->smiley_out->data[86] );
+   ASSERT( 0x000080FF == objs->smiley_out->data[87] );
+ }
 
 // void test_copy_tile( TestObjs *objs){
 //   //Create an input image to test the tile function
@@ -730,41 +730,41 @@ void test_to_grayscale( TestObjs *objs) {
    ASSERT(blend_components(88, 234, 100) == 176);
  }
 
-// void test_blend_colors( TestObjs *objs) {
-//   uint32_t black_opaque = make_pixel(0, 0, 0, 255);
-//   uint32_t black_transparent = make_pixel(0, 0, 0, 0);
+void test_blend_colors( TestObjs *objs) {
+   uint32_t black_opaque = make_pixel(0, 0, 0, 255);
+   uint32_t black_transparent = make_pixel(0, 0, 0, 0);
 
-//   uint32_t red_opaque = make_pixel(255, 0, 0, 255);
-//   uint32_t red_transparent = make_pixel(255, 0, 0, 0);
+   uint32_t red_opaque = make_pixel(255, 0, 0, 255);
+   uint32_t red_transparent = make_pixel(255, 0, 0, 0);
+ 
+   uint32_t blue_semitransparent = make_pixel(0, 0, 255, 128);
 
-//   uint32_t blue_semitransparent = make_pixel(0, 0, 255, 128);
+   //Test that two transparent pixels lead to opaque pixel with correct calculations
+   uint32_t result_1 = blend_colors(red_transparent, black_transparent);
+   ASSERT(result_1 == 0xFF);
 
-//   //Test that two transparent pixels lead to opaque pixel with correct calculations
-//   uint32_t result_1 = blend_colors(red_transparent, black_transparent);
-//   ASSERT(result_1 == 0xFF);
+   uint32_t result_2 = blend_colors(black_transparent, black_transparent);
+   ASSERT(result_2 == 0xFF);
 
-//   uint32_t result_2 = blend_colors(black_transparent, black_transparent);
-//   ASSERT(result_2 == 0xFF);
+   // Ensure that foreground blocks out background for fully opaque values
+   uint32_t result_3 = blend_colors(black_opaque, red_opaque);
+   ASSERT(result_3 == 0xFF);
 
-//   // Ensure that foreground blocks out background for fully opaque values
-//   uint32_t result_3 = blend_colors(black_opaque, red_opaque);
-//   ASSERT(result_3 == 0xFF);
+   uint32_t result_4 = blend_colors(red_opaque, black_opaque);
+   ASSERT(result_4 == 0xFF0000FF);
 
-//   uint32_t result_4 = blend_colors(red_opaque, black_opaque);
-//   ASSERT(result_4 == 0xFF0000FF);
+   //Ensure that colors blend at max intesnity but half alpha on foreground
+   uint32_t result_5 = blend_colors(blue_semitransparent, red_opaque);
+   ASSERT(result_5 == 0x7F0080FF);
 
-//   //Ensure that colors blend at max intesnity but half alpha on foreground
-//   uint32_t result_5 = blend_colors(blue_semitransparent, red_opaque);
-//   ASSERT(result_5 == 0x7F0080FF);
-
-//   //Try to mix two random pixels
-//   uint32_t random_pixel_fg = make_pixel(37, 125, 43, 147);
-//   uint32_t random_pixel_bg = make_pixel(155, 23, 200, 255);
-//   uint32_t result_6 = blend_colors(random_pixel_fg, random_pixel_bg);
-//   ASSERT(result_6 == 0x56516DFF);
+   //Try to mix two random pixels
+   uint32_t random_pixel_fg = make_pixel(37, 125, 43, 147);
+   uint32_t random_pixel_bg = make_pixel(155, 23, 200, 255);
+   uint32_t result_6 = blend_colors(random_pixel_fg, random_pixel_bg);
+   ASSERT(result_6 == 0x56516DFF);
 
   
-// }
+ }
 
 
 // void test_tile_basic( TestObjs *objs ) {
