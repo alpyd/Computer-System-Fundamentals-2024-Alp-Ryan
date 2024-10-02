@@ -1069,7 +1069,7 @@ copy_tile:
   movl %eax, TILE_WIDTH(%rsp)
 
   movl IMAGE_HEIGHT_OFFSET(%r13), %edi
-  movq %r8d, %esi
+  # movq %r8d, %esi
   movl %ecx, %edx
 
   call determine_tile_h
@@ -1167,7 +1167,7 @@ copy_inner_w_loop:
 
   movl IMAGE_HEIGHT_OFFSET(%rsi), %r11d
 
-  cmpl %r11, %r10
+  # cmpl %r11, %r10
   jge copy_advance
 
   movq %rdi, %r12
@@ -1485,95 +1485,127 @@ gray_y_loop_end:
  * Returns:
  *   1 if successful, or 0 if the transformation fails because the base
  *   and overlay image do not have the same dimensions
-
-
  */
+
+ /*
+ * Register use:
+ *   %r12 - pointer to base_img
+ *   %r13 - pointer to overlay_img
+ *   %r14 - pointer to output_img
+ *   %r15d - row counter (r)
+ *   %ebx - temporary for blended_pixel result
+ *   %r8d - temporary for width comparison
+ *   %r9d - temporary for height comparison
+ *
+ * Memory use:
+ *   -16(%rbp) - column counter (c)
+ *   -8(%rbp)  - foreground_pixel
+ */
+
 	.globl imgproc_composite
 imgproc_composite:
+    # Function prologue
+
+    pushq %rbp                   # Save %rbp for stack operations
+    movq %rsp, %rbp              # Set new base pointer for stack operations
+    subq $16, %rsp               # Reserve 16 bytes: 8 for c, 8 for foreground_pixel
+
     pushq %rbx
     pushq %r12
     pushq %r13
     pushq %r14
     pushq %r15
-
+    
     # Save image pointers in callee-saved registers
-    movq %rdi, %r12          # Save base_img pointer
-    movq %rsi, %r13          # Save overlay_img pointer
-    movq %rdx, %r14          # Save output_img pointer
+    movq %rdi, %r12              # Save base_img pointer
+    movq %rsi, %r13              # Save overlay_img pointer
+    movq %rdx, %r14              # Save output_img pointer
+
+    movl $0, %eax
 
     # Check if base_img->width != overlay_img->width
-    movl 0(%r12), %r8d       # Load base_img->width
-    movl 0(%r13), %r9d       # Load overlay_img->width
-    cmpl %r8d, %r9d          # Compare base and overlay widths
-    jne .LreturnComposite     # If not equal, return 0
+    movl IMAGE_WIDTH_OFFSET(%r12), %r8d       # Load base_img->width
+    movl IMAGE_WIDTH_OFFSET(%r13), %r9d       # Load overlay_img->width
+    cmpl %r8d, %r9d              # Compare base and overlay widths
+    jne .LreturnComposite        # If not equal, return 0
 
     # Check if base_img->height != overlay_img->height
-    movl 4(%r12), %r8d       # Load base_img->height
-    movl 4(%r13), %r9d       # Load overlay_img->height
-    cmpl %r8d, %r9d          # Compare base and overlay heights
-    jne .LreturnComposite     # If not equal, return 0
+    movl IMAGE_HEIGHT_OFFSET(%r12), %r8d      # Load base_img->height
+    movl IMAGE_HEIGHT_OFFSET(%r13), %r9d      # Load overlay_img->height
+    cmpl %r8d, %r9d              # Compare base and overlay heights
+    jne .LreturnComposite         # If not equal, return 0
 
     # Set the success return value (return 1)
     movl $1, %eax
 
     # Outer loop: Iterate over rows (r)
-    xorl %r15d, %r15d        # r = 0 (initialize row counter)
+    xorl %r15d, %r15d            # r = 0 (initialize row counter)
 
 .LouterLoop:
-    cmpl 4(%r14), %r15d      # Compare row counter r < output_img->height
-    jge .LreturnComposite     # If r >= height, finish
+    cmpl IMAGE_HEIGHT_OFFSET(%r14), %r15d     # Compare r < output_img->height
+    jge .LreturnComposite          # If r >= height, return
 
     # Inner loop: Iterate over columns (c)
-    xorl %r8d, %r8d          # c = 0 (initialize column counter)
+    movl $0, -16(%rbp)             # c = 0 (initialize column counter on stack)
 
 .LinnerLoop:
-    cmpl 0(%r14), %r8d       # Compare column counter c < output_img->width
-    jge .LnextRow            # If c >= width, go to next row
+    # Load c directly from the stack for foreground pixel
+    movl -16(%rbp), %r8d                      # Load column counter c from stack
+    cmpl IMAGE_WIDTH_OFFSET(%r14), %r8d       # Compare c < output_img->width
+    jge .LnextRow                             # If c >= width, go to next row
 
     # Load foreground_pixel = get_pixel(overlay_img, c, r)
-    movq %r13, %rdi          # 1st arg = pointer to overlay_img
-    movl %r8d, %esi          # 2nd arg = column index (c)
-    movl %r15d, %edx         # 3rd arg = row index (r)
-    call get_pixel            # Call get_pixel(overlay_img, c, r)
-    movl %eax, %r9d          # Store result in %r9d (foreground_pixel)
+    movq %r13, %rdi                # 1st arg = pointer to overlay_img
+    movl -16(%rbp), %esi           # 2nd arg = column index (c)
+    movl %r15d, %edx               # 3rd arg = row index (r)
+    call get_pixel                 # Call get_pixel(overlay_img, c, r)
+    movl %eax, -8(%rbp)            # Store result (foreground_pixel) on stack
 
     # Load background_pixel = get_pixel(base_img, c, r)
-    movq %r12, %rdi          # 1st arg = pointer to base_img
-    movl %r8d, %esi          # 2nd arg = column index (c)
-    movl %r15d, %edx         # 3rd arg = row index (r)
-    call get_pixel            # Call get_pixel(base_img, c, r)
-    movl %eax, %r10d         # Store result in %r10d (background_pixel)
+    movq %r12, %rdi                # 1st arg = pointer to base_img
+    movl -16(%rbp), %esi           # 2nd arg = column index (c) directly from stack
+    movl %r15d, %edx               # 3rd arg = row index (r)
+    call get_pixel                 # Call get_pixel(base_img, c, r)
+    movl %eax, %r10d               # Store result in %r10d (background_pixel)
+
+    # Load the foreground pixel from the stack
+    movl -8(%rbp), %r9d            # Load foreground_pixel from stack
 
     # Blend the pixels using blend_colors
-    movl %r10d, %edi         # 1st arg = background_pixel
-    movl %r9d, %esi          # 2nd arg = foreground_pixel
-    call blend_colors         # Call blend_colors(bg_pixel, fg_pixel)
-    movl %eax, %ebx          # Store blended result in %ebx
+    movl %r10d, %edi               # 1st arg = background_pixel
+    movl %r9d, %esi                # 2nd arg = foreground_pixel
+    call blend_colors              # Call blend_colors(bg_pixel, fg_pixel)
+    movl %eax, %ebx                # Store blended result in %ebx
 
     # Store blended_pixel = set_pixel(output_img, c, r, blended_pixel)
-    movq %r14, %rdi          # 1st arg = pointer to output_img
-    movl %r8d, %esi          # 2nd arg = column index (c)
-    movl %r15d, %edx         # 3rd arg = row index (r)
-    movl %ebx, %ecx          # 4th arg = blended_pixel
-    call set_pixel            # Call set_pixel(output_img, c, r, blended_pixel)
+    movq %r14, %rdi                # 1st arg = pointer to output_img
+    movl -16(%rbp), %esi           # 2nd arg = column index (c) directly from stack
+    movl %r15d, %edx               # 3rd arg = row index (r)
+    movl %ebx, %ecx                # 4th arg = blended_pixel
+    call set_pixel                 # Call set_pixel(output_img, c, r, blended_pixel)
 
-    # Increment column counter
-    incl %r8d                # c++
-    jmp .LinnerLoop          # Repeat inner loop
+    # Increment column counter (update value on stack)
+    incl -16(%rbp)                 # c++
+    jmp .LinnerLoop                # Repeat inner loop
 
 .LnextRow:
     # Increment row counter
-    incl %r15d                # r++
-    jmp .LouterLoop          # Repeat outer loop
+    incl %r15d                      # r++
+    jmp .LouterLoop                 # Repeat outer loop
 
 .LreturnComposite:
-    popq %r15
+    # Restore stack and registers
+    popq %r15                      # Restore callee-saved registers
     popq %r14
     popq %r13
     popq %r12
     popq %rbx
 
+    addq $16, %rsp                 # Free space used for c and foreground_pixel on stack
+    popq %rbp                      # Restore %rbp
+
     ret
+
 
 
 
