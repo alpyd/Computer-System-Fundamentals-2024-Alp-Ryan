@@ -382,89 +382,82 @@ uint32_t blend_colors( uint32_t fg, uint32_t bg ) {
 } */
 .globl blend_colors
 blend_colors:
+    # Prologue: Set up stack frame and save callee-saved registers
+    pushq %rbp
+    movq %rsp, %rbp
+    subq $16, %rsp            # Reserve 16 bytes on the stack for local variables
 
-# Arguments: %edi = fg, %esi = bg
+    # Save callee-saved registers
+    pushq %rbx
+    pushq %r12
+    pushq %r13
+    pushq %r14
+    pushq %r15                # Save %r15 as well
 
-# Prologue: Set up stack frame
-pushq %rbp                 # Save old base pointer
-movq %rsp, %rbp            # Set new base pointer
-subq $32, %rsp              # Reserve 32 bytes on the stack for local variables
+    # Step 1: Get foreground color components (r, g, b, a)
+    movl %edi, %r12d           # Store fg in %r12d for reuse
+    call get_r                 # fg_r = get_r(fg)
+    movl %eax, %r13d           # Store fg_r in %r13d
 
-# Save the callee-saved registers
-pushq %rbx
-pushq %r12
-pushq %r13
-pushq %r14
-pushq %r15
+    call get_g                 # fg_g = get_g(fg)
+    movl %eax, %r14d           # Store fg_g in %r14d
 
-# Step 1: Get foreground color components (r, g, b, a)
-movl %edi, %edi             # Move fg pixel to %edi (for get_r)
-call get_r                  # fg_r = get_r(fg)
-movl %eax, -4(%rbp)         # Store fg_r at -4(%rbp)
+    call get_b                 # fg_b = get_b(fg)
+    movl %eax, %r15d           # Store fg_b in %r15d
 
-movl %edi, %edi             # Move fg pixel to %edi (for get_g)
-call get_g                  # fg_g = get_g(fg)
-movl %eax, -8(%rbp)         # Store fg_g at -8(%rbp)
+    call get_a                 # fg_a = get_a(fg)
+    movl %eax, -4(%rbp)        # Store fg_a in memory (fg_a is used multiple times)
 
-movl %edi, %edi             # Move fg pixel to %edi (for get_b)
-call get_b                  # fg_b = get_b(fg)
-movl %eax, -12(%rbp)        # Store fg_b at -12(%rbp)
+    # Step 2: Get background color components (r, g, b)
+    movl %esi, %edi            # Move bg to %edi for get_r call
+    call get_r                 # bg_r = get_r(bg)
+    movl %eax, %ebx            # Store bg_r in %ebx
 
-movl %edi, %edi             # Move fg pixel to %edi (for get_a)
-call get_a                  # fg_a = get_a(fg)
-movl %eax, -16(%rbp)        # Store fg_a at -16(%rbp)
+    call get_g                 # bg_g = get_g(bg)
+    movl %eax, -8(%rbp)        # Store bg_g in memory (limited registers left)
 
-# Step 2: Get background color components (r, g, b)
-movl %esi, %edi             # Move bg pixel to %edi (for get_r)
-call get_r                  # bg_r = get_r(bg)
-movl %eax, -20(%rbp)        # Store bg_r at -20(%rbp)
+    call get_b                 # bg_b = get_b(bg)
+    movl %eax, -12(%rbp)       # Store bg_b in memory
 
-movl %esi, %edi             # Move bg pixel to %edi (for get_g)
-call get_g                  # bg_g = get_g(bg)
-movl %eax, -24(%rbp)        # Store bg_g at -24(%rbp)
+    # Step 3: Blend the components
+    # Blend red component
+    movl %r13d, %edi           # fg_r
+    movl %ebx, %esi            # bg_r
+    movl -4(%rbp), %edx        # fg_a (alpha)
+    call blend_components       # blended_r = blend_components(fg_r, bg_r, fg_a)
+    movl %eax, %r13d           # Store blended_r in %r13d
 
-movl %esi, %edi             # Move bg pixel to %edi (for get_b)
-call get_b                  # bg_b = get_b(bg)
-movl %eax, -28(%rbp)        # Store bg_b at -28(%rbp)
+    # Blend green component
+    movl %r14d, %edi           # fg_g
+    movl -8(%rbp), %esi        # bg_g
+    movl -4(%rbp), %edx        # fg_a (alpha)
+    call blend_components       # blended_g = blend_components(fg_g, bg_g, fg_a)
+    movl %eax, %r14d           # Store blended_g in %r14d
 
-# Step 3: Blend the components
-# Blend red component
-movl -4(%rbp), %edi         # Move fg_r to %edi
-movl -20(%rbp), %esi        # Move bg_r to %esi
-movl -16(%rbp), %edx        # Move fg_a (alpha) to %edx
-call blend_components        # blended_r = blend_components(fg_r, bg_r, fg_a)
-movl %eax, -4(%rbp)         # Store blended_r at -4(%rbp)
+    # Blend blue component
+    movl %r15d, %edi           # fg_b
+    movl -12(%rbp), %esi       # bg_b
+    movl -4(%rbp), %edx        # fg_a (alpha)
+    call blend_components       # blended_b = blend_components(fg_b, bg_b, fg_a)
+    movl %eax, %r15d           # Store blended_b in %r15d
 
-# Blend green component
-movl -8(%rbp), %edi         # Move fg_g to %edi
-movl -24(%rbp), %esi        # Move bg_g to %esi
-movl -16(%rbp), %edx        # Move fg_a (alpha) to %edx
-call blend_components        # blended_g = blend_components(fg_g, bg_g, fg_a)
-movl %eax, -8(%rbp)         # Store blended_g at -8(%rbp)
+    # Step 4: Create the new pixel using make_pixel
+    movl %r13d, %edi           # blended_r as 1st argument
+    movl %r14d, %esi           # blended_g as 2nd argument
+    movl %r15d, %edx           # blended_b as 3rd argument
+    movl $255, %ecx            # Alpha = 255 (fully opaque)
+    call make_pixel            # Call make_pixel(blended_r, blended_g, blended_b, 255)
 
-# Blend blue component
-movl -12(%rbp), %edi        # Move fg_b to %edi
-movl -28(%rbp), %esi        # Move bg_b to %esi
-movl -16(%rbp), %edx        # Move fg_a (alpha) to %edx
-call blend_components        # blended_b = blend_components(fg_b, bg_b, fg_a)
-movl %eax, -12(%rbp)        # Store blended_b at -12(%rbp)
+    # Step 5: Restore callee-saved registers and stack frame
+    popq %r15                  # Restore %r15
+    popq %r14                  # Restore %r14
+    popq %r13                  # Restore %r13
+    popq %r12                  # Restore %r12
+    popq %rbx                  # Restore %rbx
 
-# Step 4: Create the new pixel using make_pixel
-movl -4(%rbp), %edi         # blended_r as the 1st argument (in %edi)
-movl -8(%rbp), %esi         # blended_g as the 2nd argument (in %esi)
-movl -12(%rbp), %edx        # blended_b as the 3rd argument (in %edx)
-movl $255, %ecx             # Alpha = 255 (fully opaque) as the 4th argument (in %ecx)
-call make_pixel             # Call make_pixel(blended_r, blended_g, blended_b, 255)
-
-# Step 5: Restore callee-saved registers and stack frame
-popq %r15
-popq %r14
-popq %r13
-popq %r12
-popq %rbx
-movq %rbp, %rsp            # Restore stack pointer
-popq %rbp                  # Restore base pointer
-ret
+    addq $16, %rsp             # Restore stack pointer
+    popq %rbp                  # Restore base pointer
+    ret
 
 
 /*
@@ -1508,13 +1501,13 @@ imgproc_composite:
 
     pushq %rbp                   # Save %rbp for stack operations
     movq %rsp, %rbp              # Set new base pointer for stack operations
-    subq $16, %rsp               # Reserve 16 bytes: 8 for c, 8 for foreground_pixel
+    subq $8, %rsp                 # Reserve space for c (8 bytes)
 
-    pushq %rbx
-    pushq %r12
-    pushq %r13
-    pushq %r14
-    pushq %r15
+    pushq %rbx                   # Save callee-saved register
+    pushq %r12                   # Save callee-saved register
+    pushq %r13                   # Save callee-saved register
+    pushq %r14                   # Save callee-saved register
+    pushq %r15                   # Save callee-saved register
     
     # Save image pointers in callee-saved registers
     movq %rdi, %r12              # Save base_img pointer
@@ -1546,46 +1539,42 @@ imgproc_composite:
     jge .LreturnComposite          # If r >= height, return
 
     # Inner loop: Iterate over columns (c)
-    movl $0, -16(%rbp)             # c = 0 (initialize column counter on stack)
+    movl $0, -8(%rbp)             # c = 0 (initialize column counter on stack)
 
 .LinnerLoop:
     # Load c directly from the stack for foreground pixel
-    movl -16(%rbp), %r8d                      # Load column counter c from stack
+    movl -8(%rbp), %r8d                      # Load column counter c from stack
     cmpl IMAGE_WIDTH_OFFSET(%r14), %r8d       # Compare c < output_img->width
     jge .LnextRow                             # If c >= width, go to next row
 
     # Load foreground_pixel = get_pixel(overlay_img, c, r)
     movq %r13, %rdi                # 1st arg = pointer to overlay_img
-    movl -16(%rbp), %esi           # 2nd arg = column index (c)
+    movl -8(%rbp), %esi           # 2nd arg = column index (c)
     movl %r15d, %edx               # 3rd arg = row index (r)
     call get_pixel                 # Call get_pixel(overlay_img, c, r)
-    movl %eax, -8(%rbp)            # Store result (foreground_pixel) on stack
+    movl %eax, %ebx                # Store result (foreground_pixel) in %ebx 
 
     # Load background_pixel = get_pixel(base_img, c, r)
     movq %r12, %rdi                # 1st arg = pointer to base_img
-    movl -16(%rbp), %esi           # 2nd arg = column index (c) directly from stack
+    movl -8(%rbp), %esi           # 2nd arg = column index (c) directly from stack
     movl %r15d, %edx               # 3rd arg = row index (r)
     call get_pixel                 # Call get_pixel(base_img, c, r)
-    movl %eax, %r10d               # Store result in %r10d (background_pixel)
-
-    # Load the foreground pixel from the stack
-    movl -8(%rbp), %r9d            # Load foreground_pixel from stack
-
+    
     # Blend the pixels using blend_colors
-    movl %r10d, %edi               # 1st arg = background_pixel
-    movl %r9d, %esi                # 2nd arg = foreground_pixel
+    movl %ebx, %edi                # 1st arg = foreground_pixel
+    movl %eax, %esi                # 2nd arg = background_pixel
     call blend_colors              # Call blend_colors(bg_pixel, fg_pixel)
     movl %eax, %ebx                # Store blended result in %ebx
 
     # Store blended_pixel = set_pixel(output_img, c, r, blended_pixel)
     movq %r14, %rdi                # 1st arg = pointer to output_img
-    movl -16(%rbp), %esi           # 2nd arg = column index (c) directly from stack
+    movl -8(%rbp), %esi            # 2nd arg = column index (c) directly from stack
     movl %r15d, %edx               # 3rd arg = row index (r)
     movl %ebx, %ecx                # 4th arg = blended_pixel
     call set_pixel                 # Call set_pixel(output_img, c, r, blended_pixel)
 
     # Increment column counter (update value on stack)
-    incl -16(%rbp)                 # c++
+    incl -8(%rbp)                 # c++
     jmp .LinnerLoop                # Repeat inner loop
 
 .LnextRow:
@@ -1599,12 +1588,14 @@ imgproc_composite:
     popq %r14
     popq %r13
     popq %r12
-    popq %rbx
+    popq %rbx                      
 
-    addq $16, %rsp                 # Free space used for c and foreground_pixel on stack
+    addq $8, %rsp                  # Free space used for c on stack
     popq %rbp                      # Restore %rbp
 
     ret
+
+
 
 
 
