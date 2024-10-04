@@ -1037,7 +1037,7 @@ v_y_loop_end:
 
     .globl copy_tile
 copy_tile:
-  subq $24, %rsp
+  subq $40, %rsp
   pushq %rbp
   pushq %r12
   pushq %r13
@@ -1045,93 +1045,151 @@ copy_tile:
   pushq %r15
   pushq %rbx
 
+  # Move stack pointer into %rbp
   movq %rsp, %rbp
 
+  # Move output image pointer into %r12
   movq %rdi, %r12
+
+  # Move input image pointer into %r13
   movq %rsi, %r13
+
+  # Move tile row value into %r14d
   movl %edx, %r14d
 
+  # Move image width into %edi
   movl IMAGE_WIDTH_OFFSET(%r13), %edi
+
+  # Move n tiling factor into %esi 
   movl %r8d, %esi
-  movl %r14d, %edx
 
-  call determine_tile_w
-
-  movl %eax, -8(%rbp)
-
-  movl IMAGE_HEIGHT_OFFSET(%r13), %edi
-  # movq %r8d, %esi
+  # Move tile column value into %edx
   movl %ecx, %edx
 
-  call determine_tile_h
-
-  movq %r12, %rdi
-  movq %r13, %rsi
-  movl %r14d, %edx  
-
-  movl %eax, -4(%rbp)
-
-start_left_update:  
-  movl $0, -12(%rbp)
-  movl $0, %ebx
-  movq %rdi, %r12
-  movq %rsi, %r13
-  movl %edx, %r14d
-  movl %ecx, %r15d
-
-  # Move output image pointer into %rdi
-  # Move input image pointer into %rsi
-  # Move current row value into %edx
-  # Move current column value into %ecx
-  # %r8d already holds the n value from above
-
-update_left_loop:
-  cmpl %r15d, %ebx
-  jae start_top_update
-
-  movl IMAGE_WIDTH_OFFSET(%r13), %edi
-  movl %r8d, %esi
-  movl %ebx, %edx
-
+  # Determine the tile width
   call determine_tile_w
 
-  addl %eax, -12(%rbp)
+  # Move the tile width into -16(%rbp)
+  movl %eax, -16(%rbp)
 
+  # Move the image height into %rdi
+  movl IMAGE_HEIGHT_OFFSET(%r13), %edi
+
+  # Move the tile row value into %edx
+  movl %r14d, %edx
+
+  # Determine tile width
+  call determine_tile_h
+
+  # Restore output image pointer into %rdi
+  movq %r12, %rdi
+
+  # Restore input image pointer into %rsi
+  movq %r13, %rsi
+
+  # Restore tile row value into %edx
+  movl %r14d, %edx  
+
+  # Move the tile height into -12(%rbp)
+  movl %eax, -12(%rbp)
+
+start_left_update:  
+  # Initialize left most pixel into -20(%rbp) with value 0
+  movl $0, -20(%rbp)
+
+  # Set loop counter to 0
+  movl $0, %ebx
+
+  # Move output image pointer to %r12
+  movq %rdi, %r12
+
+  # Move input image pointer to %r13
+  movq %rsi, %r13
+
+  # Move tile row value into %r14d
+  movl %edx, %r14d
+
+  # Move tile column value into %r15d
+  movl %ecx, %r15d
+
+update_left_loop:
+  # Compare loop counter with the tile column value
+  cmpl %r15d, %ebx
+
+  # If greater than or equal to, move to updating top value
+  jge start_top_update
+
+  # Move image width into %edi
+  movl IMAGE_WIDTH_OFFSET(%r13), %edi
+
+  # Move tiling factor n into %esi
+  movl %r8d, %esi
+
+  # Move individual col value into %edx
+  movl %ebx, %edx
+
+  movl -20(%rbp), %r9d
+
+  # Determine tile width
+  call determine_tile_w
+
+  movl %r9d, -20(%rbp)
+
+  # Add tile width to leftmost pixel offset
+  addl %eax, -20(%rbp)
+  
+  # Increase loop counter and restart loop
   incl %ebx
   jmp update_left_loop
 
-
-
-
 start_top_update:
-  movl $0, -16(%rbp)
+  # Initialize top most y pixel into %r9d
+  movl $0, %r9d
+
+  # Intiailize loop counter
   movl $0, %ebx
 
 update_top_loop:
+  # Compare tile row value with loop counter
   cmpl %r14d, %ebx
+
+  # If greater than or equal to, start filling tile
   jae start_tile_fill
 
+  # Move image height into %edi
   movl IMAGE_HEIGHT_OFFSET(%r13), %edi
+
+  # Move n tiling factor into %esi
   movl %r8d, %esi
+
+  # Move loop counter into %edx
   movl %ebx, %edx
 
+  # Determine the tile h
   call determine_tile_h
 
-  addl %eax, -16(%rbp)
+  # Increment the top most pixel by previous heights
+  addl %eax, %r9d
 
+  # Increment loop counter and repeat loop
   incl %ebx
   jmp update_top_loop
 
 start_tile_fill:
+  # Move output image pointer into %rdi
   movq %r12, %rdi
+
+  # Move input image pointer into %rsi
   movq %r13, %rsi
 
   # Initialize h counter
   movl $0, %edx
 
 copy_outer_h_loop:
+  # Move tile height into storage variable
+  movl -12(%rbp), %r10d
+
   # Compare h counter with tile height
-  movl -4(%rbp), %r10d
   cmpl %r10d, %edx  
 
   # If r >= n, end the outer loop
@@ -1141,14 +1199,20 @@ copy_outer_h_loop:
   movl $0, %ecx
 
 copy_inner_w_loop:
+  # Move tile width into storage variable
+  movl -16(%rbp), %r10d
+
   # Compare w counter with tile width
-  movl -8(%rbp), %r10d
   cmpl %r10d, %ecx  
   jge copy_w_loop_end
 
+  # Move w counter into %r10d 
   movl %ecx, %r10d
+
+  # Multiply w counter by n
   imull %r8d, %r10d
 
+  # Compare n*w counter with the image width
   movl IMAGE_WIDTH_OFFSET(%rsi), %r11d
 
   cmpl %r11d, %r10d
@@ -1178,6 +1242,8 @@ copy_inner_w_loop:
 
   movq %r13, %rdi
 
+  movl -20(%rbp), %ebx
+
   call get_pixel
 
   # Move the pixel into the pixel parameter for set_pixel
@@ -1185,14 +1251,16 @@ copy_inner_w_loop:
 
   movq %r12, %rdi
 
-  movl -12(%rbp), %esi
+  movl %ebx, %esi
   addl %r15d, %esi
 
-  movl -16(%rbp), %edx
+  movl %r9d, %edx
   addl %r14d, %edx
 
   # Set the pixel at the computed position
   call set_pixel
+
+  movl %ebx, -20(%rbp)
 
   movq %r12, %rdi
   movq %r13, %rsi
@@ -1221,7 +1289,7 @@ end_copy:
   popq %r13
   popq %r12
   popq %rbp
-  addq $24, %rsp
+  addq $40, %rsp
   ret
 
 
