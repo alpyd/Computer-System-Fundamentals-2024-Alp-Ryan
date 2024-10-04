@@ -1037,7 +1037,7 @@ v_y_loop_end:
 
     .globl copy_tile
 copy_tile:
-  subq $40, %rsp
+  subq $24, %rsp
   pushq %rbp
   pushq %r12
   pushq %r13
@@ -1069,8 +1069,8 @@ copy_tile:
   # Determine the tile width
   call determine_tile_w
 
-  # Move the tile width into -16(%rbp)
-  movl %eax, -16(%rbp)
+  # Move the tile width into 16(%rbp)
+  movl %eax, 16(%rbp)
 
   # Move the image height into %rdi
   movl IMAGE_HEIGHT_OFFSET(%r13), %edi
@@ -1091,11 +1091,11 @@ copy_tile:
   movl %r14d, %edx  
 
   # Move the tile height into -12(%rbp)
-  movl %eax, -12(%rbp)
+  movl %eax, 12(%rbp)
 
 start_left_update:  
-  # Initialize left most pixel into -20(%rbp) with value 0
-  movl $0, -20(%rbp)
+  # Initialize left most pixel into 20(%rbp) with value 0
+  movl $0, 20(%rbp)
 
   # Set loop counter to 0
   movl $0, %ebx
@@ -1128,15 +1128,15 @@ update_left_loop:
   # Move individual col value into %edx
   movl %ebx, %edx
 
-  movl -20(%rbp), %r9d
+  movl 20(%rbp), %r9d
 
   # Determine tile width
   call determine_tile_w
 
-  movl %r9d, -20(%rbp)
+  movl %r9d, 20(%rbp)
 
   # Add tile width to leftmost pixel offset
-  addl %eax, -20(%rbp)
+  addl %eax, 20(%rbp)
   
   # Increase loop counter and restart loop
   incl %ebx
@@ -1187,7 +1187,7 @@ start_tile_fill:
 
 copy_outer_h_loop:
   # Move tile height into storage variable
-  movl -12(%rbp), %r10d
+  movl 12(%rbp), %r10d
 
   # Compare h counter with tile height
   cmpl %r10d, %edx  
@@ -1200,7 +1200,7 @@ copy_outer_h_loop:
 
 copy_inner_w_loop:
   # Move tile width into storage variable
-  movl -16(%rbp), %r10d
+  movl 16(%rbp), %r10d
 
   # Compare w counter with tile width
   cmpl %r10d, %ecx  
@@ -1242,7 +1242,7 @@ copy_inner_w_loop:
 
   movq %r13, %rdi
 
-  movl -20(%rbp), %ebx
+  movl 20(%rbp), %ebx
 
   call get_pixel
 
@@ -1260,7 +1260,7 @@ copy_inner_w_loop:
   # Set the pixel at the computed position
   call set_pixel
 
-  movl %ebx, -20(%rbp)
+  movl %ebx, 20(%rbp)
 
   movq %r12, %rdi
   movq %r13, %rsi
@@ -1289,7 +1289,7 @@ end_copy:
   popq %r13
   popq %r12
   popq %rbp
-  addq $40, %rsp
+  addq $24, %rsp
   ret
 
 
@@ -1559,7 +1559,7 @@ gray_y_loop_end:
  *   %r9d - temporary for height comparison
  *
  * Memory use:
- *   -16(%rbp) - column counter (c)
+ *   16(%rbp) - column counter (c)
  *   -8(%rbp)  - foreground_pixel
  */
 
