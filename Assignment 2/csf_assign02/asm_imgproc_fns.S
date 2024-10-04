@@ -1035,19 +1035,17 @@ v_y_loop_end:
   # Move current column value into %ecx
   # %r8d already holds the n value from above
 
-#define TILE_HEIGHT   0
-#define TILE_WIDTH  4
-#define LEFT_MOST_PIXEL_X  8
-#define TOP_MOST_PIXEL_Y 12 
-
     .globl copy_tile
 copy_tile:
-  subq $16, %rsp
+  subq $24, %rsp
+  pushq %rbp
   pushq %r12
   pushq %r13
   pushq %r14
   pushq %r15
   pushq %rbx
+
+  movq %rsp, %rbp
 
   movq %rdi, %r12
   movq %rsi, %r13
@@ -1059,7 +1057,7 @@ copy_tile:
 
   call determine_tile_w
 
-  movl %eax, TILE_WIDTH(%rsp)
+  movl %eax, -8(%rbp)
 
   movl IMAGE_HEIGHT_OFFSET(%r13), %edi
   # movq %r8d, %esi
@@ -1069,12 +1067,12 @@ copy_tile:
 
   movq %r12, %rdi
   movq %r13, %rsi
-  movl %r14d, %esi  
+  movl %r14d, %edx  
 
-  movl %eax, TILE_HEIGHT(%rsp)
+  movl %eax, -4(%rbp)
 
 start_left_update:  
-  movl $0, LEFT_MOST_PIXEL_X(%rsp)
+  movl $0, -12(%rbp)
   movl $0, %ebx
   movq %rdi, %r12
   movq %rsi, %r13
@@ -1097,7 +1095,7 @@ update_left_loop:
 
   call determine_tile_w
 
-  addl %eax, LEFT_MOST_PIXEL_X(%rsp)
+  addl %eax, -12(%rbp)
 
   incl %ebx
   jmp update_left_loop
@@ -1106,7 +1104,7 @@ update_left_loop:
 
 
 start_top_update:
-  movl $0, TOP_MOST_PIXEL_Y(%rsp)
+  movl $0, -16(%rbp)
   movl $0, %ebx
 
 update_top_loop:
@@ -1119,7 +1117,7 @@ update_top_loop:
 
   call determine_tile_h
 
-  addl %eax, TOP_MOST_PIXEL_Y(%rsp)
+  addl %eax, -16(%rbp)
 
   incl %ebx
   jmp update_top_loop
@@ -1133,7 +1131,7 @@ start_tile_fill:
 
 copy_outer_h_loop:
   # Compare h counter with tile height
-  movl TILE_HEIGHT(%rsp), %r10d
+  movl -4(%rbp), %r10d
   cmpl %r10d, %edx  
 
   # If r >= n, end the outer loop
@@ -1144,8 +1142,9 @@ copy_outer_h_loop:
 
 copy_inner_w_loop:
   # Compare w counter with tile width
-  movl TILE_WIDTH(%rsp), %r10d
+  movl -8(%rbp), %r10d
   cmpl %r10d, %ecx  
+  jge copy_w_loop_end
 
   movl %ecx, %r10d
   imull %r8d, %r10d
@@ -1160,7 +1159,7 @@ copy_inner_w_loop:
 
   movl IMAGE_HEIGHT_OFFSET(%rsi), %r11d
 
-  # cmpl %r11, %r10
+  cmpl %r11d, %r10d
   jge copy_advance
 
   movq %rdi, %r12
@@ -1168,8 +1167,8 @@ copy_inner_w_loop:
   movl %edx, %r14d
   movl %ecx, %r15d
 
-  movl %edx, %r10d
-  movl %ecx, %r11d
+  movl %ecx, %r10d
+  movl %edx, %r11d
 
   imull %r8d, %r10d
   imull %r8d, %r11d
@@ -1186,10 +1185,10 @@ copy_inner_w_loop:
 
   movq %r12, %rdi
 
-  movl LEFT_MOST_PIXEL_X(%rsp), %esi
+  movl -12(%rbp), %esi
   addl %r15d, %esi
 
-  movl TOP_MOST_PIXEL_Y(%rsp), %edx
+  movl -16(%rbp), %edx
   addl %r14d, %edx
 
   # Set the pixel at the computed position
@@ -1221,7 +1220,8 @@ end_copy:
   popq %r14
   popq %r13
   popq %r12
-  addq $16, %rsp
+  popq %rbp
+  addq $24, %rsp
   ret
 
 

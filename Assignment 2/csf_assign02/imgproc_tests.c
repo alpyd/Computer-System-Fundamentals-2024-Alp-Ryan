@@ -114,7 +114,7 @@ void test_determine_tile_x_offset( TestObjs *objs);
 void test_determine_tile_y_offset( TestObjs *objs);
 void test_determine_tile_w( TestObjs *objs);
 void test_determine_tile_h( TestObjs *objs);
-// void test_copy_tile( TestObjs *objs);
+void test_copy_tile( TestObjs *objs);
 void test_blend_components( TestObjs *objs);
 void test_blend_colors( TestObjs *objs);
 
@@ -130,30 +130,30 @@ int main( int argc, char **argv ) {
   // Make sure you add additional TEST() macro invocations
   // for any additional test functions you add.
   
-  TEST( test_mirror_h_basic );
-  TEST( test_mirror_v_basic );
-  TEST( test_make_pixel);
-  TEST( test_get_pixel);
-  TEST( test_set_pixel);
-  TEST( test_grayscale_basic );
-  TEST( test_get_r);
-  TEST( test_get_g);
-  TEST( test_get_b);
-  TEST( test_get_a);
-  TEST( test_to_grayscale);
+  // TEST( test_mirror_h_basic );
+  // TEST( test_mirror_v_basic );
+  // TEST( test_make_pixel);
+  // TEST( test_get_pixel);
+  // TEST( test_set_pixel);
+  // TEST( test_grayscale_basic );
+  // TEST( test_get_r);
+  // TEST( test_get_g);
+  // TEST( test_get_b);
+  // TEST( test_get_a);
+  // TEST( test_to_grayscale);
 
   // Assignment 3 Test Functions Commented Out
 
   // TEST( test_tile_basic );
-  TEST( test_composite_basic );
-  TEST( test_all_tiles_nonempty );
-  TEST( test_determine_tile_x_offset);
-  TEST( test_determine_tile_y_offset);
-  TEST( test_determine_tile_w);
-  TEST( test_determine_tile_h);
-  // TEST( test_copy_tile);
-  TEST( test_blend_components);
-  TEST( test_blend_colors);
+  // TEST( test_composite_basic );
+  // TEST( test_all_tiles_nonempty );
+  // TEST( test_determine_tile_x_offset);
+  // TEST( test_determine_tile_y_offset);
+  // TEST( test_determine_tile_w);
+  // TEST( test_determine_tile_h);
+  TEST( test_copy_tile);
+  // TEST( test_blend_components);
+  // TEST( test_blend_colors);
 
   TEST_FINI();
 }
@@ -613,94 +613,95 @@ void test_composite_basic( TestObjs *objs ) {
    ASSERT( 0x000080FF == objs->smiley_out->data[87] );
  }
 
-// void test_copy_tile( TestObjs *objs){
-//   //Create an input image to test the tile function
-//   Picture input_tile_picture = {
-//     TEST_COLORS,
-//     8, // width
-//     4, // height
-//     "crgmbcrm"
-//     "mbcrmgrb"
-//     "grcmggrb"
-//     "rbbmmcmr"
-//   };
+void test_copy_tile( TestObjs *objs){
+  //Create an input image to test the tile function
+  Picture input_tile_picture = {
+    TEST_COLORS,
+    8, // width
+    4, // height
+    "crgmbcrm"
+    "mbcrmgrb"
+    "grcmggrb"
+    "rbbmmcmr"
+  };
 
-//   struct Image *copy_tile_input = picture_to_img( &input_tile_picture);
+  struct Image *copy_tile_input = picture_to_img( &input_tile_picture);
 
-//   //Test tiling an even grid of numbers
-//   Picture output_image = {
-//     TEST_COLORS,
-//     8, // width
-//     4, // height
-//     "        "
-//     "        "
-//     "        "
-//     "        "
-//   };
+  //Test tiling an even grid of numbers
+  Picture output_image = {
+    TEST_COLORS,
+    8, // width
+    4, // height
+    "        "
+    "        "
+    "        "
+    "        "
+  };
 
-//   struct Image* copy_even_output_n4 = picture_to_img(&output_image);
-//   //Edge Case: Filling in (0,0)
-//   copy_tile(copy_even_output_n4, copy_tile_input, 0, 0, 4);
-//   ASSERT(get_pixel(copy_even_output_n4, 0, 0) == 0x00FFFFFF);
-//   ASSERT(get_pixel(copy_even_output_n4, 1, 0) == 0x0000FFFF);
-//   //Ensure no other values are changed
-//   ASSERT(get_pixel(copy_even_output_n4, 2, 0) == 0x000000FF);
-//   ASSERT(get_pixel(copy_even_output_n4, 0, 1) == 0x000000FF);
+  struct Image* copy_even_output_n4 = picture_to_img(&output_image);
+  // //Edge Case: Filling in (0,0)
+  // copy_tile(copy_even_output_n4, copy_tile_input, 0, 0, 4);
+  // ASSERT(get_pixel(copy_even_output_n4, 0, 0) == 0x00FFFFFF);
+  // ASSERT(get_pixel(copy_even_output_n4, 1, 0) == 0x0000FFFF);
+  // //Ensure no other values are changed
+  // ASSERT(get_pixel(copy_even_output_n4, 2, 0) == 0x000000FF);
+  // ASSERT(get_pixel(copy_even_output_n4, 0, 1) == 0x000000FF);
 
-//   //Try filling in (0, 1) and (1,0)
-//   copy_tile(copy_even_output_n4, copy_tile_input, 1, 0, 4);
-//   copy_tile(copy_even_output_n4, copy_tile_input, 0, 1, 4);
-//   ASSERT(get_pixel(copy_even_output_n4, 2, 0) == 0x00FFFFFF);
-//   ASSERT(get_pixel(copy_even_output_n4, 3, 0) == 0x0000FFFF);
-//   ASSERT(get_pixel(copy_even_output_n4, 0, 1) == 0x00FFFFFF);
-//   ASSERT(get_pixel(copy_even_output_n4, 1, 1) == 0x0000FFFF);
-//   ASSERT(get_pixel(copy_even_output_n4, 0, 0) == 0x00FFFFFF);
-//   ASSERT(get_pixel(copy_even_output_n4, 1, 0) == 0x0000FFFF);
+  //Try filling in (0, 1) and (1,0)
+  copy_tile(copy_even_output_n4, copy_tile_input, 1, 0, 4);
+  // copy_tile(copy_even_output_n4, copy_tile_input, 0, 1, 4);
+  uint32_t balls = get_pixel(copy_even_output_n4, 2, 0);
+  ASSERT(get_pixel(copy_even_output_n4, 2, 0) == 0x00FFFFFF);
+  ASSERT(get_pixel(copy_even_output_n4, 3, 0) == 0x0000FFFF);
+  ASSERT(get_pixel(copy_even_output_n4, 0, 1) == 0x00FFFFFF);
+  ASSERT(get_pixel(copy_even_output_n4, 1, 1) == 0x0000FFFF);
+  ASSERT(get_pixel(copy_even_output_n4, 0, 0) == 0x00FFFFFF);
+  ASSERT(get_pixel(copy_even_output_n4, 1, 0) == 0x0000FFFF);
 
-//   //Ensure no other values are changed
-//   ASSERT(get_pixel(copy_even_output_n4, 6, 2) == 0x000000FF);
-//   ASSERT(get_pixel(copy_even_output_n4, 7, 3) == 0x000000FF);
+  //Ensure no other values are changed
+  ASSERT(get_pixel(copy_even_output_n4, 6, 2) == 0x000000FF);
+  ASSERT(get_pixel(copy_even_output_n4, 7, 3) == 0x000000FF);
 
-//   struct Image* copy_odd_output_n3 = picture_to_img(&output_image);
-//   //Edge Case: Filling in (0,0)
-//   copy_tile(copy_odd_output_n3, copy_tile_input, 0, 0, 3);
-//   ASSERT(get_pixel(copy_odd_output_n3, 0, 0) == 0x00FFFFFF);
-//   ASSERT(get_pixel(copy_odd_output_n3, 1, 0) == 0xFF00FFFF);
-//   ASSERT(get_pixel(copy_odd_output_n3, 2, 0) == 0xFF0000FF);
-//   ASSERT(get_pixel(copy_odd_output_n3, 0, 1) == 0xFF0000FF);
-//   ASSERT(get_pixel(copy_odd_output_n3, 1, 1) == 0xFF00FFFF);
-//   ASSERT(get_pixel(copy_odd_output_n3, 2, 1) == 0xFF00FFFF);
-//   //Ensure no other values are changed
-//   ASSERT(get_pixel(copy_odd_output_n3, 3, 0) == 0x000000FF);
-//   ASSERT(get_pixel(copy_odd_output_n3, 0, 2) == 0x000000FF);
+  struct Image* copy_odd_output_n3 = picture_to_img(&output_image);
+  //Edge Case: Filling in (0,0)
+  copy_tile(copy_odd_output_n3, copy_tile_input, 0, 0, 3);
+  ASSERT(get_pixel(copy_odd_output_n3, 0, 0) == 0x00FFFFFF);
+  ASSERT(get_pixel(copy_odd_output_n3, 1, 0) == 0xFF00FFFF);
+  ASSERT(get_pixel(copy_odd_output_n3, 2, 0) == 0xFF0000FF);
+  ASSERT(get_pixel(copy_odd_output_n3, 0, 1) == 0xFF0000FF);
+  ASSERT(get_pixel(copy_odd_output_n3, 1, 1) == 0xFF00FFFF);
+  ASSERT(get_pixel(copy_odd_output_n3, 2, 1) == 0xFF00FFFF);
+  //Ensure no other values are changed
+  ASSERT(get_pixel(copy_odd_output_n3, 3, 0) == 0x000000FF);
+  ASSERT(get_pixel(copy_odd_output_n3, 0, 2) == 0x000000FF);
 
-//   //Try edge case - bottom edge of box with 0 offset in both x and y when others have offset
-//   copy_tile(copy_odd_output_n3, copy_tile_input, 2, 2, 3);
-//   ASSERT(get_pixel(copy_odd_output_n3, 6, 3) == 0x00FFFFFF);
-//   ASSERT(get_pixel(copy_odd_output_n3, 7, 3) == 0xFF00FFFF);
-//   //Ensure pixels next to the tile are unchanged
-//   ASSERT(get_pixel(copy_odd_output_n3, 5, 3) == 0x000000FF);
-//   ASSERT(get_pixel(copy_odd_output_n3, 6, 2) == 0x000000FF);
+  //Try edge case - bottom edge of box with 0 offset in both x and y when others have offset
+  copy_tile(copy_odd_output_n3, copy_tile_input, 2, 2, 3);
+  ASSERT(get_pixel(copy_odd_output_n3, 6, 3) == 0x00FFFFFF);
+  ASSERT(get_pixel(copy_odd_output_n3, 7, 3) == 0xFF00FFFF);
+  //Ensure pixels next to the tile are unchanged
+  ASSERT(get_pixel(copy_odd_output_n3, 5, 3) == 0x000000FF);
+  ASSERT(get_pixel(copy_odd_output_n3, 6, 2) == 0x000000FF);
   
-//   //Try edge case - offset in one box but not the other
-//   copy_tile(copy_odd_output_n3, copy_tile_input, 2, 1, 3);
-//   ASSERT(get_pixel(copy_odd_output_n3, 3, 3) == 0x00FFFFFF);
-//   ASSERT(get_pixel(copy_odd_output_n3, 4, 3) == 0xFF00FFFF);
-//   ASSERT(get_pixel(copy_odd_output_n3, 5, 3) == 0xFF0000FF);
+  //Try edge case - offset in one box but not the other
+  copy_tile(copy_odd_output_n3, copy_tile_input, 2, 1, 3);
+  ASSERT(get_pixel(copy_odd_output_n3, 3, 3) == 0x00FFFFFF);
+  ASSERT(get_pixel(copy_odd_output_n3, 4, 3) == 0xFF00FFFF);
+  ASSERT(get_pixel(copy_odd_output_n3, 5, 3) == 0xFF0000FF);
 
-//   copy_tile(copy_odd_output_n3, copy_tile_input, 0, 2, 3);
-//   ASSERT(get_pixel(copy_odd_output_n3, 6, 0) == 0x00FFFFFF);
-//   ASSERT(get_pixel(copy_odd_output_n3, 7, 0) == 0xFF00FFFF);
-//   ASSERT(get_pixel(copy_odd_output_n3, 6, 1) == 0xFF0000FF);
-//   ASSERT(get_pixel(copy_odd_output_n3, 7, 1) == 0xFF00FFFF);
+  copy_tile(copy_odd_output_n3, copy_tile_input, 0, 2, 3);
+  ASSERT(get_pixel(copy_odd_output_n3, 6, 0) == 0x00FFFFFF);
+  ASSERT(get_pixel(copy_odd_output_n3, 7, 0) == 0xFF00FFFF);
+  ASSERT(get_pixel(copy_odd_output_n3, 6, 1) == 0xFF0000FF);
+  ASSERT(get_pixel(copy_odd_output_n3, 7, 1) == 0xFF00FFFF);
 
-//   //Ensure no other zeros are changed
-//   ASSERT(get_pixel(copy_odd_output_n3, 0, 3) == 0x00000FF);
+  //Ensure no other zeros are changed
+  ASSERT(get_pixel(copy_odd_output_n3, 0, 3) == 0x00000FF);
 
-//   destroy_img( copy_tile_input );
-//   destroy_img( copy_even_output_n4 );
-//   destroy_img( copy_odd_output_n3 );
-// }
+  destroy_img( copy_tile_input );
+  destroy_img( copy_even_output_n4 );
+  destroy_img( copy_odd_output_n3 );
+}
 
  void test_blend_components( TestObjs *objs) {
    
