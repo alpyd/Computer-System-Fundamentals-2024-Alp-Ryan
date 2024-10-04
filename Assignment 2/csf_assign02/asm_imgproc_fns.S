@@ -1377,13 +1377,9 @@ tile_inner_c_loop:
   # Call copy_tile
   # %r8d already holds the n value from above
 
-  # call copy_tile TODO!
+  call copy_tile  
 
-  # Restore the original y value into %edx 
-  ; movl %r14d, %edx
-
-  # Restore input image pointer into %rdi
-  ; movq %r12, %rdi  
+  movq %rdi, %r14
 
   # Increment c counter and loop again
   incl %r15d

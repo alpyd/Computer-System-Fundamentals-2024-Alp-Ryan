@@ -107,7 +107,7 @@ void test_to_grayscale( TestObjs *objs);
 
 // Assignment 3 Test Functions
 
-// void test_tile_basic( TestObjs *objs );
+void test_tile_basic( TestObjs *objs );
 void test_composite_basic( TestObjs *objs );
 void test_all_tiles_nonempty( TestObjs *objs);
 void test_determine_tile_x_offset( TestObjs *objs);
@@ -144,7 +144,7 @@ int main( int argc, char **argv ) {
 
   // Assignment 3 Test Functions Commented Out
 
-  // TEST( test_tile_basic );
+  TEST( test_tile_basic );
   // TEST( test_composite_basic );
   // TEST( test_all_tiles_nonempty );
   // TEST( test_determine_tile_x_offset);
@@ -767,29 +767,29 @@ void test_blend_colors( TestObjs *objs) {
  }
 
 
-// void test_tile_basic( TestObjs *objs ) {
-//   Picture smiley_tile_3_pic = {
-//     TEST_COLORS,
-//     16, 10,
-//     "  rg    rg   rg "
-//     "                "
-//     "  gb    gb   gb "
-//     "                "
-//     "  rg    rg   rg "
-//     "                "
-//     "  gb    gb   gb "
-//     "  rg    rg   rg "
-//     "                "
-//     "  gb    gb   gb "
-//   };
-//   struct Image *smiley_tile_3_expected = picture_to_img( &smiley_tile_3_pic );
+void test_tile_basic( TestObjs *objs ) {
+  Picture smiley_tile_3_pic = {
+    TEST_COLORS,
+    16, 10,
+    "  rg    rg   rg "
+    "                "
+    "  gb    gb   gb "
+    "                "
+    "  rg    rg   rg "
+    "                "
+    "  gb    gb   gb "
+    "  rg    rg   rg "
+    "                "
+    "  gb    gb   gb "
+  };
+  struct Image *smiley_tile_3_expected = picture_to_img( &smiley_tile_3_pic );
 
-//   int success = imgproc_tile( objs->smiley, 3, objs->smiley_out );
-//   ASSERT( success );
-//   ASSERT( images_equal( smiley_tile_3_expected, objs->smiley_out ) );
+  int success = imgproc_tile( objs->smiley, 3, objs->smiley_out );
+  ASSERT( success );
+  ASSERT( images_equal( smiley_tile_3_expected, objs->smiley_out ) );
 
-//   destroy_img( smiley_tile_3_expected );
-// }
+  destroy_img( smiley_tile_3_expected );
+}
 
 
 void test_all_tiles_nonempty(TestObjs *objs) {
