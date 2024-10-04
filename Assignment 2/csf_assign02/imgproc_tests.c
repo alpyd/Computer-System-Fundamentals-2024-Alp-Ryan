@@ -130,30 +130,30 @@ int main( int argc, char **argv ) {
   // Make sure you add additional TEST() macro invocations
   // for any additional test functions you add.
   
-  // TEST( test_mirror_h_basic );
-  // TEST( test_mirror_v_basic );
-  // TEST( test_make_pixel);
-  // TEST( test_get_pixel);
-  // TEST( test_set_pixel);
-  // TEST( test_grayscale_basic );
-  // TEST( test_get_r);
-  // TEST( test_get_g);
-  // TEST( test_get_b);
-  // TEST( test_get_a);
-  // TEST( test_to_grayscale);
+  TEST( test_mirror_h_basic );
+  TEST( test_mirror_v_basic );
+  TEST( test_make_pixel);
+  TEST( test_get_pixel);
+  TEST( test_set_pixel);
+  TEST( test_grayscale_basic );
+  TEST( test_get_r);
+  TEST( test_get_g);
+  TEST( test_get_b);
+  TEST( test_get_a);
+  TEST( test_to_grayscale);
 
   // Assignment 3 Test Functions Commented Out
 
   TEST( test_tile_basic );
-  // TEST( test_composite_basic );
-  // TEST( test_all_tiles_nonempty );
-  // TEST( test_determine_tile_x_offset);
-  // TEST( test_determine_tile_y_offset);
-  // TEST( test_determine_tile_w);
-  // TEST( test_determine_tile_h);
+  TEST( test_composite_basic );
+  TEST( test_all_tiles_nonempty );
+  TEST( test_determine_tile_x_offset);
+  TEST( test_determine_tile_y_offset);
+  TEST( test_determine_tile_w);
+  TEST( test_determine_tile_h);
   TEST( test_copy_tile);
-  // TEST( test_blend_components);
-  // TEST( test_blend_colors);
+  TEST( test_blend_components);
+  TEST( test_blend_colors);
 
   TEST_FINI();
 }
