@@ -34,56 +34,56 @@
 .globl all_tiles_nonempty
 all_tiles_nonempty:
 
-# Align stack pointer (good style)
-subq $8, %rsp
+  # Align stack pointer (good style)
+  subq $8, %rsp
 
-# If n == 0, return 0 (false)
-cmpl $0, %edx     # Test if %edx (n) is zero
-je .LFalseCondition  # If zero, jump to false condition
+  # If n == 0, return 0 (false)
+  cmpl $0, %edx     # Test if %edx (n) is zero
+  je .LFalseCondition  # If zero, jump to false condition
 
-# Save n to the stack (since %edx will be overwritten by cdq)
-movl %edx, %r9d      # Save the divisor n in %r9d
+  # Save n to the stack (since %edx will be overwritten by cdq)
+  movl %edx, %r9d      # Save the divisor n in %r9d
 
-# place width in eax for division
-movl %edi, %eax      # Move width to %eax (32-bit register)
-cdq                  # Sign-extend %eax into %edx for signed division
+  # place width in eax for division
+  movl %edi, %eax      # Move width to %eax (32-bit register)
+  cdq                  # Sign-extend %eax into %edx for signed division
 
-# width / n
-idivl %r9d           # Signed division of %edx:%eax by %r9d (n)
+  # width / n
+  idivl %r9d           # Signed division of %edx:%eax by %r9d (n)
 
-# store width / n
-movl %eax, %r10d     # Store result of width / n in %r10d
+  # store width / n
+  movl %eax, %r10d     # Store result of width / n in %r10d
 
-# place height in eax for division
-movl %esi, %eax      # Move height to %eax (32-bit register)
-cdq                  # Sign-extend %eax into %edx for signed division
+  # place height in eax for division
+  movl %esi, %eax      # Move height to %eax (32-bit register)
+  cdq                  # Sign-extend %eax into %edx for signed division
 
-# height / n
-idivl %r9d           # Signed division of %edx:%eax by %r9d (n)
+  # height / n
+  idivl %r9d           # Signed division of %edx:%eax by %r9d (n)
 
-# store height / n
-movl %eax, %r11d     # Store result of height / n in %r11d
+  # store height / n
+  movl %eax, %r11d     # Store result of height / n in %r11d
 
-# is width / n <= 0?
-cmpl $0, %r10d   # Test if width / n is zero or less
-jle .LFalseCondition # Jump if less than or equal to 0 (signed comparison)
+  # is width / n <= 0?
+  cmpl $0, %r10d   # Test if width / n is zero or less
+  jle .LFalseCondition # Jump if less than or equal to 0 (signed comparison)
 
-# is height / n <= 0?
-cmpl $0, %r11d   # Test if height / n is zero or less
-jle .LFalseCondition # Jump if less than or equal to 0 (signed comparison)
+  # is height / n <= 0?
+  cmpl $0, %r11d   # Test if height / n is zero or less
+  jle .LFalseCondition # Jump if less than or equal to 0 (signed comparison)
 
-# True case, place 1 in return reg
-movl $1, %eax
-jmp .Lreturn         # Jump to return
+  # True case, place 1 in return reg
+  movl $1, %eax
+  jmp .Lreturn         # Jump to return
 
 .LFalseCondition:
-# False case, place 0 in return reg
-movl $0, %eax
+  # False case, place 0 in return reg
+  movl $0, %eax
 
 .Lreturn:
-# Restore stack pointer (good style)
-addq $8, %rsp
-ret
+  # Restore stack pointer (good style)
+  addq $8, %rsp
+  ret
 
 
 /*
@@ -101,49 +101,49 @@ int determine_tile_x_offset( int width, int n, int tile_col ){
   }
 } */
 
-.globl determine_tile_x_offset
+  .globl determine_tile_x_offset
 determine_tile_x_offset:
 
-# Arguments: width = %rdi, n = %rsi, tile_col = %rdx
+  # Arguments: width = %rdi, n = %rsi, tile_col = %rdx
 
-# Push callee-saved register
-pushq %r12         # Save the 64-bit register
+  # Push callee-saved register
+  pushq %r12         # Save the 64-bit register
 
-# Store tile_col in r12d
-movl %edx, %r12d
+  # Store tile_col in r12d
+  movl %edx, %r12d
 
-# If n == 0, cannot divide by 0
-cmpl $0, %esi     # Test if %esi (n) is zero
-je .LnoXOffset  # If zero, jump to false condition
+  # If n == 0, cannot divide by 0
+  cmpl $0, %esi     # Test if %esi (n) is zero
+  je .LnoXOffset  # If zero, jump to false condition
 
-# Move width into eax for division
-movl %edi, %eax
+  # Move width into eax for division
+  movl %edi, %eax
 
-# Clear edx for unsigned division
-xorl %edx, %edx    # Clear %edx
+  # Clear edx for unsigned division
+  xorl %edx, %edx    # Clear %edx
 
-# Divide width by n
-divl %esi          # Unsigned divide eax by n (%esi)
+  # Divide width by n
+  divl %esi          # Unsigned divide eax by n (%esi)
 
-# Quotient will be in %eax, remainder in %edx
+  # Quotient will be in %eax, remainder in %edx
 
-# Now, the remainder (width % n) is in %edx
-movl %edx, %r10d   # Store remainder in r10d
+  # Now, the remainder (width % n) is in %edx
+  movl %edx, %r10d   # Store remainder in r10d
 
-# If tile_col (r12d) >= remainder, go to else
-cmpl %r10d, %r12d
-jge .LnoXOffset
+  # If tile_col (r12d) >= remainder, go to else
+  cmpl %r10d, %r12d
+  jge .LnoXOffset
 
-# If tile_col < remainder, return 1
-movl $1, %eax
-jmp .LendOfCode
+  # If tile_col < remainder, return 1
+  movl $1, %eax
+  jmp .LendOfCode
 
 .LnoXOffset:
-movl $0, %eax
+  movl $0, %eax
 
 .LendOfCode:
-popq %r12          # Restore saved register
-ret                # Return to caller
+  popq %r12          # Restore saved register
+  ret                # Return to caller
 
 
 /*
@@ -161,49 +161,49 @@ int determine_tile_y_offset( int height, int n, int tile_row ){
   }
 } */
 
-.globl determine_tile_y_offset
+  .globl determine_tile_y_offset
 determine_tile_y_offset:
 
-# Arguments: height = %rdi, n = %rsi, tile_col = %rdx
+  # Arguments: height = %rdi, n = %rsi, tile_col = %rdx
 
-# Push callee-saved register
-pushq %r12         # Save the 64-bit register
+  # Push callee-saved register
+  pushq %r12         # Save the 64-bit register
 
-# Store tile_col in r12d
-movl %edx, %r12d
+  # Store tile_col in r12d
+  movl %edx, %r12d
 
-# If n == 0, cannot divide by 0
-cmpl $0, %esi     # Test if %esi (n) is zero
-je .LnoYOffset  # If zero, jump to false condition
+  # If n == 0, cannot divide by 0
+  cmpl $0, %esi     # Test if %esi (n) is zero
+  je .LnoYOffset  # If zero, jump to false condition
 
-# Move height into eax for division
-movl %edi, %eax
+  # Move height into eax for division
+  movl %edi, %eax
 
-# Clear edx for unsigned division
-xorl %edx, %edx    # Clear %edx
+  # Clear edx for unsigned division
+  xorl %edx, %edx    # Clear %edx
 
-# Divide height by n
-divl %esi          # Unsigned divide eax by n (%esi)
+  # Divide height by n
+  divl %esi          # Unsigned divide eax by n (%esi)
 
-# Quotient will be in %eax, remainder in %edx
+  # Quotient will be in %eax, remainder in %edx
 
-# Now, the remainder (height % n) is in %edx
-movl %edx, %r10d   # Store remainder in r10d
+  # Now, the remainder (height % n) is in %edx
+  movl %edx, %r10d   # Store remainder in r10d
 
-# If tile_col (r12d) >= remainder, go to else
-cmpl %r10d, %r12d
-jge .LnoYOffset
+  # If tile_col (r12d) >= remainder, go to else
+  cmpl %r10d, %r12d
+  jge .LnoYOffset
 
-# If tile_col < remainder, return 1
-movl $1, %eax
-jmp .LreturnOffset
+  # If tile_col < remainder, return 1
+  movl $1, %eax
+  jmp .LreturnOffset
 
 .LnoYOffset:
-movl $0, %eax
+  movl $0, %eax
 
 .LreturnOffset:
-popq %r12          # Restore saved register
-ret                # Return to caller
+  popq %r12          # Restore saved register
+  ret                # Return to caller
 
 
 /*
@@ -216,59 +216,59 @@ int determine_tile_w( int width, int n, int tile_col ){
   return width/n + determine_tile_x_offset(width, n, tile_col);
 }
 */
-.globl determine_tile_w
+  .globl determine_tile_w
 determine_tile_w:
 
-# Stack alignment
-subq $8, %rsp
+  # Stack alignment
+  subq $8, %rsp
 
-# Store total sum in %r12 callee-saved register
-pushq %r12
+  # Store total sum in %r12 callee-saved register
+  pushq %r12
 
-# Save tile_col in callee-saved register
-pushq %r14
-movl %edx, %r14d  # Move tile_col into r14d
+  # Save tile_col in callee-saved register
+  pushq %r14
+  movl %edx, %r14d  # Move tile_col into r14d
 
-# If n == 0, return 0 (false)
-cmpl $0, %esi     # Test if n is zero
-je .LnEqualsZero   # If zero, jump to false condition
+  # If n == 0, return 0 (false)
+  cmpl $0, %esi     # Test if n is zero
+  je .LnEqualsZero   # If zero, jump to false condition
 
-# place width in eax for division
-movl %edi, %eax    # Move width to %eax
-cdq                # Sign-extend %eax into %edx for signed division
+  # place width in eax for division
+  movl %edi, %eax    # Move width to %eax
+  cdq                # Sign-extend %eax into %edx for signed division
 
-# width / n
-idivl %esi         # Signed division of %edx:%eax by %esi (n)
+  # width / n
+  idivl %esi         # Signed division of %edx:%eax by %esi (n)
 
-# store width / n in %r12d
-movl %eax, %r12d
+  # store width / n in %r12d
+  movl %eax, %r12d
 
-# Call determine_tile_x_offset
-movl %edi, %edi    # width
-movl %esi, %esi    # n
-movl %r14d, %edx   # tile_col
-call determine_tile_x_offset
+  # Call determine_tile_x_offset
+  movl %edi, %edi    # width
+  movl %esi, %esi    # n
+  movl %r14d, %edx   # tile_col
+  call determine_tile_x_offset
 
-# Add result from function call to sum
-addl %eax, %r12d
+  # Add result from function call to sum
+  addl %eax, %r12d
 
-# Move total into %eax for return
-movl %r12d, %eax  
+  # Move total into %eax for return
+  movl %r12d, %eax  
 
-# Skip to end to return sum
-jmp .LreturnWidth
+  # Skip to end to return sum
+  jmp .LreturnWidth
 
-.LnEqualsZero:
-movl $0, %eax      # If n is zero, return 0
+  .LnEqualsZero:
+  movl $0, %eax      # If n is zero, return 0
 
-.LreturnWidth:
-# Restore callee-saved registers
-popq %r14          
-popq %r12          
+  .LreturnWidth:
+  # Restore callee-saved registers
+  popq %r14          
+  popq %r12          
 
-# Stack alignment
-addq $8, %rsp
-ret
+  # Stack alignment
+  addq $8, %rsp
+  ret
 
 
 /*
@@ -277,59 +277,59 @@ int determine_tile_h(int height, int n, int tile_row ){
   return height/n + determine_tile_y_offset(height, n, tile_row);
 } 
 */
-.globl determine_tile_h
+  .globl determine_tile_h
 determine_tile_h:
 
-# Stack alignment
-subq $8, %rsp
+  # Stack alignment
+  subq $8, %rsp
 
-# Store total sum in %r12 callee-saved register
-pushq %r12
+  # Store total sum in %r12 callee-saved register
+  pushq %r12
 
-# Save tile_row in callee-saved register
-pushq %r14
-movl %edx, %r14d  # Move tile_row into r14d
+  # Save tile_row in callee-saved register
+  pushq %r14
+  movl %edx, %r14d  # Move tile_row into r14d
 
-# If n == 0, return 0 (false)
-cmpl $0, %esi     # Test if n is zero
-je .LnEqualZero   # If zero, jump to false condition
+  # If n == 0, return 0 (false)
+  cmpl $0, %esi     # Test if n is zero
+  je .LnEqualZero   # If zero, jump to false condition
 
-# place height in eax for division
-movl %edi, %eax    # Move height to %eax
-cdq                # Sign-extend %eax into %edx for signed division
+  # place height in eax for division
+  movl %edi, %eax    # Move height to %eax
+  cdq                # Sign-extend %eax into %edx for signed division
 
-# height / n
-idivl %esi         # Signed division of %edx:%eax by %esi (n)
+  # height / n
+  idivl %esi         # Signed division of %edx:%eax by %esi (n)
 
-# store height / n in %r12d
-movl %eax, %r12d
+  # store height / n in %r12d
+  movl %eax, %r12d
 
-# Call determine_tile_y_offset
-movl %edi, %edi    # height
-movl %esi, %esi    # n
-movl %r14d, %edx   # tile_row
-call determine_tile_y_offset
+  # Call determine_tile_y_offset
+  movl %edi, %edi    # height
+  movl %esi, %esi    # n
+  movl %r14d, %edx   # tile_row
+  call determine_tile_y_offset
 
-# Add result from function call to sum
-addl %eax, %r12d
+  # Add result from function call to sum
+  addl %eax, %r12d
 
-# Move total into %eax for return
-movl %r12d, %eax  
+  # Move total into %eax for return
+  movl %r12d, %eax  
 
-# Skip to end to return sum
-jmp .LreturnHeight
+  # Skip to end to return sum
+  jmp .LreturnHeight
 
 .LnEqualZero:
-movl $0, %eax      # If n is zero, return 0
+  movl $0, %eax      # If n is zero, return 0
 
 .LreturnHeight:
-# Restore callee-saved registers
-popq %r14          
-popq %r12          
+  # Restore callee-saved registers
+  popq %r14          
+  popq %r12          
 
-# Stack alignment
-addq $8, %rsp
-ret
+  # Stack alignment
+  addq $8, %rsp
+  ret
 
 /*
 uint32_t blend_components( uint32_t fg, uint32_t bg, uint32_t alpha ) {
@@ -338,25 +338,24 @@ uint32_t blend_components( uint32_t fg, uint32_t bg, uint32_t alpha ) {
 */
 .globl blend_components
 blend_components:
+  # Arguments: %rdi = fg, %rsi = bg, %rdx = alpha
+  # alpha * fg
+  movl    %edx, %eax         # Move alpha into %eax
+  imull   %edi, %eax         # Multiply alpha * fg, result in %eax
 
-    # Arguments: %rdi = fg, %rsi = bg, %rdx = alpha
-    # alpha * fg
-    movl    %edx, %eax         # Move alpha into %eax
-    imull   %edi, %eax         # Multiply alpha * fg, result in %eax
+  # (255 - alpha) * bg
+  movl    $255, %ecx         # Load 255 into %ecx
+  subl    %edx, %ecx         # Compute 255 - alpha, store in %ecx
+  imull   %esi, %ecx         # Multiply (255 - alpha) * bg, result in %ecx
 
-    # (255 - alpha) * bg
-    movl    $255, %ecx         # Load 255 into %ecx
-    subl    %edx, %ecx         # Compute 255 - alpha, store in %ecx
-    imull   %esi, %ecx         # Multiply (255 - alpha) * bg, result in %ecx
+  # (alpha * fg + (255 - alpha) * bg)
+  addl    %ecx, %eax         # Add (alpha * fg) + ((255 - alpha) * bg)
 
-    # (alpha * fg + (255 - alpha) * bg)
-    addl    %ecx, %eax         # Add (alpha * fg) + ((255 - alpha) * bg)
-
-    # Divide by 255
-    xorl    %edx, %edx         # Clear %edx before division
-    movl    $255, %ecx         # Move 255 into %ecx for division
-    divl    %ecx               # Divide by 255, quotient in %eax
-    ret                        # Return result in %eax
+  # Divide by 255
+  xorl    %edx, %edx         # Clear %edx before division
+  movl    $255, %ecx         # Move 255 into %ecx for division
+  divl    %ecx               # Divide by 255, quotient in %eax
+  ret                        # Return result in %eax
 
 
 
@@ -382,82 +381,82 @@ uint32_t blend_colors( uint32_t fg, uint32_t bg ) {
 } */
 .globl blend_colors
 blend_colors:
-    # Prologue: Set up stack frame and save callee-saved registers
-    pushq %rbp
-    movq %rsp, %rbp
-    subq $16, %rsp            # Reserve 16 bytes on the stack for local variables
+  # Prologue: Set up stack frame and save callee-saved registers
+  pushq %rbp
+  movq %rsp, %rbp
+  subq $16, %rsp            # Reserve 16 bytes on the stack for local variables
 
-    # Save callee-saved registers
-    pushq %rbx
-    pushq %r12
-    pushq %r13
-    pushq %r14
-    pushq %r15                # Save %r15 as well
+  # Save callee-saved registers
+  pushq %rbx
+  pushq %r12
+  pushq %r13
+  pushq %r14
+  pushq %r15                # Save %r15 as well
 
-    # Step 1: Get foreground color components (r, g, b, a)
-    movl %edi, %r12d           # Store fg in %r12d for reuse
-    call get_r                 # fg_r = get_r(fg)
-    movl %eax, %r13d           # Store fg_r in %r13d
+  # Step 1: Get foreground color components (r, g, b, a)
+  movl %edi, %r12d           # Store fg in %r12d for reuse
+  call get_r                 # fg_r = get_r(fg)
+  movl %eax, %r13d           # Store fg_r in %r13d
 
-    call get_g                 # fg_g = get_g(fg)
-    movl %eax, %r14d           # Store fg_g in %r14d
+  call get_g                 # fg_g = get_g(fg)
+  movl %eax, %r14d           # Store fg_g in %r14d
 
-    call get_b                 # fg_b = get_b(fg)
-    movl %eax, %r15d           # Store fg_b in %r15d
+  call get_b                 # fg_b = get_b(fg)
+  movl %eax, %r15d           # Store fg_b in %r15d
 
-    call get_a                 # fg_a = get_a(fg)
-    movl %eax, -4(%rbp)        # Store fg_a in memory (fg_a is used multiple times)
+  call get_a                 # fg_a = get_a(fg)
+  movl %eax, -4(%rbp)        # Store fg_a in memory (fg_a is used multiple times)
 
-    # Step 2: Get background color components (r, g, b)
-    movl %esi, %edi            # Move bg to %edi for get_r call
-    call get_r                 # bg_r = get_r(bg)
-    movl %eax, %ebx            # Store bg_r in %ebx
+  # Step 2: Get background color components (r, g, b)
+  movl %esi, %edi            # Move bg to %edi for get_r call
+  call get_r                 # bg_r = get_r(bg)
+  movl %eax, %ebx            # Store bg_r in %ebx
 
-    call get_g                 # bg_g = get_g(bg)
-    movl %eax, -8(%rbp)        # Store bg_g in memory (limited registers left)
+  call get_g                 # bg_g = get_g(bg)
+  movl %eax, -8(%rbp)        # Store bg_g in memory (limited registers left)
 
-    call get_b                 # bg_b = get_b(bg)
-    movl %eax, -12(%rbp)       # Store bg_b in memory
+  call get_b                 # bg_b = get_b(bg)
+  movl %eax, -12(%rbp)       # Store bg_b in memory
 
-    # Step 3: Blend the components
-    # Blend red component
-    movl %r13d, %edi           # fg_r
-    movl %ebx, %esi            # bg_r
-    movl -4(%rbp), %edx        # fg_a (alpha)
-    call blend_components       # blended_r = blend_components(fg_r, bg_r, fg_a)
-    movl %eax, %r13d           # Store blended_r in %r13d
+  # Step 3: Blend the components
+  # Blend red component
+  movl %r13d, %edi           # fg_r
+  movl %ebx, %esi            # bg_r
+  movl -4(%rbp), %edx        # fg_a (alpha)
+  call blend_components       # blended_r = blend_components(fg_r, bg_r, fg_a)
+  movl %eax, %r13d           # Store blended_r in %r13d
 
-    # Blend green component
-    movl %r14d, %edi           # fg_g
-    movl -8(%rbp), %esi        # bg_g
-    movl -4(%rbp), %edx        # fg_a (alpha)
-    call blend_components       # blended_g = blend_components(fg_g, bg_g, fg_a)
-    movl %eax, %r14d           # Store blended_g in %r14d
+  # Blend green component
+  movl %r14d, %edi           # fg_g
+  movl -8(%rbp), %esi        # bg_g
+  movl -4(%rbp), %edx        # fg_a (alpha)
+  call blend_components       # blended_g = blend_components(fg_g, bg_g, fg_a)
+  movl %eax, %r14d           # Store blended_g in %r14d
 
-    # Blend blue component
-    movl %r15d, %edi           # fg_b
-    movl -12(%rbp), %esi       # bg_b
-    movl -4(%rbp), %edx        # fg_a (alpha)
-    call blend_components       # blended_b = blend_components(fg_b, bg_b, fg_a)
-    movl %eax, %r15d           # Store blended_b in %r15d
+  # Blend blue component
+  movl %r15d, %edi           # fg_b
+  movl -12(%rbp), %esi       # bg_b
+  movl -4(%rbp), %edx        # fg_a (alpha)
+  call blend_components       # blended_b = blend_components(fg_b, bg_b, fg_a)
+  movl %eax, %r15d           # Store blended_b in %r15d
 
-    # Step 4: Create the new pixel using make_pixel
-    movl %r13d, %edi           # blended_r as 1st argument
-    movl %r14d, %esi           # blended_g as 2nd argument
-    movl %r15d, %edx           # blended_b as 3rd argument
-    movl $255, %ecx            # Alpha = 255 (fully opaque)
-    call make_pixel            # Call make_pixel(blended_r, blended_g, blended_b, 255)
+  # Step 4: Create the new pixel using make_pixel
+  movl %r13d, %edi           # blended_r as 1st argument
+  movl %r14d, %esi           # blended_g as 2nd argument
+  movl %r15d, %edx           # blended_b as 3rd argument
+  movl $255, %ecx            # Alpha = 255 (fully opaque)
+  call make_pixel            # Call make_pixel(blended_r, blended_g, blended_b, 255)
 
-    # Step 5: Restore callee-saved registers and stack frame
-    popq %r15                  # Restore %r15
-    popq %r14                  # Restore %r14
-    popq %r13                  # Restore %r13
-    popq %r12                  # Restore %r12
-    popq %rbx                  # Restore %rbx
+  # Step 5: Restore callee-saved registers and stack frame
+  popq %r15                  # Restore %r15
+  popq %r14                  # Restore %r14
+  popq %r13                  # Restore %r13
+  popq %r12                  # Restore %r12
+  popq %rbx                  # Restore %rbx
 
-    addq $16, %rsp             # Restore stack pointer
-    popq %rbp                  # Restore base pointer
-    ret
+  addq $16, %rsp             # Restore stack pointer
+  popq %rbp                  # Restore base pointer
+  ret
 
 
 /*
@@ -471,20 +470,19 @@ blend_colors:
  *   %ecx - a
  *   %eax - Used as temp in computation, also pixel value to return
  */
-.globl make_pixel
-
+  .globl make_pixel
 make_pixel:
 
-movl %edi, %eax  # place r into temp register
-shll $24, %eax    # left shift r by 24
-shll $16, %esi    # left shift g by 16
-shll $8, %edx     # left shift b by 8
+  movl %edi, %eax  # place r into temp register
+  shll $24, %eax    # left shift r by 24
+  shll $16, %esi    # left shift g by 16
+  shll $8, %edx     # left shift b by 8
 
-or %esi, %eax    # store (r << 24) | (g << 16) in %eax
-or %edx, %eax    # store (r << 24) | (g << 16) | (b << 8) in %eax
-or %ecx, %eax    # or with a to get final result
+  or %esi, %eax    # store (r << 24) | (g << 16) in %eax
+  or %edx, %eax    # store (r << 24) | (g << 16) | (b << 8) in %eax
+  or %ecx, %eax    # or with a to get final result
 
-ret
+  ret
 
 
 /*
@@ -501,53 +499,53 @@ ret
 .globl get_pixel
 
 get_pixel:
-    # Adjust the stack to maintain 16-byte alignment
-    subq $8, %rsp
+  # Adjust the stack to maintain 16-byte alignment
+  subq $8, %rsp
 
-    # Push callee-saved registers
-    pushq %r12
-    pushq %r14
+  # Push callee-saved registers
+  pushq %r12
+  pushq %r14
 
-    # Calculate y * img->width
+  # Calculate y * img->width
 
-    # Save img pointer in r12
-    movq %rdi, %r12   
+  # Save img pointer in r12
+  movq %rdi, %r12   
 
-    # Load img->width into r14d
-    movl IMAGE_WIDTH_OFFSET(%r12), %r14d   
+  # Load img->width into r14d
+  movl IMAGE_WIDTH_OFFSET(%r12), %r14d   
 
-    # Move img->width into r10d 
-    movl %r14d, %r10d  
+  # Move img->width into r10d 
+  movl %r14d, %r10d  
 
-    # Multiply y (edx) * width (r10d)                     
-    imull %edx, %r10d                       
+  # Multiply y (edx) * width (r10d)                     
+  imull %edx, %r10d                       
 
-    # Add x to the result (y * img->width + x)
+  # Add x to the result (y * img->width + x)
 
-    # r10d = y * width + x
-    addl %esi, %r10d                        
+  # r10d = y * width + x
+  addl %esi, %r10d                        
 
-    # Load the base address of img->data
+  # Load the base address of img->data
 
-    # Load img->data (address)
-    mov IMAGE_DATA_OFFSET(%r12), %rdi       
+  # Load img->data (address)
+  mov IMAGE_DATA_OFFSET(%r12), %rdi       
 
-    # Retrieve the pixel at img->data[y * width + x]
+  # Retrieve the pixel at img->data[y * width + x]
 
-    # Load the pixel at img->data[index]
-    movl (%rdi, %r10, 4), %eax             
+  # Load the pixel at img->data[index]
+  movl (%rdi, %r10, 4), %eax             
 
-    # Restore the img pointer to rdi
-    movq %r12, %rdi
+  # Restore the img pointer to rdi
+  movq %r12, %rdi
 
-    # Restore callee-saved registers
-    popq %r14
-    popq %r12
+  # Restore callee-saved registers
+  popq %r14
+  popq %r12
 
-    # Restore the stack pointer
-    addq $8, %rsp
+  # Restore the stack pointer
+  addq $8, %rsp
 
-    ret
+  ret
 
 
 /*
@@ -563,55 +561,54 @@ get_pixel:
  *  %r10 - used for index computation (y * width + x)
  *  %r12, %r13 - callee-saved registers used for computations
  */
-.globl set_pixel
+  .globl set_pixel
 set_pixel:
+  # Adjust the stack to maintain 16-byte alignment
+  subq $8, %rsp
 
-    # Adjust the stack to maintain 16-byte alignment
-    subq $8, %rsp
+  # Push callee-saved registers
+  pushq %r12
+  pushq %r13
 
-    # Push callee-saved registers
-    pushq %r12
-    pushq %r13
+  # Move the pixel value from %ecx to %eax
 
-    # Move the pixel value from %ecx to %eax
+  # Move pixel value into eax
+  movl %ecx, %eax                          
 
-    # Move pixel value into eax
-    movl %ecx, %eax                          
+  # Calculate y * img->width
 
-    # Calculate y * img->width
+  # Save img pointer in %r12
+  movq %rdi, %r12   
 
-    # Save img pointer in %r12
-    movq %rdi, %r12   
+  # Load img->width into %r13d                       
+  movl IMAGE_WIDTH_OFFSET(%r12), %r13d 
 
-    # Load img->width into %r13d                       
-    movl IMAGE_WIDTH_OFFSET(%r12), %r13d 
+  # Multiply y (edx) * width (%r13d)    
+  imull %edx, %r13d                        
 
-    # Multiply y (edx) * width (%r13d)    
-    imull %edx, %r13d                        
+  # Add x to the result (y * img->width + x)
 
-    # Add x to the result (y * img->width + x)
+  # r13d = y * width + x
+  addl %esi, %r13d                         
 
-    # r13d = y * width + x
-    addl %esi, %r13d                         
+  # Load the base address of img->data
 
-    # Load the base address of img->data
+  # Load img->data (address) into %r12
+  movq IMAGE_DATA_OFFSET(%r12), %r12        
 
-    # Load img->data (address) into %r12
-    movq IMAGE_DATA_OFFSET(%r12), %r12        
+  # Store the pixel value at img->data[y * width + x]
 
-    # Store the pixel value at img->data[y * width + x]
+  # Store pixel at img->data[index]
+  movl %eax, (%r12, %r13, 4)               
 
-    # Store pixel at img->data[index]
-    movl %eax, (%r12, %r13, 4)               
+  # Pop callee-saved registers
+  popq %r13
+  popq %r12
 
-    # Pop callee-saved registers
-    popq %r13
-    popq %r12
+  # Restore the stack pointer
+  addq $8, %rsp
 
-    # Restore the stack pointer
-    addq $8, %rsp
-
-    ret
+  ret
 
 
 /*
@@ -623,20 +620,20 @@ set_pixel:
  *  %eax - return value (R)
  *  
  */
-.globl get_r
+  .globl get_r
 get_r:
-    # Shift pixel right by 24 bits and mask with 0xFF to get the R value
+  # Shift pixel right by 24 bits and mask with 0xFF to get the R value
 
-    # Move pixel to eax
-    movl %edi, %eax      
+  # Move pixel to eax
+  movl %edi, %eax      
 
-    # Shift right by 24
-    shrl $24, %eax       
+  # Shift right by 24
+  shrl $24, %eax       
 
-    # Mask with 0xFF
-    andl $0xFF, %eax   
+  # Mask with 0xFF
+  andl $0xFF, %eax   
 
-    ret
+  ret
 
 
 /*
@@ -648,18 +645,18 @@ get_r:
  *  %eax - return value (G)
  *  
  */
-.globl get_g
+  .globl get_g
 get_g:
-    # Shift pixel right by 16 bits and mask with 0xFF to get the G value
+  # Shift pixel right by 16 bits and mask with 0xFF to get the G value
 
-    # Move pixel to eax
-    movl %edi, %eax  
+  # Move pixel to eax
+  movl %edi, %eax  
 
-    # Shift right by 16
-    shrl $16, %eax 
+  # Shift right by 16
+  shrl $16, %eax 
 
-    # Mask with 0xFF            
-    andl $0xFF, %eax     
+  # Mask with 0xFF            
+  andl $0xFF, %eax     
 
     ret
 
@@ -674,18 +671,18 @@ get_g:
  */
 .globl get_b
 get_b:
-    # Shift pixel right by 8 bits and mask with 0xFF to get the B value
+  # Shift pixel right by 8 bits and mask with 0xFF to get the B value
 
-    # Move pixel to eax
-    movl %edi, %eax     
+  # Move pixel to eax
+  movl %edi, %eax     
 
-    # Shift right by 8       
-    shrl $8, %eax  
+  # Shift right by 8       
+  shrl $8, %eax  
 
-    # Mask with 0xFF            
-    andl $0xFF, %eax   
+  # Mask with 0xFF            
+  andl $0xFF, %eax   
 
-    ret
+  ret
 
 /*
  * uint32_t get_a(uint32_t pixel) 
@@ -698,15 +695,15 @@ get_b:
  */
 .globl get_a
 get_a:
-    # Mask pixel with 0xFF to get the A value
+  # Mask pixel with 0xFF to get the A value
 
-    # Move pixel to eax
-    movl %edi, %eax        
+  # Move pixel to eax
+  movl %edi, %eax        
 
-    # Mask with 0xFF
-    andl $0xFF, %eax   
+  # Mask with 0xFF
+  andl $0xFF, %eax   
 
-    ret
+  ret
 
 /*
 * uint32_t to_grayscale( uint32_t pixel ) 
@@ -718,91 +715,91 @@ get_a:
 *  %r12d - callee-saved register for computation
 *  
 */
-.globl to_grayscale
+  .globl to_grayscale
 to_grayscale:
 
-    # Push callee-saved registers
-    pushq %r12                   
+  # Push callee-saved registers
+  pushq %r12                   
 
-    # Get R, G, B, and A components from the pixel
+  # Get R, G, B, and A components from the pixel
 
-    # Call get_r(pixel), result in %eax
-    call get_r  
+  # Call get_r(pixel), result in %eax
+  call get_r  
 
-    # Multiply R value by 79                 
-    imull $79, %eax 
+  # Multiply R value by 79                 
+  imull $79, %eax 
 
-    # Store result in %r12 (for later use)             
-    movl %eax, %r12d      
-     
-    # Call get_g(pixel), result in %eax
-    call get_g     
-
-    # Multiply G value by 128
-    imull $128, %eax  
-
-    # Add to previous result in %r10
-    addl %eax, %r12d            
-
-    # Call get_b(pixel), result in %eax
-    call get_b  
-
-    # Multiply B value by 49                 
-    imull $49, %eax 
-
-    # Add to result in %r10             
-    addl %eax, %r12d             
-
-    # Now divide the total by 256 to get the gray value using an arithmetic right shift by 8 
-    sarl $8, %r12d               
-
-    # Get the A value from the pixel by calling get_a(pixel), result in %ebx
-    call get_a                  
-
-    # Create the grayscale pixel using make_pixel(gray_value, gray_value, gray_value, a)
-
-    # Copy gray_value for green channel
-    movl %r12d, %esi 
-
-    # Copy gray_value for blue channel            
-    movl %r12d, %edx 
-
-    # Move gray_value to %rdi (R)            
-    movl %r12d, %edi 
-
-    # Move A value to %rcx (A)           
-    movl %eax, %ecx             
+  # Store result in %r12 (for later use)             
+  movl %eax, %r12d      
     
-    # Call make_pixel(R, G, B, A), stored in %eax
-    call make_pixel    
+  # Call get_g(pixel), result in %eax
+  call get_g     
 
-    # Pop callee-saved register         
-    popq %r12                   
+  # Multiply G value by 128
+  imull $128, %eax  
 
-     # return %eax
-    ret                        
+  # Add to previous result in %r10
+  addl %eax, %r12d            
+
+  # Call get_b(pixel), result in %eax
+  call get_b  
+
+  # Multiply B value by 49                 
+  imull $49, %eax 
+
+  # Add to result in %r10             
+  addl %eax, %r12d             
+
+  # Now divide the total by 256 to get the gray value using an arithmetic right shift by 8 
+  sarl $8, %r12d               
+
+  # Get the A value from the pixel by calling get_a(pixel), result in %ebx
+  call get_a                  
+
+  # Create the grayscale pixel using make_pixel(gray_value, gray_value, gray_value, a)
+
+  # Copy gray_value for green channel
+  movl %r12d, %esi 
+
+  # Copy gray_value for blue channel            
+  movl %r12d, %edx 
+
+  # Move gray_value to %rdi (R)            
+  movl %r12d, %edi 
+
+  # Move A value to %rcx (A)           
+  movl %eax, %ecx             
+  
+  # Call make_pixel(R, G, B, A), stored in %eax
+  call make_pixel    
+
+  # Pop callee-saved register         
+  popq %r12                   
+
+  # return %eax
+  ret                        
 
 
-/*
- * Implementations of API functions
- */
+  /*
+  * Implementations of API functions
+  */
 
-/*
- * void imgproc_mirror_h( struct Image *input_img, struct Image *output_img );
- *
- * Transform image by mirroring its pixels horizontally.
- * This transformation always succeeds.
- *
- * Parameters:
- *   %rdi - pointer to original struct Image
- *   %rsi - pointer to output struct Image
- * Registers:
- *   %r11 - used to restore the original input image
- *   %r12 - callee-saved register to hold original struct Image
- *   %r13 - callee-saved register to hold image widths and heights
- *   %r14 - callee-saved register to hold original x value
- *   %r15 - callee-saved register to hold output struct Image
- */
+  /*
+  * void imgproc_mirror_h( struct Image *input_img, struct Image *output_img );
+  *
+  * Transform image by mirroring its pixels horizontally.
+  * This transformation always succeeds.
+  *
+  * Parameters:
+  *   %rdi - pointer to original struct Image
+  *   %rsi - pointer to output struct Image
+  * Registers:
+  *   %r11 - used to restore the original input image
+  *   %r12 - callee-saved register to hold original struct Image
+  *   %r13 - callee-saved register to hold image widths and heights
+  *   %r14 - callee-saved register to hold original x value
+  *   %r15 - callee-saved register to hold output struct Image
+  */
 	.globl imgproc_mirror_h
 imgproc_mirror_h:
 
@@ -824,87 +821,87 @@ imgproc_mirror_h:
 
 # Outer Loop to compare y value with height
 h_outer_y_loop:
-    # Move image height into r13d
-    movl IMAGE_HEIGHT_OFFSET(%r12), %r13d
+  # Move image height into r13d
+  movl IMAGE_HEIGHT_OFFSET(%r12), %r13d
 
-    # Compare y with the total height
-    cmpl %r13d, %edx  
+  # Compare y with the total height
+  cmpl %r13d, %edx  
 
-    # If y >= Image height, end the outer loop
-    jae h_y_loop_end
+  # If y >= Image height, end the outer loop
+  jae h_y_loop_end
 
-    # Initialize x counter variable
-    movl $0, %esi
+  # Initialize x counter variable
+  movl $0, %esi
 
 # Inner loop to execute body of code
 h_inner_x_loop:
-    # Move image width into r13d 
-    movl IMAGE_WIDTH_OFFSET(%r12), %r13d
+  # Move image width into r13d 
+  movl IMAGE_WIDTH_OFFSET(%r12), %r13d
 
-    # Compare x with total width
-    cmpl %r13d, %esi
+  # Compare x with total width
+  cmpl %r13d, %esi
 
-    # If x >= Image width, end the inner loop
-    jae h_x_loop_end
+  # If x >= Image width, end the inner loop
+  jae h_x_loop_end
 
-    # Get pixel of the input image at the current position
-    call get_pixel
+  # Get pixel of the input image at the current position
+  call get_pixel
 
-    # Move the pixel into the pixel parameter for set_pixel
-    movl %eax, %ecx
+  # Move the pixel into the pixel parameter for set_pixel
+  movl %eax, %ecx
 
-    # Store the original x position in r14d
-    movl %esi, %r14d
+  # Store the original x position in r14d
+  movl %esi, %r14d
 
-    # Store the input image pointer in r11
-    movq %rdi, %r11
+  # Store the input image pointer in r11
+  movq %rdi, %r11
 
-    # Update %esi to hold the inversed width
-    movl $0, %esi
+  # Update %esi to hold the inversed width
+  movl $0, %esi
 
-    # Move image width into r13d 
-    movl IMAGE_WIDTH_OFFSET(%r12), %r13d
+  # Move image width into r13d 
+  movl IMAGE_WIDTH_OFFSET(%r12), %r13d
 
-    # Add image width to %esi
-    addl %r13d, %esi
+  # Add image width to %esi
+  addl %r13d, %esi
 
-    # Subtract (1 + original_x) from esi
-    subl $1, %esi
-    subl %r14d, %esi
+  # Subtract (1 + original_x) from esi
+  subl $1, %esi
+  subl %r14d, %esi
 
-    # Prepare for the set_pixel call by setting r15 to output image pointer
-    movq %r15, %rdi  
+  # Prepare for the set_pixel call by setting r15 to output image pointer
+  movq %r15, %rdi  
 
-    # Set the pixel at the computed position
-    call set_pixel
+  # Set the pixel at the computed position
+  call set_pixel
 
-    # Restore the original x position
-    movl %r14d, %esi
+  # Restore the original x position
+  movl %r14d, %esi
 
-     # Restore input image pointer
-    movq %r11, %rdi 
+    # Restore input image pointer
+  movq %r11, %rdi 
 
-    # Increment x counter and loop again
-    incl %esi
-    jmp h_inner_x_loop
+  # Increment x counter and loop again
+  incl %esi
+  jmp h_inner_x_loop
 
 # Code to reset the inner loop once inner body is finished
 h_x_loop_end:
-    # At the end of the x loop, increment y and start the loop again
-    incl %edx
-    jmp h_outer_y_loop
+  # At the end of the x loop, increment y and start the loop again
+  incl %edx
+  jmp h_outer_y_loop
 
 # Code to run once outer loop is finished
 h_y_loop_end:
-    # Restore callee-saved registers
-    popq %r15
-    popq %r14
-    popq %r13
-    popq %r12
+  # Restore callee-saved registers
+  popq %r15
+  popq %r14
+  popq %r13
+  popq %r12
 
-    # Aligning stack pointer
-    addq $8, %rsp
-    ret  # return
+  # Aligning stack pointer
+  addq $8, %rsp
+  ret  # return
 
     
 /*
@@ -925,108 +922,108 @@ h_y_loop_end:
 
 	.globl imgproc_mirror_v
 imgproc_mirror_v:
-    # Adjust the stack to maintain 16-byte alignment
-    subq $8, %rsp
+  # Adjust the stack to maintain 16-byte alignment
+  subq $8, %rsp
 
-    # Push callee-saved registers
-    pushq %r12
-    pushq %r13
-    pushq %r14
-    pushq %r15
+  # Push callee-saved registers
+  pushq %r12
+  pushq %r13
+  pushq %r14
+  pushq %r15
 
-    # Move pointer to the input image into %r12 
-    movq %rdi, %r12
+  # Move pointer to the input image into %r12 
+  movq %rdi, %r12
 
-    # Move pointer to output image into callee-saved registers
-    movq %rsi, %r15
+  # Move pointer to output image into callee-saved registers
+  movq %rsi, %r15
 
-    # Initialize y counter variable
-    movl $0, %edx
+  # Initialize y counter variable
+  movl $0, %edx
 
 # Code to determine whether outer loop should iterate again
 v_outer_y_loop:
-    # Store height in %r13d
-    movl IMAGE_HEIGHT_OFFSET(%r12), %r13d  
+  # Store height in %r13d
+  movl IMAGE_HEIGHT_OFFSET(%r12), %r13d  
 
-    # Compare y with the total height
-    cmpl %r13d, %edx  
+  # Compare y with the total height
+  cmpl %r13d, %edx  
 
-    # If y >= Image height, end the outer loop
-    jae v_y_loop_end
+  # If y >= Image height, end the outer loop
+  jae v_y_loop_end
 
-    # Initialize x counter variable
-    movl $0, %esi
+  # Initialize x counter variable
+  movl $0, %esi
 
 v_inner_x_loop:
-    # Update image width in %r13d
-    movl IMAGE_WIDTH_OFFSET(%r12), %r13d  
+  # Update image width in %r13d
+  movl IMAGE_WIDTH_OFFSET(%r12), %r13d  
 
-    # Compare x with total width
-    cmpl %r13d, %esi
+  # Compare x with total width
+  cmpl %r13d, %esi
 
-    # If x >= Image width, end the inner loop
-    jae v_x_loop_end
+  # If x >= Image width, end the inner loop
+  jae v_x_loop_end
 
-    # Get pixel of the input image at the current position
-    call get_pixel
+  # Get pixel of the input image at the current position
+  call get_pixel
 
-    # Move the pixel into the pixel parameter for set_pixel
-    movl %eax, %ecx
+  # Move the pixel into the pixel parameter for set_pixel
+  movl %eax, %ecx
 
-    # Store the original y value in %r14d 
-    movl %edx, %r14d
+  # Store the original y value in %r14d 
+  movl %edx, %r14d
 
-    # Update %edx to hold the inversed height
-    movl $0, %edx
+  # Update %edx to hold the inversed height
+  movl $0, %edx
 
-    # Update image height in %r13d
-    movl IMAGE_HEIGHT_OFFSET(%r12), %r13d 
+  # Update image height in %r13d
+  movl IMAGE_HEIGHT_OFFSET(%r12), %r13d 
 
-    # Compute inversed y value by first adding y height
-    addl %r13d, %edx
+  # Compute inversed y value by first adding y height
+  addl %r13d, %edx
 
-    # Subtract (1 + original_y) from the inversed height
-    subl $1, %edx
-    subl %r14d, %edx
+  # Subtract (1 + original_y) from the inversed height
+  subl $1, %edx
+  subl %r14d, %edx
 
-    # Prepare for the set_pixel call by moving output image in %rdi
-    movq %r15, %rdi  
+  # Prepare for the set_pixel call by moving output image in %rdi
+  movq %r15, %rdi  
 
-    # Set the pixel at the computed position
-    call set_pixel
+  # Set the pixel at the computed position
+  call set_pixel
 
-    # Restore the original y value into %edx 
-    movl %r14d, %edx
+  # Restore the original y value into %edx 
+  movl %r14d, %edx
 
-    # Restore input image pointer into %rdi
-    movq %r12, %rdi  
+  # Restore input image pointer into %rdi
+  movq %r12, %rdi  
 
-    # Increment x counter and loop again
-    incl %esi
+  # Increment x counter and loop again
+  incl %esi
 
-    # Repeat the loop
-    jmp v_inner_x_loop
+  # Repeat the loop
+  jmp v_inner_x_loop
 
 # Describes what to do once the inner loop ends
 v_x_loop_end:
-    # Increae y pixel value by 1
-    incl %edx
+  # Increae y pixel value by 1
+  incl %edx
 
-    # Restart check for outer loop
-    jmp v_outer_y_loop
+  # Restart check for outer loop
+  jmp v_outer_y_loop
 
 # Describes what to do once the loop ends
 v_y_loop_end:
-    # Restore callee-saved registers
-    popq %r15
-    popq %r14
-    popq %r13
-    popq %r12
+  # Restore callee-saved registers
+  popq %r15
+  popq %r14
+  popq %r13
+  popq %r12
 
-    # Restore the stack pointer
-    addq $8, %rsp
+  # Restore the stack pointer
+  addq $8, %rsp
 
-    ret  # return
+  ret  # return
 
 
   # Move output image pointer into %rdi
@@ -1035,7 +1032,7 @@ v_y_loop_end:
   # Move current column value into %ecx
   # %r8d already holds the n value from above
 
-    .globl copy_tile
+  .globl copy_tile
 copy_tile:
   subq $24, %rsp
   pushq %rbp
@@ -1276,11 +1273,11 @@ copy_advance:
 
 # Describes what to do once the inner loop ends
 copy_w_loop_end:
-    # Increae r pixel value by 1
-    incl %edx
+  # Increae r pixel value by 1
+  incl %edx
 
-    # Restart check for outer loop
-    jmp copy_outer_h_loop
+  # Restart check for outer loop
+  jmp copy_outer_h_loop
 
 end_copy:
   popq %rbx
@@ -1389,11 +1386,11 @@ tile_inner_c_loop:
 
 # Describes what to do once the inner loop ends
 tile_c_loop_end:
-    # Increae r pixel value by 1
-    incl %r13d
+  # Increae r pixel value by 1
+  incl %r13d
 
-    # Restart check for outer loop
-    jmp tile_outer_r_loop
+  # Restart check for outer loop
+  jmp tile_outer_r_loop
 
 returnFalse:
   movl $0, %eax
@@ -1431,100 +1428,100 @@ endFunction:
  */
 	.globl imgproc_grayscale
 imgproc_grayscale:
-    # Push callee-saved registers (r13, r14, r15)
-    pushq %r13
-    pushq %r14
-    pushq %r15
+  # Push callee-saved registers (r13, r14, r15)
+  pushq %r13
+  pushq %r14
+  pushq %r15
 
-    # Move input image pointer into %r14 
-    movq %rdi, %r14 
+  # Move input image pointer into %r14 
+  movq %rdi, %r14 
 
-    # Move output image pointer into %r15
-    movq %rsi, %r15
+  # Move output image pointer into %r15
+  movq %rsi, %r15
 
-    # Initialize y counter variable
-    movl $0, %edx
+  # Initialize y counter variable
+  movl $0, %edx
 
 # Outer loop checks to see whether to proceed to go to inner loop
 gray_outer_y_loop:
-    # Store image height into %r13d
-    movl IMAGE_HEIGHT_OFFSET(%r14), %r13d
+  # Store image height into %r13d
+  movl IMAGE_HEIGHT_OFFSET(%r14), %r13d
 
-    # Compare y with the total height
-    cmpl %r13d, %edx  
+  # Compare y with the total height
+  cmpl %r13d, %edx  
 
-    # If y >= Image height, end the outer loop
-    jae gray_y_loop_end
+  # If y >= Image height, end the outer loop
+  jae gray_y_loop_end
 
-    # Initialize x counter variable
-    movl $0, %esi
+  # Initialize x counter variable
+  movl $0, %esi
 
 # Proceed to the inner loop and execute the body of code
 gray_inner_x_loop:
-    # Storage image width into %r13d
-    movl IMAGE_WIDTH_OFFSET(%r14), %r13d
+  # Storage image width into %r13d
+  movl IMAGE_WIDTH_OFFSET(%r14), %r13d
 
-    # Compare x with total width variable
-    cmpl %r13d, %esi
+  # Compare x with total width variable
+  cmpl %r13d, %esi
 
-    # If x >= Image width, end the inner loop
-    jae gray_x_loop_end
+  # If x >= Image width, end the inner loop
+  jae gray_x_loop_end
 
-    # Get pixel of the input image at the current coordinates 
-    call get_pixel
+  # Get pixel of the input image at the current coordinates 
+  call get_pixel
 
-    # Move the original y value into %r10d
-    movl %edx, %r10d
+  # Move the original y value into %r10d
+  movl %edx, %r10d
 
-    # Move the original x value into %r11d
-    movl %esi, %r11d
+  # Move the original x value into %r11d
+  movl %esi, %r11d
 
-    # Move the pixel into the pixel parameter for to_grayscale
-    movl %eax, %edi
+  # Move the pixel into the pixel parameter for to_grayscale
+  movl %eax, %edi
 
-    # Call the to_grayscale function
-    call to_grayscale 
+  # Call the to_grayscale function
+  call to_grayscale 
 
-    # Move the returned pixel into %ecx for set_pixel
-    movl %eax, %ecx
-    
-    # Add the output image pointer into the input image pointer for set_pixel
-    movq %r15, %rdi
+  # Move the returned pixel into %ecx for set_pixel
+  movl %eax, %ecx
+  
+  # Add the output image pointer into the input image pointer for set_pixel
+  movq %r15, %rdi
 
-    # Restore the original y value
-    movl %r10d, %edx
+  # Restore the original y value
+  movl %r10d, %edx
 
-    # Restore the original x value
-    movl %r11d, %esi
+  # Restore the original x value
+  movl %r11d, %esi
 
-    # Set the pixel at the provided position
-    call set_pixel
+  # Set the pixel at the provided position
+  call set_pixel
 
-    # Move the original input value into %rdi
-    movq %r14, %rdi
+  # Move the original input value into %rdi
+  movq %r14, %rdi
 
-    # Increase the x counter and jump in the loop again
-    incl %esi
+  # Increase the x counter and jump in the loop again
+  incl %esi
 
-    # Repeat the loop
-    jmp gray_inner_x_loop
+  # Repeat the loop
+  jmp gray_inner_x_loop
 
 # Code to execute once the outer loop finishes
 gray_x_loop_end:
-    # Increae the y value by 1
-    incl %edx
+  # Increae the y value by 1
+  incl %edx
 
-    # Reset the outer loop 
-    jmp gray_outer_y_loop
+  # Reset the outer loop 
+  jmp gray_outer_y_loop
 
 # Code to execute once the loop ends
 gray_y_loop_end:
-    # Pop callee-saved registers
-    popq %r15
-    popq %r14
-    popq %r13
+  # Pop callee-saved registers
+  popq %r15
+  popq %r14
+  popq %r13
 
-    ret
+  ret
 
 
 /* Offsets Width = 0, Height = 4, Data = 8
@@ -1561,108 +1558,103 @@ gray_y_loop_end:
 
 	.globl imgproc_composite
 imgproc_composite:
-    # Function prologue
+  # Function prologue
 
-    pushq %rbp                   # Save %rbp for stack operations
-    movq %rsp, %rbp              # Set new base pointer for stack operations
-    subq $8, %rsp                 # Reserve space for c (8 bytes)
+  pushq %rbp                   # Save %rbp for stack operations
+  movq %rsp, %rbp              # Set new base pointer for stack operations
+  subq $8, %rsp                 # Reserve space for c (8 bytes)
 
-    pushq %rbx                   # Save callee-saved register
-    pushq %r12                   # Save callee-saved register
-    pushq %r13                   # Save callee-saved register
-    pushq %r14                   # Save callee-saved register
-    pushq %r15                   # Save callee-saved register
-    
-    # Save image pointers in callee-saved registers
-    movq %rdi, %r12              # Save base_img pointer
-    movq %rsi, %r13              # Save overlay_img pointer
-    movq %rdx, %r14              # Save output_img pointer
+  pushq %rbx                   # Save callee-saved register
+  pushq %r12                   # Save callee-saved register
+  pushq %r13                   # Save callee-saved register
+  pushq %r14                   # Save callee-saved register
+  pushq %r15                   # Save callee-saved register
+  
+  # Save image pointers in callee-saved registers
+  movq %rdi, %r12              # Save base_img pointer
+  movq %rsi, %r13              # Save overlay_img pointer
+  movq %rdx, %r14              # Save output_img pointer
 
-    movl $0, %eax
+  movl $0, %eax
 
-    # Check if base_img->width != overlay_img->width
-    movl IMAGE_WIDTH_OFFSET(%r12), %r8d       # Load base_img->width
-    movl IMAGE_WIDTH_OFFSET(%r13), %r9d       # Load overlay_img->width
-    cmpl %r8d, %r9d              # Compare base and overlay widths
-    jne .LreturnComposite        # If not equal, return 0
+  # Check if base_img->width != overlay_img->width
+  movl IMAGE_WIDTH_OFFSET(%r12), %r8d       # Load base_img->width
+  movl IMAGE_WIDTH_OFFSET(%r13), %r9d       # Load overlay_img->width
+  cmpl %r8d, %r9d              # Compare base and overlay widths
+  jne .LreturnComposite        # If not equal, return 0
 
-    # Check if base_img->height != overlay_img->height
-    movl IMAGE_HEIGHT_OFFSET(%r12), %r8d      # Load base_img->height
-    movl IMAGE_HEIGHT_OFFSET(%r13), %r9d      # Load overlay_img->height
-    cmpl %r8d, %r9d              # Compare base and overlay heights
-    jne .LreturnComposite         # If not equal, return 0
+  # Check if base_img->height != overlay_img->height
+  movl IMAGE_HEIGHT_OFFSET(%r12), %r8d      # Load base_img->height
+  movl IMAGE_HEIGHT_OFFSET(%r13), %r9d      # Load overlay_img->height
+  cmpl %r8d, %r9d              # Compare base and overlay heights
+  jne .LreturnComposite         # If not equal, return 0
 
-    # Set the success return value (return 1)
-    movl $1, %eax
+  # Set the success return value (return 1)
+  movl $1, %eax
 
-    # Outer loop: Iterate over rows (r)
-    xorl %r15d, %r15d            # r = 0 (initialize row counter)
+  # Outer loop: Iterate over rows (r)
+  xorl %r15d, %r15d            # r = 0 (initialize row counter)
 
 .LouterLoop:
-    cmpl IMAGE_HEIGHT_OFFSET(%r14), %r15d     # Compare r < output_img->height
-    jge .LreturnComposite          # If r >= height, return
+  cmpl IMAGE_HEIGHT_OFFSET(%r14), %r15d     # Compare r < output_img->height
+  jge .LreturnComposite          # If r >= height, return
 
-    # Inner loop: Iterate over columns (c)
-    movl $0, -8(%rbp)             # c = 0 (initialize column counter on stack)
+  # Inner loop: Iterate over columns (c)
+  movl $0, -8(%rbp)             # c = 0 (initialize column counter on stack)
 
 .LinnerLoop:
-    # Load c directly from the stack for foreground pixel
-    movl -8(%rbp), %r8d                      # Load column counter c from stack
-    cmpl IMAGE_WIDTH_OFFSET(%r14), %r8d       # Compare c < output_img->width
-    jge .LnextRow                             # If c >= width, go to next row
+  # Load c directly from the stack for foreground pixel
+  movl -8(%rbp), %r8d                      # Load column counter c from stack
+  cmpl IMAGE_WIDTH_OFFSET(%r14), %r8d       # Compare c < output_img->width
+  jge .LnextRow                             # If c >= width, go to next row
 
-    # Load foreground_pixel = get_pixel(overlay_img, c, r)
-    movq %r13, %rdi                # 1st arg = pointer to overlay_img
-    movl -8(%rbp), %esi           # 2nd arg = column index (c)
-    movl %r15d, %edx               # 3rd arg = row index (r)
-    call get_pixel                 # Call get_pixel(overlay_img, c, r)
-    movl %eax, %ebx                # Store result (foreground_pixel) in %ebx 
+  # Load foreground_pixel = get_pixel(overlay_img, c, r)
+  movq %r13, %rdi                # 1st arg = pointer to overlay_img
+  movl -8(%rbp), %esi           # 2nd arg = column index (c)
+  movl %r15d, %edx               # 3rd arg = row index (r)
+  call get_pixel                 # Call get_pixel(overlay_img, c, r)
+  movl %eax, %ebx                # Store result (foreground_pixel) in %ebx 
 
-    # Load background_pixel = get_pixel(base_img, c, r)
-    movq %r12, %rdi                # 1st arg = pointer to base_img
-    movl -8(%rbp), %esi           # 2nd arg = column index (c) directly from stack
-    movl %r15d, %edx               # 3rd arg = row index (r)
-    call get_pixel                 # Call get_pixel(base_img, c, r)
-    
-    # Blend the pixels using blend_colors
-    movl %ebx, %edi                # 1st arg = foreground_pixel
-    movl %eax, %esi                # 2nd arg = background_pixel
-    call blend_colors              # Call blend_colors(bg_pixel, fg_pixel)
-    movl %eax, %ebx                # Store blended result in %ebx
+  # Load background_pixel = get_pixel(base_img, c, r)
+  movq %r12, %rdi                # 1st arg = pointer to base_img
+  movl -8(%rbp), %esi           # 2nd arg = column index (c) directly from stack
+  movl %r15d, %edx               # 3rd arg = row index (r)
+  call get_pixel                 # Call get_pixel(base_img, c, r)
+  
+  # Blend the pixels using blend_colors
+  movl %ebx, %edi                # 1st arg = foreground_pixel
+  movl %eax, %esi                # 2nd arg = background_pixel
+  call blend_colors              # Call blend_colors(bg_pixel, fg_pixel)
+  movl %eax, %ebx                # Store blended result in %ebx
 
-    # Store blended_pixel = set_pixel(output_img, c, r, blended_pixel)
-    movq %r14, %rdi                # 1st arg = pointer to output_img
-    movl -8(%rbp), %esi            # 2nd arg = column index (c) directly from stack
-    movl %r15d, %edx               # 3rd arg = row index (r)
-    movl %ebx, %ecx                # 4th arg = blended_pixel
-    call set_pixel                 # Call set_pixel(output_img, c, r, blended_pixel)
+  # Store blended_pixel = set_pixel(output_img, c, r, blended_pixel)
+  movq %r14, %rdi                # 1st arg = pointer to output_img
+  movl -8(%rbp), %esi            # 2nd arg = column index (c) directly from stack
+  movl %r15d, %edx               # 3rd arg = row index (r)
+  movl %ebx, %ecx                # 4th arg = blended_pixel
+  call set_pixel                 # Call set_pixel(output_img, c, r, blended_pixel)
 
-    # Increment column counter (update value on stack)
-    incl -8(%rbp)                 # c++
-    jmp .LinnerLoop                # Repeat inner loop
+  # Increment column counter (update value on stack)
+  incl -8(%rbp)                 # c++
+  jmp .LinnerLoop                # Repeat inner loop
 
 .LnextRow:
-    # Increment row counter
-    incl %r15d                      # r++
-    jmp .LouterLoop                 # Repeat outer loop
+  # Increment row counter
+  incl %r15d                      # r++
+  jmp .LouterLoop                 # Repeat outer loop
 
 .LreturnComposite:
-    # Restore stack and registers
-    popq %r15                      # Restore callee-saved registers
-    popq %r14
-    popq %r13
-    popq %r12
-    popq %rbx                      
+  # Restore stack and registers
+  popq %r15                      # Restore callee-saved registers
+  popq %r14
+  popq %r13
+  popq %r12
+  popq %rbx                      
 
-    addq $8, %rsp                  # Free space used for c on stack
-    popq %rbp                      # Restore %rbp
+  addq $8, %rsp                  # Free space used for c on stack
+  popq %rbp                      # Restore %rbp
 
-    ret
-
-
-
-
-
+  ret
 
 /*
 vim:ft=gas:
