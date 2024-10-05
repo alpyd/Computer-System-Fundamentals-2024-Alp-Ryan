@@ -570,7 +570,7 @@ update_top_loop:
   cmpl %r14d, %ebx
 
   # If greater than or equal to, start filling tile
-  jae start_tile_fill
+  jge start_tile_fill
 
   # Move image height into %edi
   movl IMAGE_HEIGHT_OFFSET(%r13), %edi
@@ -1641,7 +1641,7 @@ tile_outer_r_loop:
   cmpl %r8d, %r13d  
 
   # If r >= n, end the outer loop
-  jae returnTrue
+  jge returnTrue
 
   # Initialize column counter at 0
   movl $0, %r15d
@@ -1651,7 +1651,7 @@ tile_inner_c_loop:
   cmpl %r8d, %r15d
 
   # If c >= n, end the inner loop
-  jae tile_c_loop_end
+  jge tile_c_loop_end
 
   # Move output image pointer into %rdi
   movq %r14, %rdi
