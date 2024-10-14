@@ -10,6 +10,8 @@ class CacheSimulator {
     public:
         CacheSimulator(int numOfSets, int setSize, int blockSize, bool writeAllocate, bool writeThrough, bool evictionLRU);
         void executeCommand(char command, uint32_t memoryAddress);
+        uint32_t readTag(uint32_t memoryAddress);
+        uint32_t readIndex(uint32_t memoryAddress);
         bool load(uint32_t memoryAddress, bool isDirty);
         bool store(uint32_t memoryAddress);
         void printSummaryInfo();
@@ -29,6 +31,7 @@ class CacheSimulator {
         int LTotMisses; 
         int STotHits; 
         int STotMisses; 
+        int timestamp;
 };
 
 
