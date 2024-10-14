@@ -1,6 +1,7 @@
 #include <iostream>
 #include <sstream>
 #include "cachesimulator.h"
+#include <cstring>
 
 int main(int argc, char *argv[]) {
     // argc: number of command-line arguments
@@ -15,8 +16,8 @@ int main(int argc, char *argv[]) {
     int numSets = std::stoi(argv[1]);
     int numBlocks = std::stoi(argv[2]);
     int blockMem = std::stoi(argv[3]);
-    bool writeAllocate = (argv[4] == "write-allocate");
-    bool writeThrough = (argv[5] == "write-through");
+    bool writeAllocate = (strcmp(argv[4], "write-allocate") == 0);
+    bool writeThrough = (strcmp(argv[5], "write-through") == 0);
 
     CacheSimulator csim(numSets, numBlocks, blockMem, writeAllocate, writeThrough);
 
@@ -68,9 +69,34 @@ bool parametersValid(int argc, char* argv[]){
         }
     }
     if(std::stoi(argv[3]) < 4){
-        std::cerr << "Block size must be at least 4 bytes" << std::endl;
+        std::cerr << "Error - Block size must be at least 4 bytes" << std::endl;
         return false;
     }
 
-    // TODO: NEED TO COMPARE STRINGS
+    bool isWriteAllocate;
+    if (strcmp(argv[4], "write-allocate") == 0){
+        isWriteAllocate = true;     
+    } else if(strcmp(argv[4], "no-write-allocate") == 0){
+        isWriteAllocate = false;
+    } else {
+        std::cerr << "Error - Must either indicate write-allocate or no-write-allocate" << std::endl;
+        return false;
+    }
+
+    bool isWriteThrough;
+    if(strcmp(argv[5], "write-through") == 0){
+        isWriteThrough = true;     
+    } else if(strcmp(argv[5], "write-back") == 0){
+        isWriteThrough = false;
+    } else {
+        std::cerr << "Error - Must either indicate write-through or write-back" << std::endl;
+        return false;
+    }
+
+    if(!isWriteThrough && !isWriteAllocate){
+        std::cerr << "Error - Does not make sense to combine no-write-allocate with write-back." << std::endl;
+        return false;
+    }
+
+    return true;
 }
