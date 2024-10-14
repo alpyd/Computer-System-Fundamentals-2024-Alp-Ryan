@@ -1,7 +1,7 @@
 #include "cache.h"
 #include "cachesimulator.h"
 
-CacheSimulator::CacheSimulator(int numOfSets, int setSize, int blockSize, bool writeAllocate, bool writeBack){
+CacheSimulator::CacheSimulator(int numOfSets, int setSize, int blockSize, bool writeAllocate, bool writeThrough, bool evictionLRU){
 
 }
 
@@ -18,5 +18,5 @@ bool CacheSimulator::store(uint32_t memoryAddress){
 }
 
 void CacheSimulator::printSummaryInfo(){
-    
+
 }
