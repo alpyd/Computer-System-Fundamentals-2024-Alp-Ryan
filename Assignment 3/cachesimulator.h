@@ -16,14 +16,19 @@ class CacheSimulator {
 
     private:
         Cache cache;
-
-        int totalLoads; 
-        int totalStores; 
-        int loadHits; 
-        int loadMisses; 
-        int storeHits; 
-        int storeMisses; 
-        int totalCycles; 
+        int numOfSets;
+        int setSize;
+        int blockSize;
+        bool writeAllocate;
+        bool writeThrough;
+        bool evictionLRU;
+        int totLoads; 
+        int totStores; 
+        int totCycles; 
+        int LTotHits; 
+        int LTotMisses; 
+        int STotHits; 
+        int STotMisses; 
 };
 
 
