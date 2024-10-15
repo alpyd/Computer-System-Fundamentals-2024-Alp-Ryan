@@ -10,13 +10,18 @@ class CacheSimulator {
     public:
         CacheSimulator(int numOfSets, int setSize, int blockSize, bool writeAllocate, bool writeThrough, bool evictionLRU);
         void executeCommand(char command, uint32_t memoryAddress);
+        void printSummaryInfo();
+
+
+    private:
         uint32_t readTag(uint32_t memoryAddress);
         uint32_t readIndex(uint32_t memoryAddress);
         bool load(uint32_t memoryAddress, bool isDirty);
         bool store(uint32_t memoryAddress);
-        void printSummaryInfo();
+        int CacheSimulator::chooseSlotIndex(Set& set);
+        void CacheSimulator::handleLoadMiss(Set& set, uint32_t tag, bool isDirty);
+        void CacheSimulator::handleStoreMiss(uint32_t memoryAddress);
 
-    private:
         Cache cache;
         int numOfSets;
         int setSize;

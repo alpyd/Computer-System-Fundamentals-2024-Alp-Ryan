@@ -3,20 +3,16 @@
 #include <iostream>
 #include <cmath>
 
-CacheSimulator::CacheSimulator(int numOfSets, int setSize, int blockSize, bool writeAllocate, bool writeThrough, bool evictionLRU){
-    int totLoads = 0; 
-    int totStores = 0; 
-    int LTotHits = 0; 
-    int LTotMisses = 0; 
-    int STotHits = 0; 
-    int STotMisses = 0; 
-    int totCycles = 0; 
-    int timestamp = 0;
+CacheSimulator::CacheSimulator(int numOfSets, int setSize, int blockSize, bool writeAllocate, bool writeThrough, bool evictionLRU)
+    : totLoads(0), totStores(0), LTotHits(0), LTotMisses(0), STotHits(0), STotMisses(0), totCycles(0), timestamp(0), 
+      numOfSets(numOfSets), setSize(setSize), blockSize(blockSize), writeAllocate(writeAllocate), writeThrough(writeThrough), evictionLRU(evictionLRU) {
 
     for(int i = 0; i < numOfSets; i++){
         Set newSet;
         for (int j = 0; j < setSize; j++){
             Slot newSlot;
+            newSlot.valid = false;
+            newSlot.dirty = false;
             newSet.slots.push_back(newSlot);
         }
         cache.sets.push_back(newSet);
@@ -60,8 +56,7 @@ bool CacheSimulator::load(uint32_t memoryAddress, bool isDirty){
     for (int i = 0; i < set.slots.size(); i++){
         Slot slot = set.slots.at(i);
         if(slot.valid && slot.tag == tag){
-            timestamp++;
-            slot.access_ts = timestamp;
+            slot.access_ts = ++timestamp;
             if(isDirty){
                 slot.dirty = true;
             }
@@ -69,8 +64,54 @@ bool CacheSimulator::load(uint32_t memoryAddress, bool isDirty){
             return true;
         }
     }
-    // What to do if it misses 
 
+    handleLoadMiss(set, tag, isDirty);
+    return false;
+    
+
+}
+
+void CacheSimulator::handleLoadMiss(Set& set, uint32_t tag, bool isDirty){
+    Slot chosenSlot = set.slots.at(chooseSlotIndex(set));
+
+    if(!evictionLRU){
+        chosenSlot.load_ts = ++timestamp;
+    }
+
+    if(chosenSlot.valid && chosenSlot.dirty){
+        totCycles += (blockSize/4  * 100);
+    }
+
+    chosenSlot.tag = tag;
+    chosenSlot.valid = true;
+    chosenSlot.dirty = isDirty;
+    chosenSlot.access_ts = ++timestamp;
+    totCycles += (blockSize/4*100);
+}
+
+int CacheSimulator::chooseSlotIndex(Set& set){
+    for(int i = 0; i < set.slots.size(); i++){
+        if(!set.slots.at(i).valid){
+            return i;
+        }
+    }
+
+    int chosenIndex = 0;
+    if(evictionLRU) {
+        for(int i = 0; i < set.slots.size(); i++){
+            if(set.slots.at(i).access_ts < set.slots.at(chosenIndex).access_ts){
+                chosenIndex = i;
+            }
+        }
+    } else {
+        for(int i = 0; i < set.slots.size(); i++){
+            if(set.slots.at(i).load_ts < set.slots.at(chosenIndex).load_ts) {
+                chosenIndex = i;
+            }
+        }
+    }
+
+    return chosenIndex;
 }
 
 bool CacheSimulator::store(uint32_t memoryAddress){
@@ -93,8 +134,24 @@ bool CacheSimulator::store(uint32_t memoryAddress){
             return true;
         }
     }
-    // What to do if it misses
+    
+    handleStoreMiss(memoryAddress);
+    return false;
 
+}
+
+void CacheSimulator::handleStoreMiss(uint32_t memoryAddress){
+    // What to do if it misses
+    if(writeAllocate){
+        if (writeThrough){
+            load(memoryAddress, false);
+            totCycles += 100; // handleCycles
+        } else {
+            load(memoryAddress, true);
+        }
+    } else {
+        totCycles+=100; // handleCycles
+    }
 }
 
 void CacheSimulator::printSummaryInfo(){
