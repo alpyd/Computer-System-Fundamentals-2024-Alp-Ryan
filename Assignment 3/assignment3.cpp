@@ -3,48 +3,6 @@
 #include "cachesimulator.h"
 #include <cstring>
 
-int main(int argc, char *argv[]) {
-    // argc: number of command-line arguments
-    // argv: array of C-style strings (char*), representing each argument
-
-    if(!parametersValid(argc, argv)){
-        return 1;
-    }
-
-    std::cout << "Number of arguments: " << argc << std::endl;
-
-    int numSets = std::stoi(argv[1]);
-    int numBlocks = std::stoi(argv[2]);
-    int blockMem = std::stoi(argv[3]);
-    bool writeAllocate = (strcmp(argv[4], "write-allocate") == 0);
-    bool writeThrough = (strcmp(argv[5], "write-through") == 0);
-    bool evictionLRU = (strcmp(argv[6], "lru") == 0);
-
-    CacheSimulator csim(numSets, numBlocks, blockMem, writeAllocate, writeThrough, evictionLRU);
-
-    std::string inputLine;
-    while(std::getline(std::cin, inputLine)){
-        std::istringstream commandPrompt = std::istringstream(inputLine);
-        char command;
-        uint32_t memoryAddress;
-
-        if (!(commandPrompt >> command) || (command != 'l' && command != 's')) {
-            std::cerr << "Error: Invalid command format." << std::endl;
-            return 1;
-        }
-
-        if (!(commandPrompt >> memoryAddress)) {
-            std::cerr << "Error: Invalid memory address format." << std::endl;
-            return 1;
-        }
-        
-        csim.executeCommand(command, memoryAddress);
-    }
-
-    csim.printSummaryInfo();
-    return 0;
-}
-
 bool isPositiveNumber(const char* num) {
     if(num[0] == '\0'){
         return false;
@@ -112,4 +70,46 @@ bool parametersValid(int argc, char* argv[]){
     }
 
     return true;
+}
+
+int main(int argc, char *argv[]) {
+    // argc: number of command-line arguments
+    // argv: array of C-style strings (char*), representing each argument
+
+    if(!parametersValid(argc, argv)){
+        return 1;
+    }
+
+    std::cout << "Number of arguments: " << argc << std::endl;
+
+    int numSets = std::stoi(argv[1]);
+    int numBlocks = std::stoi(argv[2]);
+    int blockMem = std::stoi(argv[3]);
+    bool writeAllocate = (strcmp(argv[4], "write-allocate") == 0);
+    bool writeThrough = (strcmp(argv[5], "write-through") == 0);
+    bool evictionLRU = (strcmp(argv[6], "lru") == 0);
+
+    CacheSimulator csim(numSets, numBlocks, blockMem, writeAllocate, writeThrough, evictionLRU);
+
+    std::string inputLine;
+    while(std::getline(std::cin, inputLine)){
+        std::istringstream commandPrompt = std::istringstream(inputLine);
+        char command;
+        uint32_t memoryAddress;
+
+        if (!(commandPrompt >> command) || (command != 'l' && command != 's')) {
+            std::cerr << "Error: Invalid command format." << std::endl;
+            return 1;
+        }
+
+        if (!(commandPrompt >> memoryAddress)) {
+            std::cerr << "Error: Invalid memory address format." << std::endl;
+            return 1;
+        }
+        
+        csim.executeCommand(command, memoryAddress);
+    }
+
+    csim.printSummaryInfo();
+    return 0;
 }

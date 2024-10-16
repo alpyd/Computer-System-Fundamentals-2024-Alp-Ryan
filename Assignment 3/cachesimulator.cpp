@@ -53,7 +53,7 @@ bool CacheSimulator::load(uint32_t memoryAddress, bool isDirty){
     uint32_t tag = readTag(memoryAddress);
     uint32_t index = readTag(memoryAddress);
     Set &set = cache.sets[index];
-    for (int i = 0; i < set.slots.size(); i++){
+    for (unsigned int i = 0; i < set.slots.size(); i++){
         Slot slot = set.slots.at(i);
         if(slot.valid && slot.tag == tag){
             slot.access_ts = ++timestamp;
@@ -90,7 +90,7 @@ void CacheSimulator::handleLoadMiss(Set& set, uint32_t tag, bool isDirty){
 }
 
 int CacheSimulator::chooseSlotIndex(Set& set){
-    for(int i = 0; i < set.slots.size(); i++){
+    for(unsigned int i = 0; i < set.slots.size(); i++){
         if(!set.slots.at(i).valid){
             return i;
         }
@@ -98,13 +98,13 @@ int CacheSimulator::chooseSlotIndex(Set& set){
 
     int chosenIndex = 0;
     if(evictionLRU) {
-        for(int i = 0; i < set.slots.size(); i++){
+        for(unsigned int i = 0; i < set.slots.size(); i++){
             if(set.slots.at(i).access_ts < set.slots.at(chosenIndex).access_ts){
                 chosenIndex = i;
             }
         }
     } else {
-        for(int i = 0; i < set.slots.size(); i++){
+        for(unsigned int i = 0; i < set.slots.size(); i++){
             if(set.slots.at(i).load_ts < set.slots.at(chosenIndex).load_ts) {
                 chosenIndex = i;
             }
@@ -118,7 +118,7 @@ bool CacheSimulator::store(uint32_t memoryAddress){
     uint32_t tag = readTag(memoryAddress);
     uint32_t index = readTag(memoryAddress);
     Set &set = cache.sets[index];
-    for (int i = 0; i < set.slots.size(); i++){
+    for (unsigned int i = 0; i < set.slots.size(); i++){
         Slot slot = set.slots.at(i);
         if(slot.valid && slot.tag == tag){
             timestamp++;

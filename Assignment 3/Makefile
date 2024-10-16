@@ -1,12 +1,10 @@
-# CSF Assignment 3 Makefile
-# You should not need to make any changes
-
 .PHONY: clean csim solution.zip
 
 CC = g++
 CFLAGS = -g -Wall -Wextra -pedantic
 
-CSIM_SRCS = assignment3.cpp
+# Add cachesimulator.cpp to the source files
+CSIM_SRCS = assignment3.cpp cachesimulator.cpp
 CSIM_OBJS = $(CSIM_SRCS:.cpp=.o)
 
 EXES = csim
@@ -26,7 +24,7 @@ clean :
 # Use this target to prepare a zip file to upload, including source files, headers, and Makefile
 solution.zip :
 	rm -f $@
-	zip -9r $@ *.cpp Makefile README.txt
+	zip -9r $@ *.cpp *.h Makefile README.txt
 
 depend :
 	$(CC) $(CFLAGS) -M $(CSIM_SRCS) > depend.mak
