@@ -18,7 +18,7 @@ class CacheSimulator {
         uint32_t readIndex(uint32_t memoryAddress);
         bool load(uint32_t memoryAddress, bool isDirty);
         bool store(uint32_t memoryAddress);
-        int chooseSlotIndex(Set& set);
+        uint32_t chooseSlotIndex(Set& set);
         void handleLoadMiss(Set& set, uint32_t tag, bool isDirty);
         void handleStoreMiss(uint32_t memoryAddress);
 
