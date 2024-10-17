@@ -4,8 +4,9 @@
 #include <cmath>
 
 CacheSimulator::CacheSimulator(int numOfSets, int setSize, int blockSize, bool writeAllocate, bool writeThrough, bool evictionLRU)
-    : totLoads(0), totStores(0), LTotHits(0), LTotMisses(0), STotHits(0), STotMisses(0), totCycles(0), timestamp(0), 
-      numOfSets(numOfSets), setSize(setSize), blockSize(blockSize), writeAllocate(writeAllocate), writeThrough(writeThrough), evictionLRU(evictionLRU) {
+    : numOfSets(numOfSets), setSize(setSize), blockSize(blockSize), 
+      writeAllocate(writeAllocate), writeThrough(writeThrough), evictionLRU(evictionLRU), 
+      totCycles(0), STotMisses(0), timestamp(0) {
 
     for(int i = 0; i < numOfSets; i++){
         Set newSet;
@@ -132,13 +133,9 @@ bool CacheSimulator::store(uint32_t memoryAddress){ //writing to cache
             slot.access_ts = timestamp;
 
             // Perform the appropriate action based on writeThrough parameter
-            if(writeThrough){
-                load(memoryAddress, true); // Load and mark as dirty
+            if (writeThrough) {
                 totCycles += 100; // Handle cycles
-            } else {
-                load(memoryAddress, true); // Load and mark as dirty
-                // Handle cycles for write-back scenario, if needed
-            }
+            } 
             slot.dirty = true; // Mark the slot as dirty since we're storing data
             totCycles++; // Increment total cycles for the operation
             return true;
@@ -151,17 +148,12 @@ bool CacheSimulator::store(uint32_t memoryAddress){ //writing to cache
 
 
 void CacheSimulator::handleStoreMiss(uint32_t memoryAddress){
-    // What to do if it misses
-    if(writeAllocate){
-        // On a store miss, load the relevant block into the cache
-        if (writeThrough){
-            load(memoryAddress, true); // Load and mark as dirty
-            totCycles += 100; // Handle cycles
-        } else {
-            load(memoryAddress, true); // Load and mark as dirty for write-back
-        }
+    // On a store miss, load the relevant block into the cache if write-allocate
+    if (writeAllocate) {
+        load(memoryAddress, true); // Load and mark as dirty
     } else {
-        totCycles += 100; // Handle cycles, no cache modification for no-write-allocate
+        // No-write-allocate: Write directly to memory without cache modification
+        totCycles += 100; // Writing to memory directly (100 cycles)
     }
 }
 
