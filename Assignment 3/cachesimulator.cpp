@@ -110,7 +110,7 @@ void CacheSimulator::handleLoadMiss(Set& set, uint32_t tag, bool isDirty){ //tag
     }
 
     if(chosenSlot.valid && chosenSlot.dirty){
-        totCycles += (blockSize/ 4  * 100);
+        totCycles += ((blockSize / 4)  * 100);
     }
 
     chosenSlot.tag = tag;
@@ -135,8 +135,11 @@ bool CacheSimulator::store(uint32_t memoryAddress){ //writing to cache
             // Perform the appropriate action based on writeThrough parameter
             if (writeThrough) {
                 totCycles += 100; // Handle cycles
+                slot.dirty = false;
+            } else {
+                slot.dirty = true; // Mark the slot as dirty since we're storing data
             } 
-            slot.dirty = true; // Mark the slot as dirty since we're storing data
+            
             totCycles++; // Increment total cycles for the operation
             return true;
         }
