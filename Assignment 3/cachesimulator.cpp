@@ -22,12 +22,12 @@ CacheSimulator::CacheSimulator(int numOfSets, int setSize, int blockSize, bool w
 void CacheSimulator::executeCommand(char command, uint32_t memoryAddress){
     if(command == 's') {
         totStores++;
-        if(store(memoryAddress)){
+        if(store(memoryAddress)){ //track of store hits/misses
             STotHits++;
         } else {
             STotMisses++;
         }
-    } else if(command == 'l'){
+    } else if(command == 'l'){ //track of load hits/misses
         totLoads++;
         if(load(memoryAddress, false)){
             LTotHits++;
@@ -53,14 +53,15 @@ bool CacheSimulator::load(uint32_t memoryAddress, bool isDirty){
     uint32_t tag = readTag(memoryAddress);
     uint32_t index = readTag(memoryAddress);
     Set &set = cache.sets[index];
-    for (std::vector<Slot>::size_type i = 0; i < set.slots.size(); i++){
-        Slot slot = set.slots.at(i);
-        if(slot.valid && slot.tag == tag){
+    for (unsigned int i = 0; i < set.slots.size(); i++){ //iterate over blocks in set
+        Slot &slot = set.slots.at(i);
+        if(slot.valid && slot.tag == tag){    
+            
             slot.access_ts = ++timestamp;
             if(isDirty){
                 slot.dirty = true;
             }
-            totCycles++;
+            totCycles++; //1 cycle per load operation
             return true;
         }
     }
@@ -78,15 +79,15 @@ void CacheSimulator::handleLoadMiss(Set& set, uint32_t tag, bool isDirty){
         chosenSlot.load_ts = ++timestamp;
     }
 
-    if(chosenSlot.valid && chosenSlot.dirty){
-        totCycles += (blockSize/4  * 100);
+    if(chosenSlot.valid && chosenSlot.dirty){ // add 100 cycles per 4 byte quantity
+        totCycles += ((blockSize / 4)  * 100);
     }
 
     chosenSlot.tag = tag;
     chosenSlot.valid = true;
     chosenSlot.dirty = isDirty;
     chosenSlot.access_ts = ++timestamp;
-    totCycles += (blockSize/4*100);
+    totCycles += ((blockSize / 4) * 100); //add 100 cycles per 4 byte quantity
 }
 
 uint32_t CacheSimulator::chooseSlotIndex(Set& set){
