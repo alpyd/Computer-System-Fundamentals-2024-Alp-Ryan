@@ -91,7 +91,7 @@ void CacheSimulator::handleLoadMiss(Set& set, uint32_t tag, bool isDirty){
 }
 
 uint32_t CacheSimulator::chooseSlotIndex(Set& set){
-    for(std::vector<Slot>::size_type i = 0; i < set.slots.size(); i++){
+    for(unsigned int i = 0; i < set.slots.size(); i++){
         if(!set.slots.at(i).valid){
             return i;
         }
@@ -99,13 +99,13 @@ uint32_t CacheSimulator::chooseSlotIndex(Set& set){
 
     int chosenIndex = 0;
     if(evictionLRU) {
-        for(std::vector<Slot>::size_type i = 0; i < set.slots.size(); i++){
+        for(unsigned int i = 0; i < set.slots.size(); i++){
             if(set.slots.at(i).access_ts < set.slots.at(chosenIndex).access_ts){
                 chosenIndex = i;
             }
         }
     } else {
-        for(std::vector<Slot>::size_type i = 0; i < set.slots.size(); i++){
+        for(unsigned int i = 0; i < set.slots.size(); i++){
             if(set.slots.at(i).load_ts < set.slots.at(chosenIndex).load_ts) {
                 chosenIndex = i;
             }
@@ -119,7 +119,7 @@ bool CacheSimulator::store(uint32_t memoryAddress){
     uint32_t tag = readTag(memoryAddress);
     uint32_t index = readTag(memoryAddress);
     Set &set = cache.sets[index];
-    for (std::vector<Slot>::size_type i = 0; i < set.slots.size(); i++){
+    for (unsigned int i = 0; i < set.slots.size(); i++){
         Slot slot = set.slots.at(i);
         if(slot.valid && slot.tag == tag){
             timestamp++;
