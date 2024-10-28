@@ -154,9 +154,37 @@ ALP COMMANDS:
 
 
 ./csim 32 16 16 write-allocate write-back lru < gcc.trace (16-Way)
+Total loads: 318197
+Total stores: 197486
+Load hits: 314233
+Load misses: 3964
+Store hits: 188076
+Store misses: 9410
+Total cycles: 9901909
 
 ./csim 4 128 16 write-allocate write-back fifo < gcc.trace 
+Total loads: 318197
+Total stores: 197486
+Load hits: 313288
+Load misses: 4909
+Store hits: 187749
+Store misses: 9737
+Total cycles: 10693837
 
 ./csim 4 128 16 write-allocate write-through fifo < gcc.trace 
+Total loads: 318197
+Total stores: 197486
+Load hits: 313288
+Load misses: 4909
+Store hits: 187749
+Store misses: 9737
+Total cycles: 25317937
 
 ./csim 4 128 16 no-write-allocate write-through fifo < gcc.trace 
+Total loads: 318197
+Total stores: 197486
+Load hits: 310232
+Load misses: 7965
+Store hits: 162297
+Store misses: 35189
+Total cycles: 23407129
