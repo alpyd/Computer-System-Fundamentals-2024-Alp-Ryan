@@ -149,3 +149,14 @@ Write back uses less total cycles by about a factor of 10 than write through
 Write allocate and write back seems to be the best combination with least misses and cycles
 
 
+
+ALP COMMANDS:
+
+
+./csim 32 16 16 write-allocate write-back lru < gcc.trace (16-Way)
+
+./csim 4 128 16 write-allocate write-back fifo < gcc.trace 
+
+./csim 4 128 16 write-allocate write-through fifo < gcc.trace 
+
+./csim 4 128 16 no-write-allocate write-through fifo < gcc.trace 
