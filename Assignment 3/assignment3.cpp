@@ -84,11 +84,11 @@ bool parametersValid(int argc, char* argv[]) {
     }
 
     // Ensure that the number and string parameters are both valid
-    if (!numbersValid(argv) && !stringInputsValid(argv)){
-        return false;
+    if (numbersValid(argv) && stringInputsValid(argv)) {
+        return true;
     }
 
-    return true;
+    return false;
 }
 
 int main(int argc, char *argv[]) {
