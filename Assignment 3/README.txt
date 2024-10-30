@@ -1,37 +1,107 @@
 Alp Demirtas (ademirt1)
 Ryan Amer (ramer2)
 
-From experimental testing on different parameters of a cache with 8192 bytes and 16 byte block size, the optimal determined combination was a cache with 4 sets and 128 blocks in each set with a write-allocate miss policy, write-back hit policy, and a least recently used eviction policy.
-Since these parameters are trying to test realistic parameters, fully-associative configurations were not tested.
-Each combination of parameters was run using the inputs provided in gcc.trace, which simulated a series of load and store commands. 
-The performance of each cache configuration was determined by looking at the cache's hit rate, an indocator for better use of locality, and total cycles, a practical measure of the efficiency of each operation.
+Introduction: 
+From experimental testing on different parameters of a cache with 8192 bytes and 16 byte block size, the optimal determined combination was a cache with 8-way set associativity with a write-allocate miss policy, write-back hit policy, and a least recently used eviction policy.
+The performance of each cache configuration was determined by looking at the cache's total cycles, a practical measure of the efficiency of each operation, and the cache's hit rate, an indicator for better use of locality. 
+Additionally, the feasibility of the cache configuration was taken into account significantly when deciding the set associativity, as engineers would likely not want to incur the additional complexity and cost of adding more associativity if there was no real benefit.
 The miss peanlty and the number of extra bits required for the different configurations, such as tracking tags, validity, and dirty bits, were also considered when assessing performance, but they beared less importance on the final selection of parameters because the miss penalty would be factored into the efficiency of the total cycles and there were no constraints on using extra bits.
 
+Methods: 
+Each combination of parameters was run using the inputs provided in gcc.trace, which simulated a realsitic series of load and store commands that a cache may experience. 
+First, the effect of associativity on cache performance was isolated and tested. While maintaining the same overall cache capacity of 8192 bytes, same cache hit/miss policies, and same eviction policy, the associativity was varied, ranging from 2-way to 128-way.
+Finally, the the effect of eviction policy, LRU v FIFO, was isolated and tested by observing how the total cycles and hit rate of the eviction policy changed. 
+Finally, the effects of a write-allocate v no-write-allocate miss policy and write-through v write-back hit policy were isolated and tested by running all of the combinations on caches with same associativity, size, and eviction policy.
+
+Associativity Tests Results and Discussion:
+
+./csim 256 2 16 write-allocate write-back fifo < gcc.trace (2-Way)
+Total loads: 318197
+Total stores: 197486
+Load hits: 312298
+Load misses: 5899
+Store hits: 187483
+Store misses: 10003
+Total cycles: 11367381
+Hit Rate: 96.92%
+
+./csim 128 4 16 write-allocate write-back fifo < gcc.trace (4-Way)
+Total loads: 318197
+Total stores: 197486
+Load hits: 312969
+Load misses: 5228
+Store hits: 187684
+Store misses: 9802
+Total cycles: 10886653
+Hit Rate: 97.09%
+
+./csim 64 8 16 write-allocate write-back fifo < gcc.trace (8-Way)
+Total loads: 318197
+Total stores: 197486
+Load hits: 313096
+Load misses: 5101
+Store hits: 187747
+Store misses: 9739
+Total cycles: 10791643
+Hit Rate: 97.12%
+
+./csim 32 16 16 write-allocate write-back fifo < gcc.trace (16-Way)
+Total loads: 318197
+Total stores: 197486
+Load hits: 313151
+Load misses: 5046
+Store hits: 187761
+Store misses: 9725
+Total cycles: 10758512
+Hit Rate: 97.14%
+
+./csim 8 64 16 write-allocate write-back fifo < gcc.trace (64-Way)
+Total loads: 318197
+Total stores: 197486
+Load hits: 313243
+Load misses: 4954
+Store hits: 187755
+Store misses: 9731
+Total cycles: 10712998
+Hit Rate: 97.15%
+
+./csim 4 128 16 write-allocate write-back fifo < gcc.trace (128-Way)
+Total loads: 318197
+Total stores: 197486
+Load hits: 313288
+Load misses: 4909
+Store hits: 187749
+Store misses: 9737
+Total cycles: 10693837
+Hit Rate: 97.16%
+
+
 The first set of parameters that was tested were the number of sets and blocks, which would determine the optimal associativity.
-Since there were 512 blocks and it would not be realistic to have a fully-associative configuration, the tested set:block pairs were [2:256], [4:128], [8:64], [16:32], [32:16], [64:8], [128:4], and [256:2].
-As demonstrated in the results shown below, the 128-way pair of 128 sets and 4 blocks performed the best, as it had the lowest cycles at 10693837 and highest hit rate at 97% when all pairs were tested with the FIFO, write-allocate, and write-back parameters.
-Comparatively, the 2-way 
+For all of the runs, the total size of the cache was 8192 bytes and each block size was 16 bytes, which meant that 512 blocks would need to be evenly distributed.
+The tested set:block pairs were [2:256], [4:128], [8:64], [16:32], [32:16], [64:8], [128:4], and [256:2] under a FIFO eviction policy, write-allocate miss policy, and write-back hit policy.
 
-Experiments Ran:
-We first looked into the effect of associativity on cache performance. While maintaining the same overall cache capacity of 8192 bytes, same cache hit/miss policies, and same eviction policy, we varied the associativity ranging from 2-way to 128-way to isolate associativity.
-We then looked into the effect of write allocate v no write allocate and write thru v write back by running all of the combinations on caches with same associativity, size, and eviction policy, to isolate solely store hit/miss policy impacting cache performance metrics.
-We then looked into the effect of eviction policy, LRU v FIFO, by testing cache configurations identical in every aspect besides eviction policy, to again exclude other impacting variables and isolate eviction policy's effect on performance. 
+While the results shown above demonstrate that the 128-way set associativity had the lowest total cycles at 10693837 and the highest hit rate of 97.16%, there was not much of a difference between the associativities, with the largest difference in hit rate being 0.24% and the largest difference in cycles being that the 128-way set associativity used 6% less total cycles than the 2-way set associativity.
+Therefore, since increasing associativity did not have a large affect on the total cycles and hit rate, the most optimal associativity was chosen based on observing when the returns were 80% of the tested maximum.
+The total cycles decreased by 4.23% when increasing associativity from 2-way to 4-way, 0.87% when increasing associativity from 4-way to 8-way, 0.31% when increasing associativity from 8-way to 16-way, and 0.18% when increasing associativity from 16-way to 32-way.
 
-We found the following:
+As demonstrated by these decreases, there were increasingly diminishing returns when increasing associativity. 
+The total cycles decrease from 2-way to 8-way was 5.06%, whereas the total cyles decrease from 8-way to 128-way was 0.91%, which meant that the total cycles at 8-way associativity were ~84.82% of the 128-way associativity.
+This is further corroborated by the hit rate, as the hit rate increased 0.2% from 2-way to 8-way associativity but only increased by 0.04% from 8-way to 128-way associativity, indicating that the hit rate at 8-way associativity was around ~83.33% of the 128-way associativity.
 
-Associativity Tests:
-Hit Rate: 97% among all associativities
-Miss Penalty: 16-Way Associativity and larger sees 22% less load misses compared to 2-Way Associativity
-Pretty much no significant differences in all other statistics
+Therefore, 8-way associativity was chosen as the "optimal" associativity because it represented around 84% of the maximum observed performance while having 16 times less complexity than the 128-way associativity.
 
-Store Hit/Miss Policy Tests:
+Evicition Policy Test Results and Discussion:
+Across the board, more total cycles in FIFO by roughly 1 million!
+20% less load misses in LRU!
+
+
+Hit/Miss Policy Test Results and Discussion:
+
 Write allocate leads to much less load and store misses than no write allocate
 Write back uses less total cycles by about a factor of 10 than write through
 Write allocate and write back seems to be the best combination with least cache misses and cycles
 
-LRU V FIFO Tests:
-Across the board, more total cycles in FIFO by roughly 1 million!
-20% less load misses in LRU!
+
 
 
 In our opinion, the most efficient cache configuration uses a higher associativity with write allocate, write back, and LRU eviction.
@@ -56,8 +126,6 @@ Miss Penalty: Calculated based on the cycles spent on memory accesses due to cac
 Total Cycles (Execution Time): This is a practical measure of efficiency for each configuration.
 Cache Overhead: Include the cost of extra bits (e.g., tags, valid, and dirty bits) required for different associativities and write policies
 
-Setup: Testing gcc.trace and swim.trace files
-Make sure to use the same cache overall capacity
 
 Compare Associativity: Same Cache Size (8192 bytes), Different Associativity
 
@@ -69,7 +137,6 @@ Load misses: 5899
 Store hits: 187483
 Store misses: 10003
 Total cycles: 11367381
-Hit Rate: 96.92%
 
 ./csim 128 4 16 write-allocate write-back fifo < gcc.trace (4-Way)
 Total loads: 318197
@@ -98,7 +165,6 @@ Load misses: 5046
 Store hits: 187761
 Store misses: 9725
 Total cycles: 10758512
-Hit Rate: 97.14%
 
 
 Hit Rate: 97.16%
@@ -169,14 +235,7 @@ Store hits: 188067
 Store misses: 9419
 Total cycles: 9913888
 
-./csim 64 8 16 write-allocate write-back fifo < gcc.trace (8-Way)
-Total loads: 318197
-Total stores: 197486
-Load hits: 313096
-Load misses: 5101
-Store hits: 187747
-Store misses: 9739
-Total cycles: 10791643
+
 
 More total cycles in FIFO by roughly 1 million!
 20% less load misses in LRU!
