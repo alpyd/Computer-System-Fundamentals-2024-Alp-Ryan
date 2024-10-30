@@ -91,11 +91,66 @@ This is further corroborated by the hit rate, as the hit rate increased 0.2% fro
 Therefore, 8-way associativity was chosen as the "optimal" associativity because it represented around 84% of the maximum observed performance while having 16 times less complexity than the 128-way associativity.
 
 Evicition Policy Test Results and Discussion:
-Across the board, more total cycles in FIFO by roughly 1 million!
-20% less load misses in LRU!
+
+./csim 64 8 16 write-allocate write-back lru < gcc.trace (8-Way)
+Total loads: 318197
+Total stores: 197486
+Load hits: 314221
+Load misses: 3976
+Store hits: 188067
+Store misses: 9419
+Total cycles: 9913888
+Hit Rate: 97.404%
+
+./csim 32 16 16 write-allocate write-back lru < gcc.trace (16-Way)
+Total loads: 318197
+Total stores: 197486
+Load hits: 314233
+Load misses: 3964
+Store hits: 188076
+Store misses: 9410
+Total cycles: 9901909
+Hit Rate: 97.406%
+
+./csim 4 128 16 write-allocate write-back lru < gcc.trace (128-way)
+Total loads: 318197
+Total stores: 197486
+Load hits: 314281
+Load misses: 3916
+Store hits: 188093
+Store misses: 9393
+Total cycles: 9867174
+Hit Rate: 97.419%
+
+The second set of tested parameters was whether the eviction policy should be FIFO, first-in, first-out, or LRU, least recently used. 
+The differences across set associativities was even smaller for LRU than FIFO with the decrease in total cycles being 0.12% from 8-way to 16-way and 0.35% from 16-way to 128-way and the hit rate only having a 0.015% decrease between the max and min hit rates.
+However, there was a consistent and significant difference between the hit rate using LRU or FIFO for the same set-associativity.
+
+When comparing the set associativities with FIFO versus LRU, LRU 8-way associativity saw a hit rate increase of 0.28% and total cycles decrease of 8.13%, LRU 16-way associativity saw a hit rate increase of 0.27% and total cycles decrease of 7.96%, and LRU 128-way associativity saw a hit rate increase of 0.26% and total cycles decrease of 7.73%.
+This ~7-8% decrease in total cycles and around ~0.25% increase in hit rate demonstrates that a LRU eviction policy performs much better than a FIFO eviction policy.
+LRU eviction ensures that the least recently accessed data is evicted first, which is beneficial in accessing data with temporal locality (data accessed recently is likely to be accessed again soon).
+It should be noted that depending on the situation, FIFO may be better than LRU. For example, FIFO would be better for sequential accessing of data, as the first data accessed would be the first out after a certain amount of time.
 
 
 Hit/Miss Policy Test Results and Discussion:
+
+./csim 4 128 16 write-allocate write-through lru < gcc.trace (Write Allocate, Write Through)
+Total loads: 318197
+Total stores: 197486
+Load hits: 314281
+Load misses: 3916
+Store hits: 188093
+Store misses: 9393
+Total cycles: 24819674
+
+./csim 4 128 16 no-write-allocate write-through lru < gcc.trace (No Write Allocate, Write Through)
+Total loads: 318197
+Total stores: 197486
+Load hits: 311234
+Load misses: 6963
+Store hits: 164433
+Store misses: 33053
+Total cycles: 23009467
 
 Write allocate leads to much less load and store misses than no write allocate
 Write back uses less total cycles by about a factor of 10 than write through
@@ -110,66 +165,9 @@ It balances the most common needs in cache performance by managing writes effect
 Higher associativity (e.g., 8/16-way) reduces the likelihood of conflict misses (when multiple memory addresses map to the same cache set), as more options are available for where to store each block within a set.
 Write allocate brings data into the cache on a write miss, enabling future accesses to benefit from faster cache access rather than having to go to main memory.
 Write back reduces costly memory transcations, as multiple writes to the same cache block only trigger a single write-back when the data is eventually evicted. This is more efficient for applications with frequent updates to the same memory locations.
-LRU eviction ensures that the least recently accessed data is evicted first, which is beneficial in accessing data with temporal locality (data accessed recently is likely to be accessed again soon).
 
-Depending on the situation, some configurations are better suited than others. For example, if you have mostly sequential data access, a lower associativity (like 4-way or 8-way) with a FIFO eviction policy would be more efficient as it suited for predictable access patterns.
 Write through cache configurations may be more efficient for data accessed only once
 
-***ALP TODO:
-Consider cache overhead()
-What do u think about my idea for most efficient cache
-
-
-Factors to look at:
-Hit Rate: Higher hit rates usually indicate better use of locality.
-Miss Penalty: Calculated based on the cycles spent on memory accesses due to cache misses.
-Total Cycles (Execution Time): This is a practical measure of efficiency for each configuration.
-Cache Overhead: Include the cost of extra bits (e.g., tags, valid, and dirty bits) required for different associativities and write policies
-
-
-Compare Associativity: Same Cache Size (8192 bytes), Different Associativity
-
-./csim 256 2 16 write-allocate write-back lru < gcc.trace (2-Way)
-Total loads: 318197
-Total stores: 197486
-Load hits: 312298
-Load misses: 5899
-Store hits: 187483
-Store misses: 10003
-Total cycles: 11367381
-
-./csim 128 4 16 write-allocate write-back fifo < gcc.trace (4-Way)
-Total loads: 318197
-Total stores: 197486
-Load hits: 312969
-Load misses: 5228
-Store hits: 187684
-Store misses: 9802
-Total cycles: 10886653
-Hit Rate: 97.09%
-
-./csim 64 8 16 write-allocate write-back lru < gcc.trace (8-Way)
-Total loads: 318197
-Total stores: 197486
-Load hits: 314221
-Load misses: 3976
-Store hits: 188067
-Store misses: 9419
-Total cycles: 9913888
-
-./csim 32 16 16 write-allocate write-back lru < gcc.trace (16-Way)
-Total loads: 318197
-Total stores: 197486
-Load hits: 313151
-Load misses: 5046
-Store hits: 187761
-Store misses: 9725
-Total cycles: 10758512
-
-
-Hit Rate: 97.16%
-Miss Penalty: Minor decreasing with increasing associativity
-Pretty much no significant differences in all the statistics
 
 Compare Write Thru/Write Back and Write Allocate/No-Write-Allocate (Using same cache size, LRU):
 
@@ -206,35 +204,6 @@ Write back uses less total cycles by about a factor of 10 than write through
 Write allocate and write back seems to be the best combination with least misses and cycles
 
 
-Compare LRU v FIFO: (Compare the two for a couple different cache associativities)
-
-./csim 256 2 16 write-allocate write-back lru < gcc.trace (2-Way)
-Total loads: 318197
-Total stores: 197486
-Load hits: 313059
-Load misses: 5138
-Store hits: 187779
-Store misses: 9707
-Total cycles: 10704438
-
-./csim 256 2 16 write-allocate write-back fifo < gcc.trace (2-Way)
-Total loads: 318197
-Total stores: 197486
-Load hits: 312298
-Load misses: 5899
-Store hits: 187483
-Store misses: 10003
-Total cycles: 11367381
-
-./csim 64 8 16 write-allocate write-back lru < gcc.trace (8-Way)
-Total loads: 318197
-Total stores: 197486
-Load hits: 314221
-Load misses: 3976
-Store hits: 188067
-Store misses: 9419
-Total cycles: 9913888
-
 
 
 More total cycles in FIFO by roughly 1 million!
@@ -243,14 +212,7 @@ More total cycles in FIFO by roughly 1 million!
 
 ALP COMMANDS: **I don't think we need this anymore, let me know what u think? - Ryan
 
-./csim 32 16 16 write-allocate write-back lru < gcc.trace (16-Way)
-Total loads: 318197
-Total stores: 197486
-Load hits: 314233
-Load misses: 3964
-Store hits: 188076
-Store misses: 9410
-Total cycles: 9901909
+
 
 ./csim 4 128 16 write-allocate write-back fifo < gcc.trace 
 Total loads: 318197
