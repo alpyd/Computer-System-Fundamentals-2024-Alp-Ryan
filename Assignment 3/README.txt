@@ -200,27 +200,24 @@ While no-write-allocate and write-through performed better for this set of comma
 The 128-way set associativity with LRU eviction supported the findings that write-allocate and write-back were optimal, as the write-allocate and write-back had 9867174 total cycles, write-allocate and write-through had 24819674 total cycles, and no-write-allocate and write-through had 23009467 total cycles.
 The write-back consisntently outperformed write-through in this case as well, with a similar ~57% - ~60% decrease in the total cycles.
 
+It should be noted that for other series of commands where the data is only accessed once, write through cache configurations may be more efficient.
+However, these are specific cases and are not representativeof the broad spectrum of load and store actions that will be conducted.
+
 Therefore, it was determined that the optimaml hit-miss policy combination was write-allocate and write-back because it had 60% less total cycles.
+Write-allocate brings data into the cache on a write miss, enabling future accesses to benefit from faster cache access rather than having to go to main memory.
+Write-back reduces costly memory transcations, as multiple writes to the same cache block only trigger a single write-back when the data is eventually evicted, which is more efficient for applications with frequent updates to the same memory locations.
 
 
 Conclusion:
 
-As demonstrated by the 
-In our opinion, the most efficient cache configuration uses a higher associativity with write allocate, write back, and LRU eviction.
+As demonstrated by the provided results from testing the different cache parameter configurations, the optimal determined configuration was a cache with 8-way set associativity, LRU eviction, a write-allocate miss policy and write-back hit policy.
 It balances the most common needs in cache performance by managing writes effectively, minimizing conflict misses, and retaining frequently accessed data through LRU.
-
-Higher associativity (e.g., 8/16-way) reduces the likelihood of conflict misses (when multiple memory addresses map to the same cache set), as more options are available for where to store each block within a set.
-Write allocate brings data into the cache on a write miss, enabling future accesses to benefit from faster cache access rather than having to go to main memory.
-Write back reduces costly memory transcations, as multiple writes to the same cache block only trigger a single write-back when the data is eventually evicted. This is more efficient for applications with frequent updates to the same memory locations.
-
-Write through cache configurations may be more efficient for data accessed only once
+The 8-way set associativity was chosen because it was a set associativity that had greater than ~80% of the returns in the highest tested set-associativity and could still be realistically implemented in the real world because higher associativity caches would require more money and complexity.
+The LRU eviction policy and write-back, write-allocate hit-miss policy outperformed their counterparts, leading to a significantly lower number of cycles, a main indicator for performance.
+While there exist certain cases where the FIFO and write-through policies could outperform the chosen parameters, these parameters require specific cases and are not as general enough to be used in an all-purpose computer, as demonstrated by the commands in gcc.trace.
 
 
-Compare Write Thru/Write Back and Write Allocate/No-Write-Allocate (Using same cache size, LRU):
-
-
-
-Initial Thoughts: 
-Write allocate leads to much less load and store misses than no write allocate
-Write back uses less total cycles by about a factor of 10 than write through
-Write allocate and write back seems to be the best combination with least misses and cycles
+Contributions:
+Both partners contributed synergistically towards the project
+Alp wrote the implementations of the cache simulator and main functions, as well as writing the report for the optimal cache configuration.
+Ryan tested and debugged the implementations of the cache simulator and main functions, ensuring that the total cycles fell within the desired range. He also gathered all of the data for the report by running the shown commands on his computer.
