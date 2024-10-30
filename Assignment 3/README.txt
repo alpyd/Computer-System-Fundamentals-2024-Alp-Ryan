@@ -134,7 +134,44 @@ It should be noted that depending on the situation, FIFO may be better than LRU.
 
 Hit/Miss Policy Test Results and Discussion:
 
-./csim 4 128 16 write-allocate write-through lru < gcc.trace (Write Allocate, Write Through)
+./csim 64 8 16 write-allocate write-back lru < gcc.trace (8-Way Associativity, LRU Eviction - Write Allocate, Write Back)
+Total loads: 318197
+Total stores: 197486
+Load hits: 314221
+Load misses: 3976
+Store hits: 188067
+Store misses: 9419
+Total cycles: 9913888
+
+./csim 64 8 16 write-allocate write-through lru < gcc.trace (8-Way Associativity, LRU Eviction - Write Allocate, Write Through)
+Total loads: 318197
+Total stores: 197486
+Load hits: 314221
+Load misses: 3976
+Store hits: 188067
+Store misses: 9419
+Total cycles: 24856588
+
+./csim 64 8 16 no-write-allocate write-through lru < gcc.trace (8-Way Associativity, LRU Eviction - No Write Allocate, Write Through)
+Total loads: 318197
+Total stores: 197486
+Load hits: 311155
+Load misses: 7042
+Store hits: 164406
+Store misses: 33080
+Total cycles: 23040961
+
+./csim 4 128 16 write-allocate write-back lru < gcc.trace (128-Way Associativity, LRU Eviction - Write Allocate, Write Back)
+Total loads: 318197
+Total stores: 197486
+Load hits: 314281
+Load misses: 3916
+Store hits: 188093
+Store misses: 9393
+Total cycles: 9867174
+
+
+./csim 4 128 16 write-allocate write-through lru < gcc.trace (128-Way Associativity, LRU Eviction - Write Allocate, Write Through)
 Total loads: 318197
 Total stores: 197486
 Load hits: 314281
@@ -143,7 +180,7 @@ Store hits: 188093
 Store misses: 9393
 Total cycles: 24819674
 
-./csim 4 128 16 no-write-allocate write-through lru < gcc.trace (No Write Allocate, Write Through)
+./csim 4 128 16 no-write-allocate write-through lru < gcc.trace (128-Way Associativity, LRU Eviction - No Write Allocate, Write Through)
 Total loads: 318197
 Total stores: 197486
 Load hits: 311234
@@ -152,13 +189,23 @@ Store hits: 164433
 Store misses: 33053
 Total cycles: 23009467
 
-Write allocate leads to much less load and store misses than no write allocate
-Write back uses less total cycles by about a factor of 10 than write through
-Write allocate and write back seems to be the best combination with least cache misses and cycles
+Since the miss policy could either be write-allocate or no-write-allocate and the hit policy could either be write-through or write-back, the combinations of these hit/miss policies were tested, as some hit miss strategies may be more synergistic than others.
+The hit/miss policy of write-back and no-write allocate was not tested, as it would render the cache useless. 
+
+When the remaining 3 hit/miss policy combinations were tested for the 8-way set associativity with LRU eviction, write-allocate and write-back had 9913888 total cycles, write-allocate and write-through had 24856588 total cycles, and no-write-allocate and write-through had 23040961 total cycles.
+As demonstrated by these total cycles, write-back performed better than write-through with a ~57% - ~60% decrease in the total cycles.
+To find the second best combination, while no-write-allocate performed 7.72% better than write-allocate for the write-through hit policy, this difference also led to around 2 times more load misses and 4 times more store misses.
+While no-write-allocate and write-through performed better for this set of commands, it should be noted that commands that lead to more misses could cause it to be less effective.
+
+The 128-way set associativity with LRU eviction supported the findings that write-allocate and write-back were optimal, as the write-allocate and write-back had 9867174 total cycles, write-allocate and write-through had 24819674 total cycles, and no-write-allocate and write-through had 23009467 total cycles.
+The write-back consisntently outperformed write-through in this case as well, with a similar ~57% - ~60% decrease in the total cycles.
+
+Therefore, it was determined that the optimaml hit-miss policy combination was write-allocate and write-back because it had 60% less total cycles.
 
 
+Conclusion:
 
-
+As demonstrated by the 
 In our opinion, the most efficient cache configuration uses a higher associativity with write allocate, write back, and LRU eviction.
 It balances the most common needs in cache performance by managing writes effectively, minimizing conflict misses, and retaining frequently accessed data through LRU.
 
@@ -171,72 +218,9 @@ Write through cache configurations may be more efficient for data accessed only 
 
 Compare Write Thru/Write Back and Write Allocate/No-Write-Allocate (Using same cache size, LRU):
 
-./csim 64 8 16 write-allocate write-back lru < gcc.trace (Write Allocate, Write Back)
-Total loads: 318197
-Total stores: 197486
-Load hits: 314221
-Load misses: 3976
-Store hits: 188067
-Store misses: 9419
-Total cycles: 9913888
 
-./csim 64 8 16 write-allocate write-through lru < gcc.trace (Write Allocate, Write Through)
-Total loads: 318197
-Total stores: 197486
-Load hits: 314221
-Load misses: 3976
-Store hits: 188067
-Store misses: 9419
-Total cycles: 24856588
-
-./csim 64 8 16 no-write-allocate write-through lru < gcc.trace (No Write Allocate, Write Through)
-Total loads: 318197
-Total stores: 197486
-Load hits: 311155
-Load misses: 7042
-Store hits: 164406
-Store misses: 33080
-Total cycles: 23040961
 
 Initial Thoughts: 
 Write allocate leads to much less load and store misses than no write allocate
 Write back uses less total cycles by about a factor of 10 than write through
 Write allocate and write back seems to be the best combination with least misses and cycles
-
-
-
-
-More total cycles in FIFO by roughly 1 million!
-20% less load misses in LRU!
-
-
-ALP COMMANDS: **I don't think we need this anymore, let me know what u think? - Ryan
-
-
-
-./csim 4 128 16 write-allocate write-back fifo < gcc.trace 
-Total loads: 318197
-Total stores: 197486
-Load hits: 313288
-Load misses: 4909
-Store hits: 187749
-Store misses: 9737
-Total cycles: 10693837
-
-./csim 4 128 16 write-allocate write-through fifo < gcc.trace 
-Total loads: 318197
-Total stores: 197486
-Load hits: 313288
-Load misses: 4909
-Store hits: 187749
-Store misses: 9737
-Total cycles: 25317937
-
-./csim 4 128 16 no-write-allocate write-through fifo < gcc.trace 
-Total loads: 318197
-Total stores: 197486
-Load hits: 310232
-Load misses: 7965
-Store hits: 162297
-Store misses: 35189
-Total cycles: 23407129
