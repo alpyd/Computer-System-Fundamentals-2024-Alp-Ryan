@@ -2,16 +2,16 @@ Alp Demirtas (ademirt1)
 Ryan Amer (ramer2)
 
 Introduction: 
-From experimental testing on different parameters of a cache with 8192 bytes and 16 byte block size, the cache configuration that has the best overall effectiveness was a cache with 8-way set associativity with a write-allocate miss policy, write-back hit policy, and a least recently used eviction policy.
-The performance of each cache configuration was determined by looking at the cache's total cycles, a practical measure of the efficiency of each operation, and the cache's hit rate, an indicator for better use of locality. 
+Experimental testing on different parameters of a cache with 8192 bytes and a 16-byte block size revealed that the cache configuration with the best overall effectiveness was a cache with 8-way set associativity, a write-allocate miss policy, a write-back hit policy, and a least recently used eviction policy.
+The performance of each cache configuration was determined by examining the cache's total cycles, a practical measure of the efficiency of each operation, and the cache's hit rate, an indicator of better use of locality. 
 Additionally, the feasibility of the cache configuration was taken into account significantly when deciding the set associativity, as engineers would likely not want to incur the additional complexity and cost of adding more associativity if there was no real benefit.
-The miss peanlty and the number of extra bits required for the different configurations, such as tracking tags, validity, and dirty bits, were also considered when assessing performance, but they beared less importance on the final selection of parameters because the miss penalty would be factored into the efficiency of the total cycles and utilizing extra bits could be helpful if it leads to better efficiency.
+The miss penalty and the number of extra bits required for the different configurations, such as tracking tags, validity, and dirty bits, were also considered when assessing performance, but they were less important in the final selection of parameters because the miss penalty would be factored into the efficiency of the total cycles, and utilizing extra bits could be helpful if it leads to better efficiency.
 
 Methods: 
-Each combination of parameters was run using the inputs provided in gcc.trace, which simulated a realsitic series of load and store commands that a cache may experience. 
+Each combination of parameters was run using the inputs provided in gcc.trace, which simulated a realistic series of load and store commands that a cache may experience. 
 First, the effect of associativity on cache performance was isolated and tested. While maintaining the same overall cache capacity of 8192 bytes, same cache hit/miss policies, and same eviction policy, the associativity was varied, ranging from 2-way to 128-way.
-Finally, the the effect of eviction policy, LRU v FIFO, was isolated and tested by observing how the total cycles and hit rate of the eviction policy changed. 
-Finally, the effects of a write-allocate v no-write-allocate miss policy and write-through v write-back hit policy were isolated and tested by running all of the combinations on caches with same associativity, size, and eviction policy.
+Finally, the effect of the eviction policy, LRU v FIFO, was isolated and tested by observing how the total cycles and hit rate changed with each eviction policy. 
+Finally, the effects of a write-allocate vs. no-write-allocate miss policy and write-through vs. write-back hit policy were isolated and tested by running all of the combinations on caches with the same associativity, size, and eviction policy.
 
 Associativity Tests Results and Discussion:
 
@@ -76,21 +76,21 @@ Total cycles: 10693837
 Hit Rate: 97.16%
 
 
-The first set of parameters that was tested were the number of sets and blocks, which would determine the optimal associativity.
-For all of the runs, the total size of the cache was 8192 bytes and each block size was 16 bytes, which meant that 512 blocks would need to be evenly distributed.
-The tested set:block pairs were [2:256], [4:128], [8:64], [16:32], [32:16], [64:8], [128:4], and [256:2] under a FIFO eviction policy, write-allocate miss policy, and write-back hit policy.
+The first set of parameters tested was the number of sets and blocks, which would determine the optimal associativity.
+For all of the runs, the cache's total size was 8192 bytes, and each block was 16 bytes, which meant that 512 blocks would need to be evenly distributed.
+The tested [set, block] pairs were [2:256], [4:128], [8:64], [16:32], [32:16], [64:8], [128:4], and [256:2] under a FIFO eviction policy, write-allocate miss policy, and write-back hit policy.
 
-While the results shown above demonstrate that the 128-way set associativity had the lowest total cycles at 10693837 and the highest hit rate of 97.16%, there was not much of a difference between the associativities, with the largest difference in hit rate being 0.24% and the largest difference in cycles being that the 128-way set associativity used 6% less total cycles than the 2-way set associativity.
-Therefore, since increasing associativity did not have a large affect on the total cycles and hit rate, the most optimal associativity was chosen based on observing when the returns were 80% of the tested maximum.
+While the results shown above demonstrate that the 128-way set associativity had the lowest total cycles at 10693837 and the highest hit rate of 97.16%, there was not much of a difference between the associativities. The largest difference in hit rate was 0.24%, and the largest difference in cycles was that the 128-way set associativity used 6% fewer total cycles than the 2-way set associativity.
+Therefore, since increasing associativity did not significantly affect the total cycles and hit rate, the most optimal associativity was chosen based on observing when the returns were 80% of the tested maximum.
 The total cycles decreased by 4.23% when increasing associativity from 2-way to 4-way, 0.87% when increasing associativity from 4-way to 8-way, 0.31% when increasing associativity from 8-way to 16-way, and 0.18% when increasing associativity from 16-way to 32-way.
 
 As demonstrated by these decreases, there were increasingly diminishing returns when increasing associativity. 
 The total cycles decrease from 2-way to 8-way was 5.06%, whereas the total cyles decrease from 8-way to 128-way was 0.91%, which meant that the total cycles at 8-way associativity were ~84.82% of the 128-way associativity.
-This is further corroborated by the hit rate, as the hit rate increased 0.2% from 2-way to 8-way associativity but only increased by 0.04% from 8-way to 128-way associativity, indicating that the hit rate at 8-way associativity was around ~83.33% of the 128-way associativity.
+This is further corroborated by the hit rate, which increased 0.2% from 2-way to 8-way associativity but only by 0.04% from 8-way to 128-way associativity. This indicates that the hit rate at 8-way associativity was around ~83.33% of the 128-way associativity.
 
-Therefore, 8-way associativity was chosen as the "optimal" associativity because it represented around 84% of the maximum observed performance while having 16 times less complexity than the 128-way associativity.
+Therefore, the 8-way associativity was chosen as the "optimal" associativity because it represented around 84% of the maximum observed performance while having 16 times less complexity than the 128-way associativity.
 
-Evicition Policy Test Results and Discussion:
+Eviction Policy Test Results and Discussion:
 
 ./csim 64 8 16 write-allocate write-back lru < gcc.trace (8-Way)
 Total loads: 318197
@@ -123,14 +123,14 @@ Total cycles: 9867174
 Hit Rate: 97.419%
 
 The second set of tested parameters was whether the eviction policy should be FIFO, first-in, first-out, or LRU, least recently used. 
-The differences across set associativities was even smaller for LRU than FIFO with the decrease in total cycles being 0.12% from 8-way to 16-way and 0.35% from 16-way to 128-way and the hit rate only having a 0.015% decrease between the max and min hit rates.
-However, there was a consistent and significant difference between the hit rate using LRU or FIFO for the same set-associativity.
+The differences across set associativities were even smaller for LRU than FIFO, with the decrease in total cycles being 0.12% from 8-way to 16-way and 0.35% from 16-way to 128-way. The hit rate only decreased by 0.015% between the max and min hit rates.
+However, the hit rate using LRU or FIFO for the same set-associativity differed consistently and significantly.
 
 When comparing the set associativities with FIFO versus LRU, LRU 8-way associativity saw a hit rate increase of 0.28% and total cycles decrease of 8.13%, LRU 16-way associativity saw a hit rate increase of 0.27% and total cycles decrease of 7.96%, and LRU 128-way associativity saw a hit rate increase of 0.26% and total cycles decrease of 7.73%.
-This ~7-8% decrease in total cycles and around ~0.25% increase in hit rate demonstrates that a LRU eviction policy performs much better than a FIFO eviction policy.
-Even though LRU does require more operations, as the access timestamp needs to be continually updated, this overhead of operations is worth it because it leads to significantly less cycles.
+This ~7-8% decrease in total cycles and around ~0.25% increase in hit rate demonstrates that an LRU eviction policy performs much better than a FIFO eviction policy.
+Even though LRU requires more operations, as the access timestamp needs to be continually updated, this overhead of operations is worth it because it leads to significantly fewer cycles.
 LRU eviction ensures that the least recently accessed data is evicted first, which is beneficial in accessing data with temporal locality (data accessed recently is likely to be accessed again soon).
-It should be noted that depending on the situation, FIFO may be better than LRU. For example, FIFO would be better for sequential accessing of data, as the first data accessed would be the first out after a certain amount of time.
+FIFO may be better than LRU, depending on the situation. For example, FIFO would be better for sequential data access, as the first data accessed would be the first out after a certain amount of time.
 
 
 Hit/Miss Policy Test Results and Discussion:
@@ -171,7 +171,6 @@ Store hits: 188093
 Store misses: 9393
 Total cycles: 9867174
 
-
 ./csim 4 128 16 write-allocate write-through lru < gcc.trace (128-Way Associativity, LRU Eviction - Write Allocate, Write Through)
 Total loads: 318197
 Total stores: 197486
@@ -190,8 +189,8 @@ Store hits: 164433
 Store misses: 33053
 Total cycles: 23009467
 
-Since the miss policy could either be write-allocate or no-write-allocate and the hit policy could either be write-through or write-back, the combinations of these hit/miss policies were tested, as some hit miss strategies may be more synergistic than others.
-The hit/miss policy of write-back and no-write allocate was not tested, as it would render the cache useless. 
+Since the miss policy could either be write-allocate or no-write-allocate and the hit policy could either be write-through or write-back, combinations of these hit/miss policies were tested, as some hit-miss strategies may be more synergistic than others.
+The hit/miss policy of write-back and no-write-allocate was not tested, as it would render the cache useless. 
 
 When the remaining 3 hit/miss policy combinations were tested for the 8-way set associativity with LRU eviction, write-allocate and write-back had 9913888 total cycles, write-allocate and write-through had 24856588 total cycles, and no-write-allocate and write-through had 23040961 total cycles.
 As demonstrated by these total cycles, write-back performed better than write-through with a ~57% - ~60% decrease in the total cycles.
@@ -199,27 +198,27 @@ To find the second best combination, while no-write-allocate performed 7.72% bet
 While no-write-allocate and write-through performed better for this set of commands, it should be noted that commands that lead to more misses could cause it to be less effective.
 
 The 128-way set associativity with LRU eviction supported the findings that write-allocate and write-back were optimal, as the write-allocate and write-back had 9867174 total cycles, write-allocate and write-through had 24819674 total cycles, and no-write-allocate and write-through had 23009467 total cycles.
-The write-back consistently outperformed write-through in this case as well, with a similar ~57% - ~60% decrease in the total cycles.
-Even though write-back does have additional overhead to store the dirty bit, the increased efficiency of greater than 50% makes the extra bit worth.
+In this case, write-back consistently outperformed write-through, with a similar ~57%—60% decrease in the total cycles.
+Even though write-back does have additional overhead to store the dirty bit, the increased efficiency of greater than 50% makes the extra bit worth it.
 
-It should be noted that for other series of commands where the data is only accessed once, write through cache configurations may be more efficient.
+Writing through cache configurations may be more efficient for other commands where the data is only accessed once.
 However, these are specific cases and are not representative of the broad spectrum of load and store actions that will be conducted.
 
-Therefore, it was determined that the optimaml hit-miss policy combination was write-allocate and write-back because it had 60% less total cycles.
-Write-allocate brings data into the cache on a write miss, enabling future accesses to benefit from faster cache access rather than having to go to main memory.
+Therefore, the optimal hit-miss policy combination was write-allocate and write-back because it had 60% fewer total cycles.
+Write-allocate brings data into the cache on a miss, enabling future accesses to benefit from faster cache access rather than going to main memory.
 Write-back reduces costly memory transcations, as multiple writes to the same cache block only trigger a single write-back when the data is eventually evicted, which is more efficient for applications with frequent updates to the same memory locations.
 
 
 Conclusion:
 
-As demonstrated by the provided results from testing the different cache parameter configurations, the optimal determined configuration was a cache with 8-way set associativity, LRU eviction, a write-allocate miss policy and write-back hit policy.
+As demonstrated by the results from testing the different cache parameter configurations, the optimal configuration was a cache with 8-way set associativity, LRU eviction, a write-allocate miss policy, and a write-back hit policy.
 It balances the most common needs in cache performance by managing writes effectively, minimizing conflict misses, and retaining frequently accessed data through LRU.
-The 8-way set associativity was chosen because it was a set associativity that had greater than ~80% of the returns in the highest tested set-associativity and could still be realistically implemented in the real world because higher associativity caches would require more money and complexity.
-The LRU eviction policy and write-back, write-allocate hit-miss policy outperformed their counterparts, leading to a significantly lower number of cycles, a main indicator for performance.
-While there exist certain cases where the FIFO and write-through policies could outperform the chosen parameters, these parameters require specific cases and are not as general enough to be used in an all-purpose computer, as demonstrated by the commands in gcc.trace.
+The 8-way set associativity was chosen because it was a set associativity that had greater than ~80% of the returns in the highest tested set associativity and could still be realistically implemented in the real world. After all, higher associativity caches would require more money and complexity.
+The LRU eviction policy and write-back, write-allocate hit-miss policy outperformed their counterparts, leading to a significantly lower number of cycles, a primary indicator for performance.
+While there exist certain cases where the FIFO and write-through policies could outperform the chosen parameters, these parameters require specific cases. They are not as general enough to be used in an all-purpose computer, as demonstrated by the commands in gcc.trace.
 
 
 Contributions:
 Both partners contributed synergistically towards the project
-Alp wrote the implementations of the cache simulator and main functions, as well as writing the report for the optimal cache configuration.
-Ryan tested and debugged the implementations of the cache simulator and main functions, ensuring that the total cycles fell within the desired range. He also gathered all of the data for the report by running the shown commands on his computer.
+Alp wrote the implementations of the cache simulator and its main functions, as well as the report for the optimal cache configuration.
+Ryan tested and debugged the implementations of the cache simulator and main functions, ensuring that the total cycles fell within the desired range. He also gathered all the report data by running the shown commands on his computer.
