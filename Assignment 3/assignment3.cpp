@@ -8,7 +8,7 @@ bool validPowerOfTwo(int num){
     return num > 0 && (num & (num - 1)) == 0;
 }
 
-
+// Check that string parameters are valid
 bool stringInputsValid(char* argv[]){
     // Ensure that either write-allocate or no-write-allocate parameter is provided and throw an error if neither provided
     bool isWriteAllocate = false;
@@ -47,6 +47,7 @@ bool stringInputsValid(char* argv[]){
     return true;
 }
 
+// Check is number parameters are valid
 bool numbersValid(char* argv[]) {
     // Ensure that the numerical inputs are correct
     for (int i = 1; i <= 3; i++) {
@@ -76,6 +77,7 @@ bool numbersValid(char* argv[]) {
     return true;
 }
 
+// Check that inputted parameters are valid
 bool parametersValid(int argc, char* argv[]) {
     // Check if user has 6 parameters
     if (argc != 7) {
@@ -91,29 +93,8 @@ bool parametersValid(int argc, char* argv[]) {
     return false;
 }
 
-int main(int argc, char *argv[]) {
-    // argc: number of command-line arguments
-    // argv: array of C-style strings (char*), representing each argument
-
-    // Ensure that the provided parameters are valid. Otherwise, return null
-    if (!parametersValid(argc, argv)) {
-        return 1;
-    }
-
-    // Print out the number of arguments
-    std::cout << "Number of arguments: " << argc << std::endl;
-
-    // Initialize the user parameters
-    int numSets = std::stoi(argv[1]);
-    int numBlocks = std::stoi(argv[2]);
-    int blockMem = std::stoi(argv[3]);
-    bool writeAllocate = (strcmp(argv[4], "write-allocate") == 0);
-    bool writeThrough = (strcmp(argv[5], "write-through") == 0);
-    bool evictionLRU = (strcmp(argv[6], "lru") == 0);
-
-    // Instantiate the CacheSimulator class
-    CacheSimulator csim(numSets, numBlocks, blockMem, writeAllocate, writeThrough, evictionLRU);
-
+// Execute commands and print out summary info at the end with the instantiated CacheSimulator
+int executeCacheSimulatorCommands(CacheSimulator csim){
     // Read in the commands using std::cin to get the line and istringstream to parse the command
     std::string inputLine;
     while (std::getline(std::cin, inputLine)) {
@@ -147,6 +128,35 @@ int main(int argc, char *argv[]) {
     // Print the summary info once all commands have been executed
     csim.printSummaryInfo();
 
-    // Return 0 for success
     return 0;
+
+}
+
+// Main execution reading in inputs, execute commands, and print summary info
+int main(int argc, char *argv[]) {
+    // argc: number of command-line arguments
+    // argv: array of C-style strings (char*), representing each argument
+
+    // Ensure that the provided parameters are valid. Otherwise, return null
+    if (!parametersValid(argc, argv)) {
+        return 1;
+    }
+
+    // Print out the number of arguments
+    std::cout << "Number of arguments: " << argc << std::endl;
+
+    // Initialize the user parameters
+    int numSets = std::stoi(argv[1]);
+    int numBlocks = std::stoi(argv[2]);
+    int blockMem = std::stoi(argv[3]);
+    bool writeAllocate = (strcmp(argv[4], "write-allocate") == 0);
+    bool writeThrough = (strcmp(argv[5], "write-through") == 0);
+    bool evictionLRU = (strcmp(argv[6], "lru") == 0);
+
+    // Initialize the Cache Simulator
+    CacheSimulator csim(numSets, numBlocks, blockMem, writeAllocate, writeThrough, evictionLRU);
+
+    // Execute the inputted comands with the Cache Simulator
+    // Return 1 if failure, 0 for success
+    return executeCacheSimulatorCommands(csim);
 }
