@@ -2,10 +2,10 @@ Alp Demirtas (ademirt1)
 Ryan Amer (ramer2)
 
 Introduction: 
-From experimental testing on different parameters of a cache with 8192 bytes and 16 byte block size, the optimal determined combination was a cache with 8-way set associativity with a write-allocate miss policy, write-back hit policy, and a least recently used eviction policy.
+From experimental testing on different parameters of a cache with 8192 bytes and 16 byte block size, the cache configuration that has the best overall effectiveness was a cache with 8-way set associativity with a write-allocate miss policy, write-back hit policy, and a least recently used eviction policy.
 The performance of each cache configuration was determined by looking at the cache's total cycles, a practical measure of the efficiency of each operation, and the cache's hit rate, an indicator for better use of locality. 
 Additionally, the feasibility of the cache configuration was taken into account significantly when deciding the set associativity, as engineers would likely not want to incur the additional complexity and cost of adding more associativity if there was no real benefit.
-The miss peanlty and the number of extra bits required for the different configurations, such as tracking tags, validity, and dirty bits, were also considered when assessing performance, but they beared less importance on the final selection of parameters because the miss penalty would be factored into the efficiency of the total cycles and there were no constraints on using extra bits.
+The miss peanlty and the number of extra bits required for the different configurations, such as tracking tags, validity, and dirty bits, were also considered when assessing performance, but they beared less importance on the final selection of parameters because the miss penalty would be factored into the efficiency of the total cycles and utilizing extra bits could be helpful if it leads to better efficiency.
 
 Methods: 
 Each combination of parameters was run using the inputs provided in gcc.trace, which simulated a realsitic series of load and store commands that a cache may experience. 
@@ -128,6 +128,7 @@ However, there was a consistent and significant difference between the hit rate 
 
 When comparing the set associativities with FIFO versus LRU, LRU 8-way associativity saw a hit rate increase of 0.28% and total cycles decrease of 8.13%, LRU 16-way associativity saw a hit rate increase of 0.27% and total cycles decrease of 7.96%, and LRU 128-way associativity saw a hit rate increase of 0.26% and total cycles decrease of 7.73%.
 This ~7-8% decrease in total cycles and around ~0.25% increase in hit rate demonstrates that a LRU eviction policy performs much better than a FIFO eviction policy.
+Even though LRU does require more operations, as the access timestamp needs to be continually updated, this overhead of operations is worth it because it leads to significantly less cycles.
 LRU eviction ensures that the least recently accessed data is evicted first, which is beneficial in accessing data with temporal locality (data accessed recently is likely to be accessed again soon).
 It should be noted that depending on the situation, FIFO may be better than LRU. For example, FIFO would be better for sequential accessing of data, as the first data accessed would be the first out after a certain amount of time.
 
@@ -198,10 +199,11 @@ To find the second best combination, while no-write-allocate performed 7.72% bet
 While no-write-allocate and write-through performed better for this set of commands, it should be noted that commands that lead to more misses could cause it to be less effective.
 
 The 128-way set associativity with LRU eviction supported the findings that write-allocate and write-back were optimal, as the write-allocate and write-back had 9867174 total cycles, write-allocate and write-through had 24819674 total cycles, and no-write-allocate and write-through had 23009467 total cycles.
-The write-back consisntently outperformed write-through in this case as well, with a similar ~57% - ~60% decrease in the total cycles.
+The write-back consistently outperformed write-through in this case as well, with a similar ~57% - ~60% decrease in the total cycles.
+Even though write-back does have additional overhead to store the dirty bit, the increased efficiency of greater than 50% makes the extra bit worth.
 
 It should be noted that for other series of commands where the data is only accessed once, write through cache configurations may be more efficient.
-However, these are specific cases and are not representativeof the broad spectrum of load and store actions that will be conducted.
+However, these are specific cases and are not representative of the broad spectrum of load and store actions that will be conducted.
 
 Therefore, it was determined that the optimaml hit-miss policy combination was write-allocate and write-back because it had 60% less total cycles.
 Write-allocate brings data into the cache on a write miss, enabling future accesses to benefit from faster cache access rather than having to go to main memory.
