@@ -8,116 +8,163 @@ CacheSimulator::CacheSimulator(int numOfSets, int setSize, int blockSize, bool w
       writeAllocate(writeAllocate), writeThrough(writeThrough), evictionLRU(evictionLRU), 
       totCycles(0), STotMisses(0), timestamp(0) {
 
+    // Initialize the cache by initializing each of the sets and initializing their respective nodes
     for(int i = 0; i < numOfSets; i++){
+        // Initialize the set at that index and then add all of the slots as specified by parameters
         Set newSet;
         for (int j = 0; j < setSize; j++){
             Slot newSlot;
+            
+            // Slot is neither dirty nor valid when first initialized
             newSlot.valid = false;
             newSlot.dirty = false;
-            newSlot.access_ts = 0; // Initialize access_ts
-            newSlot.load_ts = 0;   // Initialize load_ts
+
+            // Initialize access_ts
+            newSlot.access_ts = 0;
+
+            // Initialize load_ts 
+            newSlot.load_ts = 0;   
+
+            // Add the slot into the set
             newSet.slots.push_back(newSlot);
         }
+
+        //Add the set into the cache
         cache.sets.push_back(newSet);
     }
 }
 
 void CacheSimulator::executeCommand(char command, uint32_t memoryAddress){
     if(command == 's') {
+        // Increase the total store commands
         totStores++;
-        if(store(memoryAddress)){ //track of store hits/misses
+        if(store(memoryAddress)){ 
+            // Increase hits if store returns true
             STotHits++;
         } else {
+            // Increment misses if store returns false
             STotMisses++;
         }
-    } else if(command == 'l'){ //track of load hits/misses
+    } else if(command == 'l'){ 
+        // Increase the total load commands
         totLoads++;
         if(load(memoryAddress, false)){
+            // Increase hits if load returns true
             LTotHits++;
         } else {
+            // Increase misses if load returns false
             LTotMisses++;
         }
     } 
 }
 
 uint32_t CacheSimulator::readTag(uint32_t memoryAddress) {
-    int numBitsOffset = std::log2(blockSize);  // Number of bits for the block offset
-    int numBitsIndex = std::log2(numOfSets);   // Number of bits for the index
+    // Number of bits for the block offset
+    int numBitsOffset = std::log2(blockSize); 
 
+    // Number of bits for the index
+    int numBitsIndex = std::log2(numOfSets);   
+
+    // Return the tag by shifting by the sum of offset and index bits
     return memoryAddress >> (numBitsOffset + numBitsIndex);
 }
 
 uint32_t CacheSimulator::readIndex(uint32_t memoryAddress) {
-    int numBitsOffset = std::log2(blockSize);  // Number of bits for the block offset
-    int numBitsIndex = std::log2(numOfSets);   // Number of bits for the index
+    // Number of bits for the block offset
+    int numBitsOffset = std::log2(blockSize);  
 
+    // Number of bits for the index
+    int numBitsIndex = std::log2(numOfSets);   
+
+    // Return the index by shifting first by the number of offset bits and then masking the index bits
     return (memoryAddress >> numBitsOffset) & ((1 << numBitsIndex) - 1);
 }
 
 
 uint32_t CacheSimulator::chooseSlotIndex(Set& set){
+    // Conduct a linear search to find the first slot that is invalid; holds nothing
     for(uint32_t i = 0; i < set.slots.size(); i++){
         if(!set.slots.at(i).valid){
             return i;
         }
     }
 
+    // If all slots are valid, then we must evict using either LRU or FIFO
     int chosenIndex = 0;
     if(evictionLRU) {
         for(uint32_t i = 0; i < set.slots.size(); i++){
+            // Set the chosen index to the slot that was accessed last for LRU
             if(set.slots.at(i).access_ts < set.slots.at(chosenIndex).access_ts){
                 chosenIndex = i;
             }
         }
     } else {
         for(uint32_t i = 0; i < set.slots.size(); i++){
+            // Set the chosen index to the slot that was loaded in last
             if(set.slots.at(i).load_ts < set.slots.at(chosenIndex).load_ts) {
                 chosenIndex = i;
             }
         }
     }
 
+    // Return the index that was going to be evicted
     return chosenIndex;
 }
 
-bool CacheSimulator::load(uint32_t memoryAddress, bool isDirty){ //reading from cache
+bool CacheSimulator::load(uint32_t memoryAddress, bool isDirty){ 
+    // Isolate the tag and index of the memory address
     uint32_t tag = readTag(memoryAddress);
     uint32_t index = readIndex(memoryAddress);
+
+    // Locate the set using the provided index
     Set &set = cache.sets[index];
-    for (unsigned int i = 0; i < set.slots.size(); i++){ //iterate over blocks in set
+
+    // Iterate over slots within the sets to find the tag
+    for (unsigned int i = 0; i < set.slots.size(); i++){ 
         Slot &slot = set.slots.at(i);
         if(slot.valid && slot.tag == tag){    
-            
+            // If there is a matching tag, return true and increase access timestamp for LRU
             slot.access_ts = ++timestamp;
             if(isDirty){
                 slot.dirty = true;
             }
-            totCycles++; //1 cycle per load operation
+            //1 cycle per load operation
+            totCycles++; 
             return true;
         }
     }
-
+    
+    // If the tag was not found, we must execute a load miss
     handleLoadMiss(set, tag, isDirty);
     return false;
     
 }
 
 void CacheSimulator::handleLoadMiss(Set& set, uint32_t tag, bool isDirty){ //tag for index not found, get data from memory and load into cache
+    // Get the chosen Slot to write into
     Slot &chosenSlot = set.slots.at(chooseSlotIndex(set));
 
+    // For FIFO, make sure to update load timestamp
     if(!evictionLRU){
         chosenSlot.load_ts = ++timestamp;
     }
 
-    if(chosenSlot.valid && chosenSlot.dirty){ // add 100 cycles per 4 byte quantity
+
+    if(chosenSlot.valid && chosenSlot.dirty){ 
+        // Add 100 cycles per 4 byte quantity
         totCycles += ((blockSize / 4)  * 100);
     }
 
+    // Load in the given tag and its properties
     chosenSlot.tag = tag;
     chosenSlot.valid = true;
     chosenSlot.dirty = isDirty;
+
+    // Increase the access timestamp for LRU
     chosenSlot.access_ts = ++timestamp;
-    totCycles += ((blockSize / 4) * 100); //add 100 cycles per 4 byte quantity
+
+    // Add 100 cycles per 4 byte quantity
+    totCycles += ((blockSize / 4) * 100); 
 }
 
 bool CacheSimulator::store(uint32_t memoryAddress){ //writing to cache
@@ -127,46 +174,58 @@ bool CacheSimulator::store(uint32_t memoryAddress){ //writing to cache
     
     // Check if the tag is already in the cache (cache hit)
     for (unsigned int i = 0; i < set.slots.size(); i++){
-        Slot &slot = set.slots.at(i);  // Use a reference to modify the slot directly
+        // Use a reference to modify the slot directly
+        Slot &slot = set.slots.at(i);  
         if(slot.valid && slot.tag == tag){
             timestamp++;
             slot.access_ts = timestamp;
 
             // Perform the appropriate action based on writeThrough parameter
             if (writeThrough) {
-                totCycles += 100; // Handle cycles
+                // Handle cycles for write through
+                totCycles += 100; 
                 slot.dirty = false;
             } else {
-                slot.dirty = true; // Mark the slot as dirty since we're storing data
+                // Mark the slot as dirty since we're storing data
+                slot.dirty = true; 
             } 
-            
-            totCycles++; // Increment total cycles for the operation
+            // Increment total cycles for the operation and return true indicating a hit
+            totCycles++; 
             return true;
         }
     }
-    
-    handleStoreMiss(memoryAddress); // Handle a store miss
-    return false; // Return false if the store was unsuccessful
+    // Handle a store miss
+    handleStoreMiss(memoryAddress); 
+
+    // Return false if the store was unsuccessful
+    return false; 
 }
 
 
 void CacheSimulator::handleStoreMiss(uint32_t memoryAddress){
     // On a store miss, load the relevant block into the cache if write-allocate
     if (writeAllocate) {
-        load(memoryAddress, true); // Load and mark as dirty
+        // Load and mark as dirty
+        load(memoryAddress, true); 
     } else {
         // No-write-allocate: Write directly to memory without cache modification
-        totCycles += 100; // Writing to memory directly (100 cycles)
+        // Writing to memory directly (100 cycles)
+        totCycles += 100; 
     }
 }
 
 
 void CacheSimulator::printSummaryInfo(){
+    // Print out the total loads and stores
     std::cout << "Total loads: " << totLoads << std::endl;
     std::cout << "Total stores: " << totStores << std::endl;
+    
+    // Print out the load hits and misses
     std::cout << "Load hits: " << LTotHits << std::endl;
     std::cout << "Load misses: " << LTotMisses << std::endl;
     std::cout << "Store hits: " << STotHits << std::endl;
     std::cout << "Store misses: " << STotMisses << std::endl;
+
+    // Print out the total cycles
     std::cout << "Total cycles: " << totCycles << std::endl;
 }
