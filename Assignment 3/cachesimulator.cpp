@@ -3,6 +3,17 @@
 #include <iostream>
 #include <cmath>
 
+/* Constructor for CacheSimulator that sets all counters to 0 and takes in user parameters
+
+Parameters:
+   numOfSets - number of sets in cache
+   setSize - how many slots are in a set
+   blockSize - how many bytes is the size of each block
+   writeAllocate - whether miss policy is write-allocate or no-write allocate
+   writeThrough - whether hit policy is write-through or write-back
+   evictionLRU - whether eviction policy is LRU or FIFO
+*/  
+
 CacheSimulator::CacheSimulator(int numOfSets, int setSize, int blockSize, bool writeAllocate, bool writeThrough, bool evictionLRU)
     : numOfSets(numOfSets), setSize(setSize), blockSize(blockSize), 
       writeAllocate(writeAllocate), writeThrough(writeThrough), evictionLRU(evictionLRU), 
@@ -34,6 +45,14 @@ CacheSimulator::CacheSimulator(int numOfSets, int setSize, int blockSize, bool w
     }
 }
 
+
+/* Execute a load or store command
+
+Parameters:
+   command - character value indicating load or store
+   memoryAddress - memory address with which to simulate load or store
+*/
+
 void CacheSimulator::executeCommand(char command, uint32_t memoryAddress){
     if(command == 's') {
         // Increase the total store commands
@@ -58,6 +77,12 @@ void CacheSimulator::executeCommand(char command, uint32_t memoryAddress){
     } 
 }
 
+/* Read the tag from a provided memory address
+
+Parameters:
+   memoryAddress - the memory address that will be read
+*/  
+
 uint32_t CacheSimulator::readTag(uint32_t memoryAddress) {
     // Number of bits for the block offset
     int numBitsOffset = std::log2(blockSize); 
@@ -69,6 +94,12 @@ uint32_t CacheSimulator::readTag(uint32_t memoryAddress) {
     return memoryAddress >> (numBitsOffset + numBitsIndex);
 }
 
+/* Read the index from a provided memory address
+
+Parameters:
+   memoryAddress - the memory address that will be read
+*/  
+
 uint32_t CacheSimulator::readIndex(uint32_t memoryAddress) {
     // Number of bits for the block offset
     int numBitsOffset = std::log2(blockSize);  
@@ -79,6 +110,12 @@ uint32_t CacheSimulator::readIndex(uint32_t memoryAddress) {
     // Return the index by shifting first by the number of offset bits and then masking the index bits
     return (memoryAddress >> numBitsOffset) & ((1 << numBitsIndex) - 1);
 }
+
+/* Chooses a slot index to load a memory address into on a miss
+
+Parameters:
+    set - the provided set to choose the dedicated slot from
+*/  
 
 
 uint32_t CacheSimulator::chooseSlotIndex(Set& set){
@@ -111,6 +148,13 @@ uint32_t CacheSimulator::chooseSlotIndex(Set& set){
     return chosenIndex;
 }
 
+/* Loads a memory address into the cache
+
+Parameters:
+   memoryAddress - the memory address to load into the cache
+   isDirty - whether the slot being loaded is dirty
+*/  
+
 bool CacheSimulator::load(uint32_t memoryAddress, bool isDirty){ 
     // Isolate the tag and index of the memory address
     uint32_t tag = readTag(memoryAddress);
@@ -140,7 +184,15 @@ bool CacheSimulator::load(uint32_t memoryAddress, bool isDirty){
     
 }
 
-void CacheSimulator::handleLoadMiss(Set& set, uint32_t tag, bool isDirty){ //tag for index not found, get data from memory and load into cache
+/* Handle a load miss
+
+Parameters:
+   set - The set with which to handle the load miss in
+   tag - The tag of the memory address being loaded in
+   isDirty - Whether or not the slot being loaded into is dirty
+*/  
+
+void CacheSimulator::handleLoadMiss(Set& set, uint32_t tag, bool isDirty){ 
     // Get the chosen Slot to write into
     Slot &chosenSlot = set.slots.at(chooseSlotIndex(set));
 
@@ -167,7 +219,13 @@ void CacheSimulator::handleLoadMiss(Set& set, uint32_t tag, bool isDirty){ //tag
     totCycles += ((blockSize / 4) * 100); 
 }
 
-bool CacheSimulator::store(uint32_t memoryAddress){ //writing to cache
+/* Stores a memory address from the cache
+
+Parameters:
+   memoryAddress - the memory address to store into the cache
+*/  
+
+bool CacheSimulator::store(uint32_t memoryAddress){ 
     uint32_t tag = readTag(memoryAddress);
     uint32_t index = readIndex(memoryAddress);
     Set &set = cache.sets[index];
@@ -201,6 +259,11 @@ bool CacheSimulator::store(uint32_t memoryAddress){ //writing to cache
     return false; 
 }
 
+/* Handle a store miss
+
+Parameters:
+   memoryAddress - the memory address that will be stored on the miss
+*/  
 
 void CacheSimulator::handleStoreMiss(uint32_t memoryAddress){
     // On a store miss, load the relevant block into the cache if write-allocate
@@ -214,6 +277,9 @@ void CacheSimulator::handleStoreMiss(uint32_t memoryAddress){
     }
 }
 
+/* Print the summary info with the total loads, stores, and cycles, 
+   as well as the load and store hits and misses
+*/  
 
 void CacheSimulator::printSummaryInfo(){
     // Print out the total loads and stores
