@@ -15,6 +15,12 @@ int quicksort( int64_t *arr, unsigned long start, unsigned long end, unsigned lo
 
 // TODO: declare additional helper functions if needed
 
+// Data type representing a child process
+typedef struct {
+    pid_t pid;
+    int success;
+} Child;
+
 int main( int argc, char **argv ) {
   unsigned long par_threshold;
   if ( argc != 3 || sscanf( argv[2], "%lu", &par_threshold ) != 1 ) {
@@ -35,15 +41,16 @@ int main( int argc, char **argv ) {
 
   // TODO: determine the file size and number of elements
 
-struct stat statbuf;
-int rc = fstat( fd, &statbuf );
-if ( rc != 0 ) {
+  struct stat statbuf;
+  int rc = fstat( fd, &statbuf );
+  if ( rc != 0 ) {
     fprintf(stderr, "Error: fstat system call\n" );
     exit(1);
-}
-// statbuf.st_size indicates the number of bytes in the file
-file_size = statbuf.st_size;
-num_elements = file_size / sizeof(int64_t);
+  }
+
+  // statbuf.st_size indicates the number of bytes in the file
+  file_size = statbuf.st_size;
+  num_elements = file_size / sizeof(int64_t);
 
   // mmap the file data
   int64_t *arr;
@@ -64,6 +71,51 @@ num_elements = file_size / sizeof(int64_t);
   munmap(arr, file_size);
 
   return 0;
+}
+
+// Helper function to fork and start a child process for sorting
+Child quicksort_subproc(int64_t *arr, unsigned long start, unsigned long end, unsigned long par_threshold) {
+    Child child;
+    child.pid = fork();
+
+    if (child.pid == 0) {
+        // Child process: execute the sorting task
+        if (quicksort(arr, start, end, par_threshold)) {
+            exit(0);  // Success
+        } else {
+            exit(1);  // Failure
+        }
+    } else if (child.pid < 0) {
+        // Fork failed
+        child.success = 0;
+    } else {
+        // Parent process, child created successfully
+        child.success = 1;
+    }
+
+    return child;
+}
+
+// Helper function to wait for a child process to complete
+void quicksort_wait(Child *child) {
+    if (child->pid > 0) {
+        int wstatus;
+        if (waitpid(child->pid, &wstatus, 0) < 0) {
+            // Wait failed
+            child->success = 0;
+        } else if (!WIFEXITED(wstatus) || WEXITSTATUS(wstatus) != 0) {
+            // Child did not exit normally or exited with an error
+            child->success = 0;
+        } else {
+            // Child exited successfully
+            child->success = 1;
+        }
+    }
+}
+
+// Helper function to check if a child completed successfully
+int quicksort_check_success(Child *child) {
+    return child->success;
 }
 
 // Compare elements.
@@ -192,13 +244,17 @@ int quicksort( int64_t *arr, unsigned long start, unsigned long end, unsigned lo
   // Partition
   unsigned long mid = partition( arr, start, end );
 
-  // Recursively sort the left and right partitions
-  int left_success, right_success;
-  // TODO: modify this code so that the recursive calls execute in child processes
-  left_success = quicksort( arr, start, mid, par_threshold );
-  right_success = quicksort( arr, mid + 1, end, par_threshold );
+  Child left = quicksort_subproc(arr, start, mid, par_threshold);
+  Child right = quicksort_subproc(arr, mid + 1, end, par_threshold);
+
+  quicksort_wait(&left);
+  quicksort_wait(&right);
+
+  int left_success = quicksort_check_success(&left);
+  int right_success = quicksort_check_success(&right);
 
   return left_success && right_success;
 }
 
 // TODO: define additional helper functions if needed
+
