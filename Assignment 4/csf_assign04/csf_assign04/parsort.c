@@ -56,11 +56,11 @@ int main( int argc, char **argv ) {
   int64_t *arr;
   // TODO: mmap the file data
   arr = mmap(NULL, file_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+  close(fd); //can close the file now
   if(arr == MAP_FAILED) {
     fprintf(stderr, "Error: mmap system call\n" );
     exit(1);
   }
-  close(fd); //can close the file now
 
   // Sort the data!
   int success;
