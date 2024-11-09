@@ -13,12 +13,10 @@ void swap( int64_t *arr, unsigned long i, unsigned long j );
 unsigned long partition( int64_t *arr, unsigned long start, unsigned long end );
 int quicksort( int64_t *arr, unsigned long start, unsigned long end, unsigned long par_threshold );
 
-// TODO: declare additional helper functions if needed
-
 // Data type representing a child process
 typedef struct {
-    pid_t pid;
-    int success;
+  pid_t pid;
+  int success;
 } Child;
 
 int main( int argc, char **argv ) {
@@ -29,7 +27,6 @@ int main( int argc, char **argv ) {
   }
 
   // open the named file
-  // TODO: open the named file
   int fd = open(argv[1], O_RDWR);
   if (fd < 0) {
     fprintf(stderr, "Error: cannot open named file\n" );
@@ -38,8 +35,6 @@ int main( int argc, char **argv ) {
 
   // determine file size and number of elements
   unsigned long file_size, num_elements;
-
-  // TODO: determine the file size and number of elements
 
   struct stat statbuf;
   int rc = fstat( fd, &statbuf );
@@ -54,9 +49,12 @@ int main( int argc, char **argv ) {
 
   // mmap the file data
   int64_t *arr;
-  // TODO: mmap the file data
   arr = mmap(NULL, file_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-  close(fd); //can close the file now
+
+  //can close the file now
+  close(fd); 
+  
+  // Throw an error if mmap system call failed
   if(arr == MAP_FAILED) {
     fprintf(stderr, "Error: mmap system call\n" );
     exit(1);
@@ -65,13 +63,14 @@ int main( int argc, char **argv ) {
   // Sort the data!
   int success;
   success = quicksort( arr, 0, num_elements, par_threshold );
+
+  // Return an error if the sorting failed
   if ( !success ) {
     fprintf( stderr, "Error: sorting failed\n" );
     exit( 1 );
   }
 
   // Unmap the file data
-  // TODO: unmap the file data
   munmap(arr, file_size);
 
   return 0;
@@ -79,47 +78,49 @@ int main( int argc, char **argv ) {
 
 // Helper function to fork and start a child process for sorting
 Child quicksort_subproc(int64_t *arr, unsigned long start, unsigned long end, unsigned long par_threshold) {
-    Child child;
-    child.pid = fork();
+  Child child;
+  child.pid = fork();
 
-    if (child.pid == 0) {
-        // Child process: execute the sorting task
-        if (quicksort(arr, start, end, par_threshold)) {
-            exit(0);  // Success
-        } else {
-            exit(1);  // Failure
-        }
-    } else if (child.pid < 0) {
-        // Fork failed
-        child.success = 0;
+  if (child.pid == 0) {
+    // Child process: execute the sorting task
+    if (quicksort(arr, start, end, par_threshold)) {
+      // Success
+      exit(0);  
     } else {
-        // Parent process, child created successfully
-        child.success = 1;
+      // Failure
+      exit(1);  
     }
+  } else if (child.pid < 0) {
+    // Fork failed
+    child.success = 0;
+  } else {
+    // Parent process, child created successfully
+    child.success = 1;
+  }
 
-    return child;
+  return child;
 }
 
 // Helper function to wait for a child process to complete
 void quicksort_wait(Child *child) {
-    if (child->pid > 0) {
-        int wstatus;
-        if (waitpid(child->pid, &wstatus, 0) < 0) {
-            // Wait failed
-            child->success = 0;
-        } else if (!WIFEXITED(wstatus) || WEXITSTATUS(wstatus) != 0) {
-            // Child did not exit normally or exited with an error
-            child->success = 0;
-        } else {
-            // Child exited successfully
-            child->success = 1;
-        }
+  if (child->pid > 0) {
+    int wstatus;
+    if (waitpid(child->pid, &wstatus, 0) < 0) {
+      // Wait failed
+      child->success = 0;
+    } else if (!WIFEXITED(wstatus) || WEXITSTATUS(wstatus) != 0) {
+      // Child did not exit normally or exited with an error
+      child->success = 0;
+    } else {
+      // Child exited successfully
+      child->success = 1;
     }
+  }
 }
 
 // Helper function to check if a child completed successfully
 int quicksort_check_success(Child *child) {
-    return child->success;
+  return child->success;
 }
 
 // Compare elements.
@@ -135,6 +136,8 @@ int quicksort_check_success(Child *child) {
 //   0 if *left == *right
 int compare( const void *left, const void *right ) {
   int64_t left_elt = *(const int64_t *)left, right_elt = *(const int64_t *)right;
+
+  // Compare the left and right elements for the comparator
   if ( left_elt < right_elt )
     return -1;
   else if ( left_elt > right_elt )
@@ -184,17 +187,17 @@ unsigned long partition( int64_t *arr, unsigned long start, unsigned long end ) 
   // to the pivot element: elements less than the pivot element
   // should be in the left partition, elements greater than or
   // equal to the pivot should go in the right partition
-  unsigned long left_index = start,
-                right_index = start + ( len - 2 );
+  unsigned long left_index = start;
+  unsigned long right_index = start + (len - 2);
 
   while ( left_index <= right_index ) {
-    // extend the left partition?
+    // extend the left partition
     if ( arr[left_index] < pivot_val ) {
       ++left_index;
       continue;
     }
 
-    // extend the right partition?
+    // extend the right partition
     if ( arr[right_index] >= pivot_val ) {
       --right_index;
       continue;
@@ -251,6 +254,7 @@ int quicksort( int64_t *arr, unsigned long start, unsigned long end, unsigned lo
   Child left = quicksort_subproc(arr, start, mid, par_threshold);
   Child right = quicksort_subproc(arr, mid + 1, end, par_threshold);
 
+  // Wait for the left and right children and check if they are successful
   quicksort_wait(&left);
   quicksort_wait(&right);
 
@@ -259,6 +263,3 @@ int quicksort( int64_t *arr, unsigned long start, unsigned long end, unsigned lo
 
   return left_success && right_success;
 }
-
-// TODO: define additional helper functions if needed
-
