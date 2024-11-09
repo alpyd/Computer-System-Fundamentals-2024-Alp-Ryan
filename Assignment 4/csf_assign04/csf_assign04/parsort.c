@@ -138,12 +138,13 @@ int compare(const void *left, const void *right) {
   int64_t left_elt = *(const int64_t *)left, right_elt = *(const int64_t *)right;
 
   // Compare the left and right elements for the comparator
-  if (left_elt < right_elt)
+  if (left_elt < right_elt) {
     return -1;
-  else if (left_elt > right_elt)
+  } else if (left_elt > right_elt) {
     return 1;
-  else
+  } else {
     return 0;
+  }
 }
 
 // Swap array elements.
@@ -238,8 +239,9 @@ int quicksort(int64_t *arr, unsigned long start, unsigned long end, unsigned lon
 
   // Base case: if there are fewer than 2 elements to sort,
   // do nothing
-  if (len < 2)
+  if (len < 2) {
     return 1;
+  }
 
   // Base case: if number of elements is less than or equal to
   // the threshold, sort sequentially using qsort
