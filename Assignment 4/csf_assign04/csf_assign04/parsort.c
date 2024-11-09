@@ -12,6 +12,7 @@ int compare(const void *left, const void *right);
 void swap(int64_t *arr, unsigned long i, unsigned long j);
 unsigned long partition(int64_t *arr, unsigned long start, unsigned long end);
 int quicksort(int64_t *arr, unsigned long start, unsigned long end, unsigned long par_threshold);
+int64_t* mapfile(const char *fname, unsigned long *elements);
 
 // Data type representing a child process
 typedef struct {
@@ -26,39 +27,12 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
-  // open the named file
-  int fd = open(argv[1], O_RDWR);
-  if (fd < 0) {
-    fprintf(stderr, "Error: cannot open named file\n");
-    exit(1);
-  }
+  // determine parameter threshold and number of elements
+  par_threshold = strtoul(argv[2], NULL, 10);
+  unsigned long num_elements;
 
-  // determine file size and number of elements
-  unsigned long file_size, num_elements;
-
-  struct stat statbuf;
-  int rc = fstat(fd, &statbuf);
-  if (rc != 0) {
-    fprintf(stderr, "Error: fstat system call\n");
-    exit(1);
-  }
-
-  // statbuf.st_size indicates the number of bytes in the file
-  file_size = statbuf.st_size;
-  num_elements = file_size / sizeof(int64_t);
-
-  // mmap the file data
-  int64_t *arr;
-  arr = mmap(NULL, file_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-
-  //can close the file now
-  close(fd); 
-  
-  // Throw an error if mmap system call failed
-  if(arr == MAP_FAILED) {
-    fprintf(stderr, "Error: mmap system call\n");
-    exit(1);
-  }
+  // Map the file to the arr object
+  int64_t *arr = mapfile(argv[1], &num_elements);
 
   // Sort the data!
   int success;
@@ -71,9 +45,44 @@ int main(int argc, char **argv) {
   }
 
   // Unmap the file data
-  munmap(arr, file_size);
+  munmap(arr, num_elements * sizeof(int64_t));
 
   return 0;
+}
+
+// Helper function to map file data into an array
+int64_t* mapfile(const char *fname, unsigned long *elements) {
+  // open the named file
+  int fd = open(fname, O_RDWR);
+  if (fd < 0) {
+    fprintf(stderr, "Error: cannot open named file\n");
+    exit(1);
+  }
+
+  struct stat statbuf;
+  int rc = fstat(fd, &statbuf);
+  if (rc != 0) {
+    fprintf(stderr, "Error: fstat system call\n");
+    exit(1);
+  }
+
+  // statbuf.st_size indicates the number of bytes in the file
+  *elements = statbuf.st_size / sizeof(int64_t);
+
+  // mmap the file data
+  int64_t *arr = mmap(NULL, statbuf.st_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+
+  //can close the file now
+  close(fd); 
+  
+  // Throw an error if mmap system call failed
+  if(arr == MAP_FAILED) {
+    fprintf(stderr, "Error: mmap system call\n");
+    exit(1);
+  }
+
+  // Return the file data
+  return arr;
 }
 
 // Helper function to fork and start a child process for sorting
