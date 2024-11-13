@@ -91,77 +91,73 @@ void Message::push_arg( const std::string &arg )
   m_args.push_back( arg );
 }
 
-// Helper function to check if a string is a valid identifier
+//Checks if a string is a valid identifier
 bool is_valid_identifier(const std::string& str) {
     if (str.empty() || !std::isalpha(str[0])) {
-        return false; // Identifiers must start with a letter
+        return false; // identifiers must start with a letter
     }
     for (char ch : str) {
         if (!std::isalnum(ch) && ch != '_') {
-            return false; // Only letters, digits, and underscores are allowed
+            return false; // only letters, digits, and underscores are allowed
         }
     }
     return true;
 }
 
-// Helper function to check if a string is a valid value (non-whitespace characters only)
+//Checks if a string is a valid value (non-whitespace characters only)
 bool is_valid_value(const std::string& str) {
     return !str.empty() && str.find_first_of(" \t\n") == std::string::npos;
 }
 
-// Helper function to check if a string is valid plain text (for errors)
+//Checks if a string is valid plain text (for errors)
 bool is_valid_plain_text(const std::string& str) {
     return !str.empty();
 }
 
 bool Message::is_valid() const {
-    // Check the message type and validate accordingly
-    switch (m_message_type) {
-        case MessageType::LOGIN:
-            // LOGIN should have exactly 1 identifier argument
-            return get_num_args() == 1 && is_valid_identifier(m_args[0]);
+    // Check the message type and validate
+  switch (m_message_type) {
+    case MessageType::LOGIN:
+      // LOGIN should have exactly 1 identifier argument
+      return get_num_args() == 1 && is_valid_identifier(m_args[0]);
 
-        case MessageType::CREATE:
-            // CREATE should have exactly 1 identifier argument
-            return get_num_args() == 1 && is_valid_identifier(m_args[0]);
+    case MessageType::CREATE:
+      // CREATE should have exactly 1 identifier argument
+      return get_num_args() == 1 && is_valid_identifier(m_args[0]);
 
-        case MessageType::PUSH:
-            // PUSH should have exactly 1 valid value argument
-            return get_num_args() == 1 && is_valid_value(m_args[0]);
+    case MessageType::PUSH:
+      // PUSH should have exactly 1 valid value argument
+      return get_num_args() == 1 && is_valid_value(m_args[0]);
 
-        case MessageType::POP:
-        case MessageType::ADD:
-        case MessageType::SUB:
-        case MessageType::MUL:
-        case MessageType::DIV:
-        case MessageType::BYE:
-        case MessageType::OK:
-            // POP, arithmetic operations, BYE, and OK should have no arguments
-            return get_num_args() == 0;
+    case MessageType::POP:
+    case MessageType::ADD:
+    case MessageType::SUB:
+    case MessageType::MUL:
+    case MessageType::DIV:
+    case MessageType::BYE:
+    case MessageType::OK:
+      // POP, arithmetic operations, BYE, and OK should have no arguments
+      return get_num_args() == 0;
 
-        case MessageType::SET:
-            // SET should have exactly 2 identifier arguments (table and key)
-            return get_num_args() == 2 &&
-                   is_valid_identifier(m_args[0]) && // table
-                   is_valid_identifier(m_args[1]);   // key
+    case MessageType::SET:
+      // SET should have exactly 2 identifier arguments (table and key)
+      return get_num_args() == 2 &&is_valid_identifier(m_args[0]) && is_valid_identifier(m_args[1]);
 
-        case MessageType::GET:
-            // GET should have exactly 2 identifier arguments (table and key)
-            return get_num_args() == 2 &&
-                   is_valid_identifier(m_args[0]) && // table
-                   is_valid_identifier(m_args[1]);   // key
+    case MessageType::GET:
+      // GET should have exactly 2 identifier arguments (table and key)
+      return get_num_args() == 2 && is_valid_identifier(m_args[0]) && is_valid_identifier(m_args[1]);
 
-        case MessageType::FAILED:
-        case MessageType::ERROR:
-            // FAILED and ERROR should have exactly 1 plain text argument (stripped quotes)
-            return get_num_args() == 1 && is_valid_plain_text(m_args[0]);
+    case MessageType::FAILED:
+    case MessageType::ERROR:
+      // FAILED and ERROR should have exactly 1 plain text argument (stripped quotes)
+      return get_num_args() == 1 && is_valid_plain_text(m_args[0]);
 
-        case MessageType::DATA:
-            // DATA should have exactly 1 valid value argument
-            return get_num_args() == 1 && is_valid_value(m_args[0]);
+    case MessageType::DATA:
+      // DATA should have exactly 1 valid value argument
+      return get_num_args() == 1 && is_valid_value(m_args[0]);
 
-        default:
-            // If the message type is unknown or doesn't conform to any known type
-            return false;
+    default:
+      // If the message type is unknown or doesn't conform to any known type
+      return false;
     }
 }
