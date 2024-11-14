@@ -5,6 +5,13 @@
 #include "exceptions.h"
 #include "message_serialization.h"
 
+#include <utility>
+#include <sstream>
+#include <cassert>
+#include <map>
+#include "exceptions.h"
+#include "message_serialization.h"
+
 namespace {
     std::string message_type_to_string(MessageType type) {
         static const std::map<MessageType, std::string> type_to_str = {
@@ -56,6 +63,68 @@ namespace {
         if (!quote_found) throw InvalidMessage("Unmatched quote in quoted text.");
         return quoted_text;
     }
+
+    void parse_message_arguments(std::istringstream& iss, Message& msg, MessageType message_type) {
+        std::string arg1, arg2;
+
+        switch (message_type) {
+            case MessageType::LOGIN:
+                iss >> arg1;
+                msg.push_arg(arg1);
+                break;
+
+            case MessageType::CREATE:
+                iss >> arg1;
+                msg.push_arg(arg1);
+                break;
+
+            case MessageType::PUSH:
+                iss >> arg1;
+                msg.push_arg(arg1);
+                break;
+
+            case MessageType::POP:
+            case MessageType::TOP:
+            case MessageType::BEGIN:
+            case MessageType::COMMIT:
+            case MessageType::BYE:
+            case MessageType::OK:
+                // No arguments expected for these types
+                break;
+
+            case MessageType::SET:
+                iss >> arg1 >> arg2;
+                msg.push_arg(arg1);
+                msg.push_arg(arg2);
+                break;
+
+            case MessageType::GET:
+                iss >> arg1 >> arg2;
+                msg.push_arg(arg1);
+                msg.push_arg(arg2);
+                break;
+
+            case MessageType::ADD:
+            case MessageType::SUB:
+            case MessageType::MUL:
+            case MessageType::DIV:
+                // No arguments to parse, operations rely on operand stack state
+                break;
+
+            case MessageType::FAILED:
+            case MessageType::ERROR:
+                msg.push_arg(parse_quoted_text(iss));
+                break;
+
+            case MessageType::DATA:
+                iss >> arg1;
+                msg.push_arg(arg1);
+                break;
+
+            default:
+                throw InvalidMessage("Unsupported message type for parsing.");
+        }
+    }
 }
 
 void MessageSerialization::encode(const Message &msg, std::string &encoded_msg) {
@@ -88,15 +157,8 @@ void MessageSerialization::decode(const std::string &encoded_msg_, Message &msg)
     }
     msg = Message(message_type);
 
-    std::string arg;
-    while (iss >> std::ws) {
-        if (iss.peek() == '"') {
-            arg = parse_quoted_text(iss);
-        } else {
-            iss >> arg;
-        }
-        msg.push_arg(arg);
-    }
+    // Parse the arguments for the specific message type
+    parse_message_arguments(iss, msg, message_type);
 
     if (!msg.is_valid()) {
         throw InvalidMessage("Decoded message is not valid.");
