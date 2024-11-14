@@ -4,11 +4,24 @@
 #include <map>
 #include <string>
 #include <pthread.h>
+#include <mutex>
 
 class Table {
 private:
   std::string m_name;
   // TODO: add member variables
+
+  // Main map for committed key-value pairs.
+  std::map<std::string, std::string> committed_data;
+    
+  // Separate map for tentative changes.
+  std::map<std::string, std::string> tentative_data;
+    
+  // Flag to indicate if there are any tentative changes.
+  bool has_tentative_changes = false;
+
+  // Mutex for locking the table during modifications.
+  std::mutex table_mutex;
 
   // copy constructor and assignment operator are prohibited
   Table( const Table & );
