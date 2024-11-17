@@ -3,10 +3,11 @@
 
 #include <vector>
 #include <string>
+#include <stack>
 
 class ValueStack {
 private:
-  // TODO: member variable(s)
+  std::stack<std::string> value_stack;
 
 public:
   ValueStack();
