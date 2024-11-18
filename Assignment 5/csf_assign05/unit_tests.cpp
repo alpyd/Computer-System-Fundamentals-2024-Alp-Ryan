@@ -346,7 +346,7 @@ void test_message_serialization_decode( TestObjs *objs )
   MessageSerialization::decode( objs->encoded_login_req, msg );
   ASSERT( MessageType::LOGIN == msg.get_message_type() );
   ASSERT( 1 == msg.get_num_args() );
-  ASSERT( "alice" == msg.get_username() ); 
+  ASSERT( "alice" == msg.get_username() );
 
   MessageSerialization::decode( objs->encoded_create_req, msg );
   ASSERT( MessageType::CREATE == msg.get_message_type() );
