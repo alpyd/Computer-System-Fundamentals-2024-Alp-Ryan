@@ -3,28 +3,26 @@
 #include "exceptions.h"
 #include "guard.h"
 
-Table::Table( const std::string &name )
-  : m_name( name )
-{
+Table::Table(const std::string &name) : m_name(name) {
+  if (pthread_mutex_init(&table_mutex, nullptr) != 0) {
+    throw std::runtime_error("Failed to initialize mutex");
+  }
 }
 
-Table::~Table()
-{
+Table::~Table() {
+  pthread_mutex_destroy(&table_mutex);   
 }
 
-void Table::lock()
-{
-  table_mutex.lock();
+void Table::lock() {
+  pthread_mutex_lock(&table_mutex);
 }
 
-void Table::unlock()
-{
-  table_mutex.unlock();
+void Table::unlock() {
+  pthread_mutex_unlock(&table_mutex);
 }
 
-bool Table::trylock()
-{
-  return table_mutex.try_lock();
+bool Table::trylock() {
+  return pthread_mutex_trylock(&table_mutex) == 0;
 }
 
 void Table::set( const std::string &key, const std::string &value )
