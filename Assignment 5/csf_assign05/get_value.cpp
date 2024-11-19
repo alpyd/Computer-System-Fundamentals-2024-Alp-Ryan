@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
 
     std::string response = receive_message(rio);
     if (response.substr(0, 2) != "OK") {
-        std::cerr << "Error: " << response;
+        std::cerr << "Error: LOGIN failed - " << response;
         Close(fd);
         return 1;
     }
@@ -60,19 +60,32 @@ int main(int argc, char **argv) {
     send_message(rio, fd, get_message.str());
 
     response = receive_message(rio);
-    if (response.substr(0, 5) == "ERROR" || response.substr(0, 6) == "FAILED") {
-        std::cerr << "Error: " << response.substr(response.find(" ") + 1);
+    if (response.substr(0, 2) != "OK") {
+        std::cerr << "Error: GET failed - " << response;
         Close(fd);
         return 1;
     }
 
-    // Step 4: If the response is OK, print the value
-    std::cout << response << std::endl;
+// Step 4: Send TOP message to retrieve the value
+send_message(rio, fd, "TOP\n");
 
-    // Step 5: Send BYE message to close the connection politely
-    send_message(rio, fd, "BYE\n");
-
-    // Step 6: Close the connection
+// Expect a "DATA value" response from the server
+response = receive_message(rio);
+if (response.substr(0, 4) != "DATA") {
+    std::cerr << "Error: Unexpected TOP response - " << response;
     Close(fd);
-    return 0;
+    return 1;
+}
+
+// Extract and print the value from the response
+std::string value = response.substr(5); // Skip the "DATA " prefix
+std::cout << value;
+
+// Step 5: Send BYE message to gracefully close the connection
+send_message(rio, fd, "BYE\n");
+
+
+// Step 7: Close the connection
+Close(fd);
+return 0;
 }
