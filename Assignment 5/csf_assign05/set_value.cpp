@@ -58,7 +58,7 @@ int main(int argc, char **argv)
 
     // Step 3: Send PUSH message
     std::ostringstream push_message;
-    push_message << "PUSH" << value << "\n";
+    push_message << " PUSH " << value << "\n";
     send_message(rio, fd, push_message.str());
 
     response = receive_message(rio);
