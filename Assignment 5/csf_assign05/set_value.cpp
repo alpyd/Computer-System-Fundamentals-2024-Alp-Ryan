@@ -5,7 +5,7 @@
 
 // Helper function to send a message using rio_writen
 void send_message(rio_t &rio, int fd, const std::string &message) {
-    Rio_writen(fd, message.c_str(), message.length());
+  Rio_writen(fd, message.c_str(), message.length());
 }
 
 // Helper function to receive a message using rio_readlineb
