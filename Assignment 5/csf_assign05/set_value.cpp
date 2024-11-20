@@ -20,6 +20,16 @@ std::string receive_message(rio_t &rio) {
     return std::string(buffer);
 }
 
+// Helper function to extract quoted text from a response
+std::string extract_quoted_text(const std::string &response) {
+    size_t start = response.find('\"');
+    size_t end = response.rfind('\"');
+    if (start != std::string::npos && end != std::string::npos && end > start) {
+        return response.substr(start + 1, end - start - 1); // Extract text between quotes
+    }
+    return "Unknown error"; // Fallback if quotes are missing or malformed
+}
+
 int main(int argc, char **argv)
 {
   if (argc != 7) {
@@ -51,7 +61,8 @@ int main(int argc, char **argv)
 
   std::string response = receive_message(rio);
   if (response.substr(0, 2) != "OK") {
-    std::cerr << response;
+    std::string error_message = extract_quoted_text(response);
+    std::cerr << "Error: " << error_message << std::endl;
     Close(fd);
     return 1;
   }
@@ -63,7 +74,8 @@ int main(int argc, char **argv)
 
   response = receive_message(rio);
   if (response.substr(0, 2) != "OK") {
-    std::cerr << response;
+    std::string error_message = extract_quoted_text(response);
+    std::cerr << "Error: " << error_message << std::endl;
     Close(fd);
     return 1;
   }
@@ -75,7 +87,8 @@ int main(int argc, char **argv)
 
     response = receive_message(rio);
     if (response.substr(0, 2) != "OK") {
-      std::cerr << response;
+      std::string error_message = extract_quoted_text(response);
+      std::cerr << "Error: " << error_message << std::endl;
       Close(fd);
       return 1;
     }
