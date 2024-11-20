@@ -41,32 +41,32 @@ int main(int argc, char **argv)
     return 1;
   }
 
-    rio_t rio;
-    Rio_readinitb(&rio, fd);  // Initialize robust I/O
+  rio_t rio;
+  Rio_readinitb(&rio, fd);  // Initialize robust I/O
 
-    // Step 2: Send LOGIN message
-    std::ostringstream login_message;
-    login_message << "LOGIN " << username << "\n";
-    send_message(rio, fd, login_message.str());
+  // Step 2: Send LOGIN message
+  std::ostringstream login_message;
+  login_message << "LOGIN " << username << "\n";
+  send_message(rio, fd, login_message.str());
 
-    std::string response = receive_message(rio);
-    if (response.substr(0, 2) != "OK") {
-        std::cerr << "Error: LOGIN failed - " << response;
-        Close(fd);
-        return 1;
-    }
+  std::string response = receive_message(rio);
+  if (response.substr(0, 2) != "OK") {
+    std::cerr << response;
+    Close(fd);
+    return 1;
+  }
 
-    // Step 3: Send PUSH message
-    std::ostringstream push_message;
-    push_message << " PUSH " << value << "\n";
-    send_message(rio, fd, push_message.str());
+  // Step 3: Send PUSH message
+  std::ostringstream push_message;
+  push_message << " PUSH " << value << "\n";
+  send_message(rio, fd, push_message.str());
 
-    response = receive_message(rio);
-    if (response.substr(0, 2) != "OK") {
-        std::cerr << "Error: PUSH failed - " << response;
-        Close(fd);
-        return 1;
-    }
+  response = receive_message(rio);
+  if (response.substr(0, 2) != "OK") {
+    std::cerr << response;
+    Close(fd);
+    return 1;
+  }
 
     // Step 4: Send SET message
     std::ostringstream set_message;
@@ -75,11 +75,10 @@ int main(int argc, char **argv)
 
     response = receive_message(rio);
     if (response.substr(0, 2) != "OK") {
-        std::cerr << "Error: SET failed - " << response;
-        Close(fd);
-        return 1;
+      std::cerr << response;
+      Close(fd);
+      return 1;
     }
-
 
   // Step 5: Send BYE message to gracefully close the connection
   send_message(rio, fd, "BYE\n");

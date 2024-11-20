@@ -10,14 +10,14 @@ void send_message(rio_t &rio, int fd, const std::string &message) {
 
 // Helper function to receive a message using rio_readlineb
 std::string receive_message(rio_t &rio) {
-    char buffer[MAXLINE];
-    ssize_t n = Rio_readlineb(&rio, buffer, MAXLINE);
-    if (n == 0) {
-        std::cerr << "Error: Server closed the connection unexpectedly\n";
-        exit(1);
-    }
-    buffer[n] = '\0';  // Null-terminate the response
-    return std::string(buffer);
+  char buffer[MAXLINE];
+  ssize_t n = Rio_readlineb(&rio, buffer, MAXLINE);
+  if (n == 0) {
+      std::cerr << "Error: Server closed the connection unexpectedly\n";
+      exit(1);
+  }
+  buffer[n] = '\0';  // Null-terminate the response
+  return std::string(buffer);
 }
 
 int main(int argc, char **argv) {
@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
 
   std::string response = receive_message(rio);
   if (response.substr(0, 2) != "OK") {
-    std::cerr << "Error: LOGIN failed - " << response;
+    std::cerr << "Error: " << response;
     Close(fd);
     return 1;
   }
@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
 
     std::string response = receive_message(rio);
     if (response.substr(0, 2) != "OK") {
-      std::cerr << "Error: BEGIN failed - " << response;
+      std::cerr << "Error: " << response;
       Close(fd);
       return 1;
     }
@@ -85,7 +85,7 @@ int main(int argc, char **argv) {
 
   response = receive_message(rio);
   if (response.substr(0, 2) != "OK") {
-    std::cerr << "Error: GET failed - " << response;
+    std::cerr << "Error: " << response;
     Close(fd);
     return 1;
   }
@@ -97,7 +97,7 @@ int main(int argc, char **argv) {
 
   response = receive_message(rio);
   if (response.substr(0, 2) != "OK") {
-    std::cerr << "Error: PUSH failed - " << response;
+    std::cerr << "Error: " << response;
     Close(fd);
     return 1;
   }
@@ -109,7 +109,7 @@ int main(int argc, char **argv) {
 
   response = receive_message(rio);
   if (response.substr(0, 2) != "OK") {
-    std::cerr << "Error: ADD failed - " << response;
+    std::cerr << "Error: " << response;
     Close(fd);
     return 1;
   }
@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
 
   response = receive_message(rio);
   if (response.substr(0, 2) != "OK") {
-    std::cerr << "Error: SET failed - " << response;
+    std::cerr << "Error: " << response;
     Close(fd);
     return 1;
   }
@@ -134,7 +134,7 @@ int main(int argc, char **argv) {
 
     std::string response = receive_message(rio);
     if (response.substr(0, 2) != "OK") {
-      std::cerr << "Error: COMMIT failed - " << response;
+      std::cerr << "Error: " << response;
       Close(fd);
       return 1;
     }
