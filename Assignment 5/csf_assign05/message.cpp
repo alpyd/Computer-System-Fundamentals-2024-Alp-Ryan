@@ -42,6 +42,7 @@ void Message::set_message_type(MessageType message_type) {
 }
 
 std::string Message::get_username() const {
+  // Return the username from the message for LOGIN
  if (m_message_type == MessageType::LOGIN && !m_args.empty()) {
     return m_args[0];
   }
@@ -49,6 +50,7 @@ std::string Message::get_username() const {
 }
 
 std::string Message::get_table() const {
+  // Return the table from the message
   if ((m_message_type == MessageType::CREATE || m_message_type == MessageType::SET || m_message_type == MessageType::GET) && !m_args.empty()) {
     return m_args[0];
   }
@@ -56,6 +58,7 @@ std::string Message::get_table() const {
 }
 
 std::string Message::get_key() const {
+  // Return the key from the message
   if ((m_message_type == MessageType::SET || m_message_type == MessageType::GET) && m_args.size() > 1) {
     return m_args[1];
   }
@@ -63,6 +66,7 @@ std::string Message::get_key() const {
 }
 
 std::string Message::get_value() const {
+  // Return the value of the message
   if ((m_message_type == MessageType::SET && m_args.size() > 2) ||
     (m_message_type == MessageType::PUSH && !m_args.empty()) ||
     (m_message_type == MessageType::DATA && !m_args.empty())) {

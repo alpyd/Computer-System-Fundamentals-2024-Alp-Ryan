@@ -30,6 +30,67 @@ std::string extract_quoted_text(const std::string &response) {
   return "Unknown error"; // Fallback if quotes are missing or malformed
 }
 
+int handle_error(int fd, const std::string &response) {
+  if (response.substr(0, 2) != "OK") {
+    std::string error_message = extract_quoted_text(response);
+    std::cerr << "Error: " << error_message << std::endl;
+    Close(fd);
+    return 1;
+  }
+
+  return 0;
+}
+
+// Send LOGIN message
+int LOGIN(rio_t &rio, int fd, std::string username) {
+  std::ostringstream login_message;
+  login_message << "LOGIN " << username << "\n";
+  send_message(rio, fd, login_message.str());
+  std::string response = receive_message(rio);
+  return handle_error(fd, response);
+}
+
+// Send PUSH message
+int PUSH(rio_t &rio, int fd, std::string value) {
+  std::ostringstream push_message;
+  push_message << " PUSH " << value << "\n";
+  send_message(rio, fd, push_message.str());
+
+  std::string response = receive_message(rio);
+  return handle_error(fd, response);
+}
+
+// Send SET message
+int SET(rio_t &rio, int fd, std::string table, std::string key) {
+  std::ostringstream set_message;
+  set_message << "SET " << table << " " << key << "\n";
+  send_message(rio, fd, set_message.str());
+
+  std::string response = receive_message(rio);
+  return handle_error(fd, response);
+}
+
+int execute_set_value(rio_t &rio, int fd, std::string username, std::string table, std::string key, std::string value) {
+  // Step 2: Send LOGIN message
+  if (LOGIN(rio, fd, username) != 0) {
+    return 1;
+  } 
+
+  // Step 3: Send PUSH message
+  if (PUSH(rio, fd, value) != 0) {
+    return 1;
+  }
+
+  // Step 4: Send SET message
+  if (SET(rio, fd, table, key) != 0) {
+    return 1;
+  }
+
+  // Step 5: Send BYE message to gracefully close the connection
+  send_message(rio, fd, "BYE\n");
+  return 0;
+}
+
 int main(int argc, char **argv) {
   if (argc != 7) {
     std::cerr << "Usage: ./set_value <hostname> <port> <username> <table> <key> <value>\n";
@@ -53,47 +114,10 @@ int main(int argc, char **argv) {
   rio_t rio;
   Rio_readinitb(&rio, fd);  // Initialize robust I/O
 
-  // Step 2: Send LOGIN message
-  std::ostringstream login_message;
-  login_message << "LOGIN " << username << "\n";
-  send_message(rio, fd, login_message.str());
-
-  std::string response = receive_message(rio);
-  if (response.substr(0, 2) != "OK") {
-    std::string error_message = extract_quoted_text(response);
-    std::cerr << "Error: " << error_message << std::endl;
-    Close(fd);
+  // Step 2-5: Execute set_value
+  if (execute_set_value(rio, fd, username, table, key, value) != 0) {
     return 1;
   }
-
-  // Step 3: Send PUSH message
-  std::ostringstream push_message;
-  push_message << " PUSH " << value << "\n";
-  send_message(rio, fd, push_message.str());
-
-  response = receive_message(rio);
-  if (response.substr(0, 2) != "OK") {
-    std::string error_message = extract_quoted_text(response);
-    std::cerr << "Error: " << error_message << std::endl;
-    Close(fd);
-    return 1;
-  }
-
-  // Step 4: Send SET message
-  std::ostringstream set_message;
-  set_message << "SET " << table << " " << key << "\n";
-  send_message(rio, fd, set_message.str());
-
-  response = receive_message(rio);
-  if (response.substr(0, 2) != "OK") {
-    std::string error_message = extract_quoted_text(response);
-    std::cerr << "Error: " << error_message << std::endl;
-    Close(fd);
-    return 1;
-  }
-
-  // Step 5: Send BYE message to gracefully close the connection
-  send_message(rio, fd, "BYE\n");
 
   // Step 6: Close the connection
   Close(fd);
