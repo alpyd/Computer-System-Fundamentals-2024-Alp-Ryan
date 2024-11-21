@@ -147,8 +147,7 @@ bool Message::is_valid() const {
       // DATA should have exactly 1 valid value argument
       return get_num_args() == 1 && is_valid_value(m_args[0]);
 
-    default:
-      // If the message type is unknown or doesn't conform to any known type
+    default: // If the message type is unknown or doesn't conform to any known type
       return false;
   }
 }
