@@ -3,7 +3,7 @@ CONTRIBUTIONS
 Ryan wrote the implementation for message.h, message.cpp, message_serialization.h, message_serialization.cpp, and get_value.cpp.
 Alp wrote the implementation for value_stack.h, value_stack.cpp, table.h, table.cpp, set_value.cpp, and incr_value.cpp.
 
-The two partner also debugged each other's code.
+The two partners also debugged each other's code.
 
 One interesting implementation was utilizing the C++ data structures to better represent the value_stack and table objects.
 As opposed to coding out the methods for the underlying data structures, utilizing the imported data structures allowed for a simplified and efficient implementation of the methods.
