@@ -30,8 +30,7 @@ std::string extract_quoted_text(const std::string &response) {
     return "Unknown error"; // Fallback if quotes are missing or malformed
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   if (argc != 7) {
     std::cerr << "Usage: ./set_value <hostname> <port> <username> <table> <key> <value>\n";
     return 1;
@@ -80,18 +79,18 @@ int main(int argc, char **argv)
     return 1;
   }
 
-    // Step 4: Send SET message
-    std::ostringstream set_message;
-    set_message << "SET " << table << " " << key << "\n";
-    send_message(rio, fd, set_message.str());
+  // Step 4: Send SET message
+  std::ostringstream set_message;
+  set_message << "SET " << table << " " << key << "\n";
+  send_message(rio, fd, set_message.str());
 
-    response = receive_message(rio);
-    if (response.substr(0, 2) != "OK") {
-      std::string error_message = extract_quoted_text(response);
-      std::cerr << "Error: " << error_message << std::endl;
-      Close(fd);
-      return 1;
-    }
+  response = receive_message(rio);
+  if (response.substr(0, 2) != "OK") {
+    std::string error_message = extract_quoted_text(response);
+    std::cerr << "Error: " << error_message << std::endl;
+    Close(fd);
+    return 1;
+  }
 
   // Step 5: Send BYE message to gracefully close the connection
   send_message(rio, fd, "BYE\n");

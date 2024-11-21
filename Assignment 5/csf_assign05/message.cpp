@@ -25,93 +25,84 @@ Message::~Message()
 {
 }
 
-Message &Message::operator=( const Message &rhs )
-{
+Message &Message::operator=( const Message &rhs ) {
   if (this != &rhs) {
-        m_message_type = rhs.m_message_type;
-        m_args = rhs.m_args;
-    }
-    return *this;
+    m_message_type = rhs.m_message_type;
+    m_args = rhs.m_args;
+  }
+  return *this;
 }
 
-MessageType Message::get_message_type() const
-{
+MessageType Message::get_message_type() const {
   return m_message_type;
 }
 
-void Message::set_message_type(MessageType message_type)
-{
+void Message::set_message_type(MessageType message_type) {
   m_message_type = message_type;
 }
 
-std::string Message::get_username() const
-{
+std::string Message::get_username() const {
  if (m_message_type == MessageType::LOGIN && !m_args.empty()) {
-      return m_args[0];
+    return m_args[0];
   }
   return "";
 }
 
-std::string Message::get_table() const
-{
+std::string Message::get_table() const {
   if ((m_message_type == MessageType::CREATE || m_message_type == MessageType::SET || m_message_type == MessageType::GET) && !m_args.empty()) {
-      return m_args[0];
+    return m_args[0];
   }
   return "";
 }
 
-std::string Message::get_key() const
-{
+std::string Message::get_key() const {
   if ((m_message_type == MessageType::SET || m_message_type == MessageType::GET) && m_args.size() > 1) {
-      return m_args[1];
+    return m_args[1];
   }
   return "";
 }
 
-std::string Message::get_value() const
-{
+std::string Message::get_value() const {
   if ((m_message_type == MessageType::SET && m_args.size() > 2) ||
-      (m_message_type == MessageType::PUSH && !m_args.empty()) ||
-      (m_message_type == MessageType::DATA && !m_args.empty())) {
-      return m_args.back();
+    (m_message_type == MessageType::PUSH && !m_args.empty()) ||
+    (m_message_type == MessageType::DATA && !m_args.empty())) {
+    return m_args.back();
   }
   return "";
 }
 
-std::string Message::get_quoted_text() const
-{
+std::string Message::get_quoted_text() const {
   if ((m_message_type == MessageType::FAILED || m_message_type == MessageType::ERROR) && !m_args.empty()) {
-      return m_args[0];
+    return m_args[0];
   }
   return "";
 }
 
-void Message::push_arg( const std::string &arg )
-{
+void Message::push_arg( const std::string &arg ) {
   m_args.push_back( arg );
 }
 
 //Checks if a string is a valid identifier
 bool is_valid_identifier(const std::string& str) {
-    if (str.empty() || !std::isalpha(str[0])) {
-        return false; // identifiers must start with a letter
+  if (str.empty() || !std::isalpha(str[0])) {
+    return false; // identifiers must start with a letter
+  }
+  for (char ch : str) {
+    if (!std::isalnum(ch) && ch != '_') {
+      return false; // only letters, digits, and underscores are allowed
     }
-    for (char ch : str) {
-        if (!std::isalnum(ch) && ch != '_') {
-            return false; // only letters, digits, and underscores are allowed
-        }
-    }
-    return true;
+  }
+  return true;
 }
 
 //Checks if a string is a valid value (non-whitespace characters only)
 bool is_valid_value(const std::string& str) {
-    return !str.empty() && str.find_first_of(" \t\n") == std::string::npos;
+  return !str.empty() && str.find_first_of(" \t\n") == std::string::npos;
 }
 
 //Checks if a string is valid plain text (for errors)
 bool is_valid_plain_text(const std::string& str) {
-    return !str.empty();
+  return !str.empty();
 }
 
 bool Message::is_valid() const {
@@ -159,5 +150,5 @@ bool Message::is_valid() const {
     default:
       // If the message type is unknown or doesn't conform to any known type
       return false;
-    }
+  }
 }
