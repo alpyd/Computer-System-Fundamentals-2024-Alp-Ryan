@@ -19,7 +19,10 @@ Server::~Server()
 
 void Server::listen( const std::string &port )
 {
-  // TODO: implement
+  int listen_fd = Open_listenfd(port.c_str());
+  if (listen_fd < 0) {
+    throw std::runtime_error("Failed to open listening socket");
+  }
 }
 
 void Server::server_loop()
@@ -49,6 +52,21 @@ void *Server::client_worker( void *arg )
   client->chat_with_client();
   return nullptr;
 */
+
+// Detach the thread to avoid requiring pthread_join
+    pthread_detach(pthread_self());
+
+    
+    std::unique_ptr<ClientConnection> client(static_cast<ClientConnection *>(arg));
+  
+    try { // Handle client interaction
+        
+        client->chat_with_client();
+    } catch (const std::exception &e) {
+        log_error(std::string("Client worker error: ") + e.what());
+    }
+  
+    return nullptr; // The thread exits here
 }
 
 void Server::log_error( const std::string &what )
