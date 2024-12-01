@@ -36,6 +36,7 @@ public:
 
   // TODO: add member functions
   void handle_client_connection(int client_fd);
+  void create_table(const std::string &name);
 
   // Some suggested member functions:
 /*

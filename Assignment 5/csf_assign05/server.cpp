@@ -70,7 +70,7 @@ void *Server::client_worker(void *arg)
         // Handle client interaction (e.g., chat or request handling)
         client->chat_with_client();
     } catch (const std::exception &e) {
-        log_error("Client worker error: " + std::string(e.what()));
+        std::cerr << "Client worker error: " << std::string(e.what()) << std::endl;
     }
     
     return nullptr; // Thread exits here
