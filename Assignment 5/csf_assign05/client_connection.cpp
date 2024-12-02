@@ -163,7 +163,8 @@ void ClientConnection::handle_create(const Message &request)
             throw InvalidMessage("Invalid table name format");
         }
 
-        //TODO: Handle table creation logic (e.g., create a new table in the database)
+        //Create table in server's collection of tables
+        m_server->create_table(table_name);
 
         send_response(MessageType::OK);
 }
@@ -181,8 +182,11 @@ void ClientConnection::handle_get(const Message &request)
         throw InvalidMessage("Invalid table name or key format");
     }
 
-    //TODO: Replace this with actual table and key lookup logic
-    std::string value = "0";  
+    //Get the table from server, lock table, update key's value, unlock table, proceed to push onto stack
+    Table* requested = m_server->find_table(table_name);
+    requested->lock();
+    std::string value = requested->get(key);
+    requested->unlock();  
 
     // Push the retrieved value onto the operand stack
     operand_stack.push(value);
@@ -202,12 +206,20 @@ void ClientConnection::handle_set(const Message &request)
             throw OperationException("Operand stack is empty, cannot set value");
         }
 
+        std::string table_name = request.get_table();
+        std::string key = request.get_key();
+      
         std::string value_to_set = operand_stack.get_top();
         operand_stack.pop();  // Pop the value from the stack
 
-        // TODO: store value_to_set in appropriate value for key in table
+        // Get table from server, lock it, update the key's value, unlock
+        Table* requested = m_server->find_table(table_name);
+        requested->lock();
+        requested->set(key, value_to_set);
+        requested->unlock(); 
 
         send_response(MessageType::OK);
+        
     } catch (const OperationException &e) {
         Message msg(MessageType::FAILED);
         msg.push_arg(e.what()); // Add the error message as an argument

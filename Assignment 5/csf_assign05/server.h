@@ -15,9 +15,6 @@ private:
   bool stop_flag;                                     // Flag to stop the server loop
   std::map<std::string, std::unique_ptr<Table>> tables; // Map of table names to Table objects
   pthread_mutex_t tables_mutex;                      // Mutex to protect access to the `tables` map
-
-  // Private methods
-  Table* find_table(const std::string &name);         // Helper to find a table by name
   
   // copy constructor and assignment operator are prohibited
   Server( const Server & );
@@ -37,6 +34,7 @@ public:
   // TODO: add member functions
   void handle_client_connection(int client_fd);
   void create_table(const std::string &name);
+  Table* find_table(const std::string &name);         // Helper to find a table by name
 
   // Some suggested member functions:
 /*
