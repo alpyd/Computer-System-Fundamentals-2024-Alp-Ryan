@@ -18,14 +18,9 @@ private:
   ValueStack operand_stack;
 
   //ADDED FUNCTIONALITY
-  // Keeps track of locked tables during a transaction
-  std::set<Table*> m_locked_tables;
-
+  
   // Helper function to process a message from the client
   void process_request(const Message &request);
-
-  // Helper function to send a response message back to the client
-  void send_response(const Message &response);
 
   // Helper function to handle exceptions and clean up resources
   void handle_exception(const std::exception &e);
@@ -72,6 +67,12 @@ private:
   // Helper function to manage locks on tables
   void lock_table(Table* table);
   void unlock_all_tables();
+
+  // Helper function to send a message using rio_writen
+  void send_response(const Message &msg);
+
+  // Helper function to receive a message using rio_readlineb
+  std::string receive_message(rio_t &rio);
 
   // copy constructor and assignment operator are prohibited
   ClientConnection( const ClientConnection & );

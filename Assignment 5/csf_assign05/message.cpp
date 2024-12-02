@@ -125,10 +125,13 @@ bool Message::is_valid() const {
       return get_num_args() == 1 && is_valid_value(m_args[0]);
 
     case MessageType::POP:
+    case MessageType::TOP:
     case MessageType::ADD:
     case MessageType::SUB:
     case MessageType::MUL:
     case MessageType::DIV:
+    case MessageType::BEGIN:
+    case MessageType::COMMIT:
     case MessageType::BYE:
     case MessageType::OK:
       // POP, arithmetic operations, BYE, and OK should have no arguments

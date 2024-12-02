@@ -20,21 +20,44 @@ ClientConnection::~ClientConnection()
   close(m_client_fd);
 }
 
+// Helper function to send response using Rio_writen
+void ClientConnection::send_response(const Message &msg) {
+  std::string encoded_msg;
+  MessageSerialization::encode(msg, encoded_msg);
+  Rio_writen(m_client_fd, encoded_msg.c_str(), encoded_msg.length());
+}
+
+// Helper function to receive a message using rio_readlineb
+std::string ClientConnection::receive_message(rio_t &rio) {
+  char buffer[MAXLINE];
+  ssize_t n = Rio_readlineb(&rio, buffer, MAXLINE);
+  if (n == 0) {
+    std::cerr << "Error: Server closed the connection unexpectedly\n";
+    exit(1);
+  }
+  buffer[n] = '\0';  // Null-terminate the response
+  return std::string(buffer);
+}
+
 void ClientConnection::chat_with_client()
 {
     Message request;
     Message response;
+    bool communicating = true;
     //TODO: Must start with a LOGIN request, and voluntarily end with BYE request
 
-    while (true) {
+    while (communicating) {
         try {
             // Step 1: Read a message from the client
-            std::string encoded_msg = "TODO"; //this needs to be gotten from the client over the socket, figure this out
+            std::string encoded_msg = receive_message(m_fdbuf); 
             MessageSerialization::decode(encoded_msg, request);
 
-            // Step 2: Process the request
+            // Step 2: Process the request, send response
             process_request(request);
-
+            
+            if(request.get_message_type() == MessageType::BYE) {
+              communicating = false;
+            }
             //Request handler functions nested in process_request will send response to client
 
         } 
@@ -110,23 +133,6 @@ void ClientConnection::process_request(const Message &request)
     }
 }
 
-void ClientConnection::send_response(const Message &response)
-{
-    // Send the response to the client
-    std::string encoded_response;
-    MessageSerialization::encode(response, encoded_response);
-    //TODO: Figure out how to take response Message and convert it to a string, to then be sent to client over thread
-    
-    // Here we're using Rio (Reliable I/O) to send the response through the socket
-    //TODO: Figure out how to send response over socket to client
-    
-    /*
-    size_t bytes_sent = rio_writen(m_client_fd, response.get_serialized_data(), response.get_serialized_size());
-    if (bytes_sent != response.get_serialized_size()) {
-        throw CommException();  // Communication error if the number of bytes sent doesn't match the size
-    } */
-}
-
 void ClientConnection::handle_login(const Message &request)
 {
         // Ensure the request has exactly one argument (the username)
@@ -186,7 +192,7 @@ void ClientConnection::handle_get(const Message &request)
 void ClientConnection::handle_set(const Message &request)
 {
     
-  if (!!request.is_valid()) {
+  if (!request.is_valid()) {
       throw InvalidMessage("Invalid SET request format");
   }
 
@@ -218,6 +224,7 @@ void ClientConnection::handle_bye(const Message &request) {
 if (!request.is_valid()) {
   throw InvalidMessage("Invalid BYE request format.");
 }
+
 send_response(MessageType::OK);
 
 }
