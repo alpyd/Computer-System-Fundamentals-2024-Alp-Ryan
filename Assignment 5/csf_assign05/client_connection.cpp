@@ -261,9 +261,9 @@ void ClientConnection::handle_push(const Message &request)
 
 void ClientConnection::handle_pop(const Message &request)
 {
-    // Ensure the request has no arguments
-    if (request.get_num_args() != 0) {
-        throw InvalidMessage("No arguments allowed for POP");
+    // Ensure the request is valid
+    if (!request.is_valid()) {
+        throw InvalidMessage("Invalid format of POP");
     }
 
     try {
@@ -285,8 +285,8 @@ void ClientConnection::handle_pop(const Message &request)
 void ClientConnection::handle_top(const Message &request)
 {
   // Ensure the request has no arguments
-    if (request.get_num_args() != 0) {
-        throw InvalidMessage("No arguments allowed for TOP");
+    if (!request.is_valid()) {
+        throw InvalidMessage("Invalid format of TOP");
     }
 
     try {
@@ -312,8 +312,8 @@ void ClientConnection::handle_top(const Message &request)
 void ClientConnection::handle_add(const Message &request)
 {
   // Ensure the request has no arguments
-    if (request.get_num_args() != 0) {
-        throw InvalidMessage("No arguments allowed for ADD");
+    if (!request.is_valid()) {
+        throw InvalidMessage("Invalid format of ADD");
     }
 
     try {
@@ -342,8 +342,8 @@ void ClientConnection::handle_add(const Message &request)
 void ClientConnection::handle_sub(const Message &request)
 {
   // Ensure the request has no arguments
-    if (request.get_num_args() != 0) {
-        throw InvalidMessage("No arguments allowed for SUB");
+    if (!request.is_valid()) {
+        throw InvalidMessage("Invalid format of SUB");
     }
 
     try {
@@ -372,8 +372,8 @@ void ClientConnection::handle_sub(const Message &request)
 void ClientConnection::handle_mul(const Message &request)
 {
   // Ensure the request has no arguments
-    if (request.get_num_args() != 0) {
-        throw InvalidMessage("No arguments allowed for MUL");
+    if (!request.is_valid()) {
+        throw InvalidMessage("Invalid format of MUL");
     }
 
     try {
@@ -407,8 +407,8 @@ void ClientConnection::handle_mul(const Message &request)
 void ClientConnection::handle_div(const Message &request)
 {
   // Ensure the request has no arguments
-    if (request.get_num_args() != 0) {
-        throw InvalidMessage("No arguments allowed for DIV");
+    if (!request.is_valid()) {
+        throw InvalidMessage("Invalid format of DIV");
     }
 
     try {
