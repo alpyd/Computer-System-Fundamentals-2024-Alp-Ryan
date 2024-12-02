@@ -43,20 +43,24 @@ void ClientConnection::chat_with_client()
 {
     Message request;
     Message response;
-    bool communicating = true;
-    //TODO: Must start with a LOGIN request, and voluntarily end with BYE request
-
-    while (communicating) {
+    bool first_request = true;
+    
+    while (true) {
         try {
             // Step 1: Read a message from the client
             std::string encoded_msg = receive_message(m_fdbuf); 
             MessageSerialization::decode(encoded_msg, request);
 
+            if (first_request && request.get_message_type() != MessageType::LOGIN) { //Must start with a LOGIN request
+              throw InvalidMessage("First message must be a LOGIN request");
+            }
+            first_request = false;
+            
             // Step 2: Process the request, send response
             process_request(request);
             
             if(request.get_message_type() == MessageType::BYE) {
-              communicating = false;
+              break;
             }
             //Request handler functions nested in process_request will send response to client
 
@@ -65,18 +69,21 @@ void ClientConnection::chat_with_client()
             // Invalid message, respond with ERROR and terminate the connection
             std::cerr << "Invalid message received from client: " << e.what() << std::endl;
             send_response(MessageType::ERROR);  // Send the error response to the client
+            //close(m_fdbuf.rio_fd);  
             break;  // Exit the loop and end the connection
         } 
         catch (const CommException &e) {
             // Communication error, respond with ERROR and terminate the connection
             std::cerr << "Communication error with client: " << e.what() << std::endl;
             send_response(MessageType::ERROR);  // Send the error response to the client
+            //close(m_fdbuf.rio_fd);  
             break;  // Exit the loop and end the connection
         } 
         catch (const std::exception &e) {
             // Handle other unexpected exceptions
             std::cerr << "Unexpected error: " << e.what() << std::endl;
             send_response(MessageType::ERROR);  // Send the error response to the client
+            //close(m_fdbuf.rio_fd);  
             break;  // Exit the loop and end the connection
         }
     }
@@ -135,14 +142,8 @@ void ClientConnection::process_request(const Message &request)
 
 void ClientConnection::handle_login(const Message &request)
 {
-        // Ensure the request has exactly one argument (the username)
-        if (request.get_num_args() != 1) {
-            throw InvalidMessage("LOGIN requires exactly 1 argument (username)");
-        }
-
-        std::string username = request.get_username();
-
-        // Validate that the username is a valid identifier (non-empty, starts with a letter, etc.)
+        
+        // Validate that the username is a valid identifier
         if (!request.is_valid()) {
             throw InvalidMessage("Invalid username format");
         }
@@ -219,7 +220,7 @@ void ClientConnection::handle_set(const Message &request)
         requested->unlock(); 
 
         send_response(MessageType::OK);
-        
+
     } catch (const OperationException &e) {
         Message msg(MessageType::FAILED);
         msg.push_arg(e.what()); // Add the error message as an argument
