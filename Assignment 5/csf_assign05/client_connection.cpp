@@ -68,22 +68,25 @@ void ClientConnection::chat_with_client()
         catch (const InvalidMessage &e) {
             // Invalid message, respond with ERROR and terminate the connection
             std::cerr << "Invalid message received from client: " << e.what() << std::endl;
-            send_response(MessageType::ERROR);  // Send the error response to the client
-            //close(m_fdbuf.rio_fd);  
+            Message msg(MessageType::ERROR);
+            msg.push_arg(e.what()); // Add the error message as an argument
+            send_response(msg);
             break;  // Exit the loop and end the connection
         } 
         catch (const CommException &e) {
             // Communication error, respond with ERROR and terminate the connection
             std::cerr << "Communication error with client: " << e.what() << std::endl;
-            send_response(MessageType::ERROR);  // Send the error response to the client
-            //close(m_fdbuf.rio_fd);  
+            Message msg(MessageType::ERROR);
+            msg.push_arg(e.what()); // Add the error message as an argument
+            send_response(msg);
             break;  // Exit the loop and end the connection
         } 
         catch (const std::exception &e) {
             // Handle other unexpected exceptions
             std::cerr << "Unexpected error: " << e.what() << std::endl;
-            send_response(MessageType::ERROR);  // Send the error response to the client
-            //close(m_fdbuf.rio_fd);  
+            Message msg(MessageType::ERROR);
+            msg.push_arg(e.what()); // Add the error message as an argument
+            send_response(msg);
             break;  // Exit the loop and end the connection
         }
     }
