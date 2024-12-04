@@ -28,6 +28,9 @@ void ClientConnection::send_response(const Message &msg) {
   rio_writen(m_client_fd, encoded_msg.c_str(), encoded_msg.length());
 }
 
+//TODO: When any I/O operation fails we need to close the socket of that thread
+//Is that done using close(m_client_fd)??
+
 // Helper function to receive a message using rio_readlineb
 std::string ClientConnection::receive_message(rio_t &rio) {
   char buffer[MAXLINE];
