@@ -25,19 +25,23 @@ ClientConnection::~ClientConnection()
 void ClientConnection::send_response(const Message &msg) {
   std::string encoded_msg;
   MessageSerialization::encode(msg, encoded_msg);
-  rio_writen(m_client_fd, encoded_msg.c_str(), encoded_msg.length());
+  ssize_t n = rio_writen(m_client_fd, encoded_msg.c_str(), encoded_msg.length()); 
+  if(n <= 0) {
+    throw CommException("Error writing to client");
+  }
+  //TODO: fix this to check return value and throw CommException if failed
 }
 
 //TODO: When any I/O operation fails we need to close the socket of that thread
-//Is that done using close(m_client_fd)??
+//throw commexception for each i/o operation, make sure it is caught and then
+//release all locks to prevent deadlocks, close(m_client_fd) destructor does it
 
 // Helper function to receive a message using rio_readlineb
 std::string ClientConnection::receive_message(rio_t &rio) {
   char buffer[MAXLINE];
   ssize_t n = rio_readlineb(&rio, buffer, MAXLINE);
-  if (n == 0) {
-    std::cerr << "Error: Server closed the connection unexpectedly\n";
-    exit(1);
+  if (n <= 0) {
+    throw CommException("Error reading from client");
   }
   buffer[n] = '\0';  // Null-terminate the response
   return std::string(buffer);
@@ -162,6 +166,12 @@ void ClientConnection::process_request(const Message &request)
 }
 
 void ClientConnection::handle_begin(const Message &request) {
+    
+    // Validate that the BEGIN request is valid
+    if (!request.is_valid()) {
+        throw InvalidMessage("Invalid BEGIN request format");
+    }
+    
     if (in_transaction) {
         throw FailedTransaction("A transaction is already ongoing");
     }
@@ -171,6 +181,12 @@ void ClientConnection::handle_begin(const Message &request) {
 }
 
 void ClientConnection::handle_commit(const Message &request) {
+    
+    // Validate that the COMMIT request is valid
+    if (!request.is_valid()) {
+        throw InvalidMessage("Invalid COMMIT request format");
+    }
+
     if (!in_transaction) {
         throw InvalidMessage("A transaction has not been started");
     }
