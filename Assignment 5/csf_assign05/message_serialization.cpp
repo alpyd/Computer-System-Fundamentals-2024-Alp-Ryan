@@ -91,7 +91,7 @@ namespace {
             case MessageType::COMMIT:
             case MessageType::BYE:
             case MessageType::OK:
-                break;
+            break;
 
             case MessageType::SET: //2 arguments: table, key
                 iss >> arg1 >> arg2;
@@ -123,6 +123,9 @@ namespace {
 
             default:
                 throw InvalidMessage("Unsupported message type for parsing.");
+        }
+        if (!(iss >> std::ws).eof()) { // Check for extraneous input
+                throw InvalidMessage("Too many arguments for the command.");
         }
     }
 }
