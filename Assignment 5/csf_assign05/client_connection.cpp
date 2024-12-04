@@ -25,13 +25,13 @@ ClientConnection::~ClientConnection()
 void ClientConnection::send_response(const Message &msg) {
   std::string encoded_msg;
   MessageSerialization::encode(msg, encoded_msg);
-  Rio_writen(m_client_fd, encoded_msg.c_str(), encoded_msg.length());
+  rio_writen(m_client_fd, encoded_msg.c_str(), encoded_msg.length());
 }
 
 // Helper function to receive a message using rio_readlineb
 std::string ClientConnection::receive_message(rio_t &rio) {
   char buffer[MAXLINE];
-  ssize_t n = Rio_readlineb(&rio, buffer, MAXLINE);
+  ssize_t n = rio_readlineb(&rio, buffer, MAXLINE);
   if (n == 0) {
     std::cerr << "Error: Server closed the connection unexpectedly\n";
     exit(1);

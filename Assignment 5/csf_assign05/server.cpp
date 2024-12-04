@@ -31,7 +31,7 @@ Server::~Server()
 // Listen for incoming connections on the given port
 void Server::listen(const std::string &port)
 {
-    listen_sock = Open_listenfd(port.c_str()); // Open the listen socket
+    listen_sock = open_listenfd(port.c_str()); // Open the listen socket
     if (listen_sock < 0) {
         throw std::runtime_error("Failed to open listening socket");
     }
@@ -41,7 +41,7 @@ void Server::listen(const std::string &port)
 void Server::server_loop()
 {
     while (!stop_flag) {
-        int client_fd = Accept(listen_sock, nullptr, nullptr);  // Block waiting for a connection
+        int client_fd = accept(listen_sock, nullptr, nullptr);  // Block waiting for a connection
         if (client_fd < 0) {
             log_error("Failed to accept connection");
             continue; // Retry if accepting a connection fails
