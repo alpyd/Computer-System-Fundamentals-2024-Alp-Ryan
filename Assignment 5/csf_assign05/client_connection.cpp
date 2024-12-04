@@ -9,6 +9,7 @@
 ClientConnection::ClientConnection( Server *server, int client_fd )
   : m_server( server )
   , m_client_fd( client_fd )
+  , in_transaction (false)
 {
   rio_readinitb( &m_fdbuf, m_client_fd );
 }
@@ -80,8 +81,22 @@ void ClientConnection::chat_with_client()
             msg.push_arg(e.what()); // Add the error message as an argument
             send_response(msg);
             break;  // Exit the loop and end the connection
-        } 
-        catch (const std::exception &e) {
+        } catch (const OperationException &e) {
+
+        } catch (const FailedTransaction &e) {
+            for (std::string name : m_table_names) {
+                Table* table = m_server->find_table(name);
+                if (table != nullptr) {
+                    table->rollback_changes();
+                    table->unlock();
+                }
+            }
+            in_transaction = false;
+            std::cerr << "Transaction failed: " << e.what() << std::endl;
+            Message msg(MessageType::ERROR);
+            msg.push_arg(e.what()); // Add the error message as an argument
+            send_response(msg);
+        } catch (const std::exception &e) {
             // Handle other unexpected exceptions
             std::cerr << "Unexpected error: " << e.what() << std::endl;
             Message msg(MessageType::ERROR);
@@ -130,10 +145,10 @@ void ClientConnection::process_request(const Message &request)
             handle_div(request);
             break;
         case MessageType::BEGIN:
-            //handle_begin();
+            handle_begin(request);
             break;
         case MessageType::COMMIT:
-            //handle_commit();
+            handle_commit(request);
             break;
         case MessageType::BYE:
             handle_bye(request);
@@ -143,34 +158,61 @@ void ClientConnection::process_request(const Message &request)
     }
 }
 
+void ClientConnection::handle_begin(const Message &request) {
+    if (in_transaction) {
+        throw FailedTransaction("A transaction is already ongoing");
+    }
+
+    in_transaction = true;
+    send_response(MessageType::OK);
+}
+
+void ClientConnection::handle_commit(const Message &request) {
+    if (!in_transaction) {
+        throw InvalidMessage("A transaction has not been started");
+    }
+
+    for (std::string name : m_table_names) {
+        Table* table = m_server->find_table(name);
+        if (table != nullptr) {
+            table->commit_changes();
+            table->unlock();
+        }
+    }
+
+    m_table_names.clear();
+    in_transaction = false;
+    send_response(MessageType::OK);
+
+}
+
 void ClientConnection::handle_login(const Message &request)
 {
-        
-        // Validate that the username is a valid identifier
-        if (!request.is_valid()) {
-            throw InvalidMessage("Invalid username format");
-        }
+    
+    // Validate that the username is a valid identifier
+    if (!request.is_valid()) {
+        throw InvalidMessage("Invalid username format");
+    }
 
-        // Send response back indicating successful login
-        send_response(MessageType::OK);
+    // Send response back indicating successful login
+    send_response(MessageType::OK);
 }
 
 void ClientConnection::handle_create(const Message &request)
 {
-   
-        if (request.get_num_args() != 1) {
-            throw InvalidMessage("CREATE requires exactly 1 argument (table name)");
-        }
+    if (request.get_num_args() != 1) {
+        throw InvalidMessage("CREATE requires exactly 1 argument (table name)");
+    }
 
-        std::string table_name = request.get_table();
-        if (!request.is_valid()) {
-            throw InvalidMessage("Invalid table name format");
-        }
+    std::string table_name = request.get_table();
+    if (!request.is_valid()) {
+        throw InvalidMessage("Invalid table name format");
+    }
 
-        //Create table in server's collection of tables
-        m_server->create_table(table_name);
+    //Create table in server's collection of tables
+    m_server->create_table(table_name);
 
-        send_response(MessageType::OK);
+    send_response(MessageType::OK);
 }
 
 void ClientConnection::handle_get(const Message &request)
@@ -188,12 +230,25 @@ void ClientConnection::handle_get(const Message &request)
 
     //Get the table from server, lock table, update key's value, unlock table, proceed to push onto stack
     Table* requested = m_server->find_table(table_name);
-    requested->lock();
-    std::string value = requested->get(key);
-    requested->unlock();  
+    if (in_transaction) {
+        if (!find_table(table_name)) {
+            if(!requested->trylock()) {
+                throw FailedTransaction("Error: Could not lock the table");
+            }
+            m_table_names.push_back(table_name);
+        }
+        if(!requested->has_key(key)) {
+            throw InvalidMessage("Error: Provided key does not exist");
+        }
+        operand_stack.push(requested->get(key));
+    } else {
+        requested->lock();
+        std::string value = requested->get(key);
+        requested->unlock();  
 
-    // Push the retrieved value onto the operand stack
-    operand_stack.push(value);
+        // Push the retrieved value onto the operand stack
+        operand_stack.push(value);
+    }
     send_response(MessageType::OK);
 }
 
@@ -218,9 +273,22 @@ void ClientConnection::handle_set(const Message &request)
 
         // Get table from server, lock it, update the key's value, unlock
         Table* requested = m_server->find_table(table_name);
-        requested->lock();
-        requested->set(key, value_to_set);
-        requested->unlock(); 
+        if (requested == nullptr) {
+            throw InvalidMessage("Error: Specified table is not present");
+        }
+        if (in_transaction) {
+            if (!find_table(table_name)) {
+                if(!requested->trylock()) {
+                    throw FailedTransaction("Error: Could not lock the table");
+                }
+                m_table_names.push_back(table_name);
+            }
+            requested->set(key, value_to_set);
+        } else {
+            requested->lock();
+            requested->set(key, value_to_set);
+            requested->unlock(); 
+        }
 
         send_response(MessageType::OK);
 
@@ -235,13 +303,22 @@ void ClientConnection::handle_set(const Message &request)
     }
 }
 
-void ClientConnection::handle_bye(const Message &request) {
-  
-if (!request.is_valid()) {
-  throw InvalidMessage("Invalid BYE request format.");
+bool ClientConnection::find_table(std::string table_name){
+    for (std::string name: m_table_names) {
+        if (name == table_name) {
+            return true;
+        }
+    }
+    return false;
 }
 
-send_response(MessageType::OK);
+void ClientConnection::handle_bye(const Message &request) {
+  
+    if (!request.is_valid()) {
+    throw InvalidMessage("Invalid BYE request format.");
+    }
+
+    send_response(MessageType::OK);
 
 }
 
@@ -249,7 +326,7 @@ void ClientConnection::handle_push(const Message &request)
 {
     
   if (!request.is_valid()) {
-      throw InvalidMessage("Invalid PUSH request format.");
+    throw InvalidMessage("Invalid PUSH request format.");
   }
 
   std::string value = request.get_value();

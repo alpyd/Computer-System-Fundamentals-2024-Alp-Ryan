@@ -77,8 +77,7 @@ void *Server::client_worker(void *arg)
 }
 
 // Log errors to standard error
-void Server::log_error(const std::string &what)
-{
+void Server::log_error(const std::string &what) {
     std::cerr << "Error: " << what << "\n";
 }
 

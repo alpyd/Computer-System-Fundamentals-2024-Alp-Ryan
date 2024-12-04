@@ -15,7 +15,9 @@ private:
   Server *m_server;
   int m_client_fd;
   rio_t m_fdbuf;
+  bool in_transaction;
   ValueStack operand_stack;
+  std::vector<std::string> m_table_names;
 
   //ADDED FUNCTIONALITY
   
@@ -64,6 +66,13 @@ private:
   // Handler for DIV request
   void handle_div(const Message &request);
 
+  // Handler for BEGIN request
+  void handle_begin(const Message &request);
+
+  // Handler for COMMIT request
+  void handle_commit(const Message &request);
+
+
   // Helper function to manage locks on tables
   void lock_table(Table* table);
   void unlock_all_tables();
@@ -77,6 +86,9 @@ private:
   // copy constructor and assignment operator are prohibited
   ClientConnection( const ClientConnection & );
   ClientConnection &operator=( const ClientConnection & );
+
+
+  bool find_table(std::string table_name);
 
 public:
   ClientConnection( Server *server, int client_fd );
