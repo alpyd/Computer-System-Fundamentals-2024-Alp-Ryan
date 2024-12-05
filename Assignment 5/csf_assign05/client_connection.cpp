@@ -58,6 +58,10 @@ void ClientConnection::chat_with_client()
             // Step 1: Read a message from the client
             std::string encoded_msg = receive_message(m_fdbuf); 
             MessageSerialization::decode(encoded_msg, request);
+            
+            if(!first_request && request.get_message_type() == MessageType::LOGIN) { //Ensure only 1 starting LOGIN request
+              throw InvalidMessage("No duplicate LOGIN's allowed");
+            }
 
             if (first_request && request.get_message_type() != MessageType::LOGIN) { //Must start with a LOGIN request
               throw InvalidMessage("First message must be a LOGIN request");
