@@ -52,8 +52,9 @@ void ClientConnection::chat_with_client()
     Message request;
     Message response;
     bool first_request = true;
+    bool in_conversation = true;
     
-    while (true) {
+    while (in_conversation) {
         try {
             // Step 1: Read a message from the client
             std::string encoded_msg = receive_message(m_fdbuf); 
@@ -72,7 +73,7 @@ void ClientConnection::chat_with_client()
             process_request(request);
             
             if(request.get_message_type() == MessageType::BYE) {
-              break;
+              in_conversation = false;
             }
             //Request handler functions nested in process_request will send response to client
 
