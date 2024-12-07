@@ -83,6 +83,9 @@ private:
   // Helper function to receive a message using rio_readlineb
   std::string receive_message(rio_t &rio);
 
+  // Helper function to standard error sending FAILED response
+  void send_failed_response(std::string error_msg);
+
   // copy constructor and assignment operator are prohibited
   ClientConnection( const ClientConnection & );
   ClientConnection &operator=( const ClientConnection & );

@@ -155,7 +155,8 @@ void ClientConnection::process_request(const Message &request) {
       handle_bye(request);
       break;
     default:
-      throw InvalidMessage("Unknown message type");  // Unknown message type, invalid request
+      // Unknown message type, invalid request
+      throw InvalidMessage("Unknown message type");  
   }
 }
 
@@ -295,13 +296,9 @@ void ClientConnection::handle_set(const Message &request) {
     }
     send_response(MessageType::OK);
   } catch (const OperationException &e) {
-    Message msg(MessageType::FAILED);
-    msg.push_arg(e.what()); // Add the error message as an argument
-    send_response(msg);
+    send_failed_response(e.what());
   } catch (const std::exception &e) {
-    Message msg(MessageType::FAILED);
-    msg.push_arg(e.what()); // Add the error message as an argument
-    send_response(msg);
+    send_failed_response(e.what());
   }
 }
 
@@ -349,18 +346,9 @@ void ClientConnection::handle_pop(const Message &request) {
     // Respond with OK
     send_response(MessageType::OK);  
   } catch (const OperationException &e) {
-    Message msg(MessageType::FAILED);
-
-    // Add the error message as an argument
-    msg.push_arg(e.what()); 
-
-    send_response(msg);
+    send_failed_response(e.what());
   } catch (const std::exception &e) {
-    Message msg(MessageType::FAILED);
-
-    // Add the error message as an argument
-    msg.push_arg(e.what()); 
-    send_response(msg);
+    send_failed_response(e.what());
   }
 }
 
@@ -371,27 +359,21 @@ void ClientConnection::handle_top(const Message &request) {
   }
 
   try {
-    std::string top_value = operand_stack.get_top();  // Get the top value from the stack
+    // Get the top value from the stack
+    std::string top_value = operand_stack.get_top();  
+
     if (!top_value.empty()) {
       Message msg(MessageType::DATA);
-      msg.push_arg(top_value); // Add the top value as an argument
+      // Add the top value as an argument
+      msg.push_arg(top_value); 
       send_response(msg);
     } else {
       throw OperationException("Operand stack is empty.");
     }
   } catch (const OperationException &e) {
-    Message msg(MessageType::FAILED);
-
-    // Add the error message as an argument
-    msg.push_arg(e.what()); 
-
-    send_response(msg);
+    send_failed_response(e.what());
   } catch (const std::exception &e) {
-    Message msg(MessageType::FAILED);
-
-    // Add the error message as an argument
-    msg.push_arg(e.what()); 
-    send_response(msg);
+    send_failed_response(e.what());
   }
 }
 
@@ -402,39 +384,26 @@ void ClientConnection::handle_add(const Message &request) {
   }
 
   try {
-    // Get second operand
+    // Get second operand and pop from the stack
     std::string operand2 = operand_stack.get_top();  
-
-    // Pop operand2 from the stack
     operand_stack.pop();  
 
-    // Get first operand
+    // Get first operand and pop from the stack
     std::string operand1 = operand_stack.get_top();  
-
-    // Pop operand1 from the stack
     operand_stack.pop();  
 
     // Perform the addition (assuming operands are integers)
     int result = std::stoi(operand1) + std::stoi(operand2);
-
+    
     // Push the result back onto the stack
     operand_stack.push(std::to_string(result));  
 
     // Respond with OK
     send_response(MessageType::OK);  
   } catch (const OperationException &e) {
-    Message msg(MessageType::FAILED);
-
-    // Add the error message as an argument
-    msg.push_arg(e.what()); 
-    
-    send_response(msg);
+    send_failed_response(e.what());
   } catch (const std::exception &e) {
-    Message msg(MessageType::FAILED);
-    // Add the error message as an argument
-    msg.push_arg(e.what()); 
-
-    send_response(msg);
+    send_failed_response(e.what());
   }
 }
 
@@ -445,16 +414,12 @@ void ClientConnection::handle_sub(const Message &request) {
   }
 
   try {
-    // Get second operand
+    // Get second operand and pop from the stack
     std::string operand2 = operand_stack.get_top(); 
-
-    // Pop operand2 from the stack 
     operand_stack.pop();  
 
-    // Get first operand
+    // Get first operand and pop from the stack
     std::string operand1 = operand_stack.get_top();  
-
-    // Pop operand1 from the stack
     operand_stack.pop();  
 
     // Perform the subtraction (assuming operands are integers)
@@ -466,15 +431,9 @@ void ClientConnection::handle_sub(const Message &request) {
     // Respond with OK
     send_response(MessageType::OK);  
   } catch (const OperationException &e) {
-    Message msg(MessageType::FAILED);
-    // Add the error message as an argument
-    msg.push_arg(e.what()); 
-    send_response(msg);
+    send_failed_response(e.what());
   } catch (const std::exception &e) {
-    Message msg(MessageType::FAILED);
-    // Add the error message as an argument
-    msg.push_arg(e.what()); 
-    send_response(msg);
+    send_failed_response(e.what());
   }
 }
 
@@ -485,13 +444,13 @@ void ClientConnection::handle_mul(const Message &request) {
   }
 
   try {
-    // Get the second operand from the stack
+    // Get the second operand from stack and pop it from stack
     std::string operand2 = operand_stack.get_top();
-    operand_stack.pop();  // Pop operand2 from the stack
+    operand_stack.pop(); 
 
-    // Get the first operand from the stack
+    // Get the first operand from the stack and pop it from stack
     std::string operand1 = operand_stack.get_top();
-    operand_stack.pop();  // Pop operand1 from the stack
+    operand_stack.pop();
 
     // Perform the multiplication (assuming operands are integers)
     int result = std::stoi(operand1) * std::stoi(operand2);
@@ -502,13 +461,9 @@ void ClientConnection::handle_mul(const Message &request) {
     // Respond with OK if everything is successful
     send_response(MessageType::OK);
   } catch (const OperationException &e) {
-    Message msg(MessageType::FAILED);
-    msg.push_arg(e.what()); // Add the error message as an argument
-    send_response(msg);
+    send_failed_response(e.what());
   } catch (const std::exception &e) {
-    Message msg(MessageType::FAILED);
-    msg.push_arg(e.what()); // Add the error message as an argument
-    send_response(msg);
+    send_failed_response(e.what());
   }
 }
 
@@ -519,31 +474,43 @@ void ClientConnection::handle_div(const Message &request) {
   }
 
   try {
-    std::string operand2 = operand_stack.get_top();  // Get second operand
-    operand_stack.pop();  // Pop operand2 from the stack
+    // Get second operand and pop from the stack
+    std::string operand2 = operand_stack.get_top(); 
+    operand_stack.pop();
 
-    std::string operand1 = operand_stack.get_top();  // Get first operand
-    operand_stack.pop();  // Pop operand1 from the stack
+    // Get first operand and pop from the stack
+    std::string operand1 = operand_stack.get_top();  
+    operand_stack.pop(); 
 
-    // Perform the division (assuming operands are integers)
-    int operand2_val = std::stoi(operand2);
-    if (operand2_val == 0) {
+    // Throw error if attempting to divide by 0
+    if (std::stoi(operand2) == 0) {
       throw OperationException("Division by zero.");
     }
 
-    int result = std::stoi(operand1) / operand2_val;
-    operand_stack.push(std::to_string(result));  // Push the result back onto the stack
+    // Perform the division (assuming operands are integers)
+    int result = std::stoi(operand1) / std::stoi(operand2);
 
-    send_response(MessageType::OK);  // Respond with OK
+    // Push the result back onto the stack
+    operand_stack.push(std::to_string(result));  
+
+    // Respond with OK
+    send_response(MessageType::OK);  
   } catch (const OperationException &e) {
-    Message msg(MessageType::FAILED);
-    msg.push_arg(e.what()); // Add the error message as an argument
-    send_response(msg);
+    send_failed_response(e.what());
   } catch (const std::exception &e) {
-    Message msg(MessageType::FAILED);
-    msg.push_arg(e.what()); // Add the error message as an argument
-    send_response(msg);
+    send_failed_response(e.what());
   }
+}
+
+void ClientConnection::send_failed_response(std::string error_msg) {
+  // Create a FAILED MessageType
+  Message msg(MessageType::FAILED);
+  
+  // Add the error message as an argument
+  msg.push_arg(error_msg); 
+
+  // Send the Failed Message Response
+  send_response(msg);
 }
 
  
