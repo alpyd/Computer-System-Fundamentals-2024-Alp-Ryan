@@ -86,6 +86,15 @@ private:
   // Helper function to standard error sending FAILED response
   void send_failed_response(std::string error_msg);
 
+  // Helper function to help with GET command for transaction
+  void transaction_get(const std::string& table_name, const std::string& key);
+
+  // Helper function to help with SET command for transaction
+  void transaction_set(const std::string& table_name, const std::string& key, const std::string& value_to_set);
+
+  // Helper function to help with SET command without transaction
+  void normal_set(const std::string& table_name, const std::string& key, const std::string& value_to_set);
+
   // copy constructor and assignment operator are prohibited
   ClientConnection( const ClientConnection & );
   ClientConnection &operator=( const ClientConnection & );

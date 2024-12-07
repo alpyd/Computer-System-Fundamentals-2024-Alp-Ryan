@@ -184,6 +184,7 @@ void ClientConnection::handle_commit(const Message &request) {
     throw InvalidMessage("A transaction has not been started");
   }
 
+  // Commit changes and unlock mutex for all of the changed tables
   for (std::string name : m_table_names) {
     Table* table = m_server->find_table(name);
     if (table != nullptr) {
@@ -192,8 +193,11 @@ void ClientConnection::handle_commit(const Message &request) {
     }
   }
 
+  // Reset variables now that transaction is done
   m_table_names.clear();
   in_transaction = false;
+
+  // Send OK response
   send_response(MessageType::OK);
 }
 
@@ -228,6 +232,7 @@ void ClientConnection::handle_get(const Message &request) {
     throw InvalidMessage("GET requires exactly 2 arguments (table and key)");
   }
 
+  // Isolate the table and key to get data from
   std::string table_name = request.get_table();
   std::string key = request.get_key();
 
@@ -236,19 +241,10 @@ void ClientConnection::handle_get(const Message &request) {
   }
 
   //Get the table from server, lock table, update key's value, unlock table, proceed to push onto stack
-  Table* requested = m_server->find_table(table_name);
   if (in_transaction) {
-    if (!find_table(table_name)) {
-      if(!requested->trylock()) {
-        throw FailedTransaction("Error: Could not lock the table");
-      }
-      m_table_names.push_back(table_name);
-    }
-    if(!requested->has_key(key)) {
-      throw InvalidMessage("Error: Provided key does not exist");
-    }
-    operand_stack.push(requested->get(key));
+    transaction_get(table_name, key);
   } else {
+    Table* requested = m_server->find_table(table_name);
     requested->lock();
     std::string value = requested->get(key);
     requested->unlock();  
@@ -257,6 +253,22 @@ void ClientConnection::handle_get(const Message &request) {
     operand_stack.push(value);
   }
   send_response(MessageType::OK);
+}
+
+void ClientConnection::transaction_get(const std::string& table_name, const std::string& key) {
+  //Get the table from server, lock table, update key's value, unlock table, proceed to push onto stack
+  Table* requested = m_server->find_table(table_name);
+  if (!find_table(table_name)) {
+    if(!requested->trylock()) {
+      throw FailedTransaction("Error: Could not lock the table");
+    }
+    // Add the table name to the larger vector of table names
+    m_table_names.push_back(table_name);
+  }
+  if(!requested->has_key(key)) {
+    throw InvalidMessage("Error: Provided key does not exist");
+  }
+  operand_stack.push(requested->get(key));
 }
 
 void ClientConnection::handle_set(const Message &request) {
@@ -270,29 +282,19 @@ void ClientConnection::handle_set(const Message &request) {
       throw OperationException("Operand stack is empty, cannot set value");
     }
 
+    // Isolate the table and key to set data
     std::string table_name = request.get_table();
     std::string key = request.get_key();
 
+    // Get the value from the top of stack to set and pop it from stack afterwards
     std::string value_to_set = operand_stack.get_top();
-    operand_stack.pop();  // Pop the value from the stack
+    operand_stack.pop();  
 
     // Get table from server, lock it, update the key's value, unlock
-    Table* requested = m_server->find_table(table_name);
-    if (requested == nullptr) {
-      throw InvalidMessage("Error: Specified table is not present");
-    }
     if (in_transaction) {
-      if (!find_table(table_name)) {
-        if(!requested->trylock()) {
-          throw FailedTransaction("Error: Could not lock the table");
-        }
-        m_table_names.push_back(table_name);
-      }
-      requested->set(key, value_to_set);
+      transaction_set(table_name, key, value_to_set);
     } else {
-      requested->lock();
-      requested->set(key, value_to_set);
-      requested->unlock(); 
+      normal_set(table_name, key, value_to_set);
     }
     send_response(MessageType::OK);
   } catch (const OperationException &e) {
@@ -302,7 +304,39 @@ void ClientConnection::handle_set(const Message &request) {
   }
 }
 
-bool ClientConnection::find_table(std::string table_name){
+void ClientConnection::transaction_set(const std::string& table_name, const std::string& key, const std::string& value_to_set) {
+  // Get the requested table and throw InvalidMessage if requested table not present
+  Table* requested = m_server->find_table(table_name);
+  if (requested == nullptr) {
+    throw InvalidMessage("Error: Specified table is not present");
+  }
+
+  // Lock the table and add the table name to the global vector of table names
+  if (!find_table(table_name)) {
+    if(!requested->trylock()) {
+      throw FailedTransaction("Error: Could not lock the table");
+    }
+    m_table_names.push_back(table_name);
+  }
+
+  // Set the value of the requested table at the specified key
+  requested->set(key, value_to_set);
+}
+
+void ClientConnection::normal_set(const std::string& table_name, const std::string& key, const std::string& value_to_set) {
+  // Get the requested table and throw InvalidMessage if requested table not present
+  Table* requested = m_server->find_table(table_name);
+  if (requested == nullptr) {
+    throw InvalidMessage("Error: Specified table is not present");
+  }
+
+  // Lock the table, set the value of the requested table at the specified key, and unlock table to ensure no deadlocks
+  requested->lock();
+  requested->set(key, value_to_set);
+  requested->unlock();
+}
+
+bool ClientConnection::find_table(std::string table_name) {
   for (std::string name: m_table_names) {
     if (name == table_name) {
       return true;
