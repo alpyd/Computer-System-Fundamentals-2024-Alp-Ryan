@@ -17,7 +17,8 @@ Once the thread utilized the collection for the desired action, such as modifyin
 The server was tested to be free of race conditions and deadlocks in the code's critical sections by ensuring runtime tests between different clients and the server did not stall indefinitely, an indicator of deadlock, as well as analyzing the code's critical sections to ensure the correct order of locking and unlocking of different mutexes.
 This way, common causes of deadlock, such as Thread 1 acquiring a lock and waiting to acquire Thread 2's lock and Thread 2 acquiring a lock and waiting to acquire Thread 1's lock, were avoided.
 Additionally, by releasing the lock as soon as the Thread is completed with the task, deadlocks arising from indefinite waiting were also avoided.
-
+Specifically, careful attention was given in the ClientConnection during critical sections. For GET and SET commands not in a transaction, the mutex was locked and immediately unlocked after carrying out the necessary commands.
+However, the transaction state requires that the lock is held until the transaction completes. Therefore, careful attention was paid to ensure that there was no unlock functions called until the COMMIT function and that all errors called during a transaction safely unlocked all implicated Table Objects.
 
 ASSIGNMENT 5, SECTION 1
 
