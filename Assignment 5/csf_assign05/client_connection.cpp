@@ -364,8 +364,7 @@ void ClientConnection::handle_pop(const Message &request) {
   }
 }
 
-void ClientConnection::handle_top(const Message &request)
-{
+void ClientConnection::handle_top(const Message &request) {
   // Ensure the request has no arguments
   if (!request.is_valid()) {
     throw InvalidMessage("Invalid format of TOP");
@@ -441,42 +440,42 @@ void ClientConnection::handle_add(const Message &request) {
 
 void ClientConnection::handle_sub(const Message &request) {
   // Ensure the request has no arguments
-    if (!request.is_valid()) {
-      throw InvalidMessage("Invalid format of SUB");
-    }
+  if (!request.is_valid()) {
+    throw InvalidMessage("Invalid format of SUB");
+  }
 
-    try {
-      // Get second operand
-      std::string operand2 = operand_stack.get_top(); 
+  try {
+    // Get second operand
+    std::string operand2 = operand_stack.get_top(); 
 
-      // Pop operand2 from the stack 
-      operand_stack.pop();  
+    // Pop operand2 from the stack 
+    operand_stack.pop();  
 
-      // Get first operand
-      std::string operand1 = operand_stack.get_top();  
+    // Get first operand
+    std::string operand1 = operand_stack.get_top();  
 
-      // Pop operand1 from the stack
-      operand_stack.pop();  
+    // Pop operand1 from the stack
+    operand_stack.pop();  
 
-      // Perform the subtraction (assuming operands are integers)
-      int result = std::stoi(operand1) - std::stoi(operand2);
+    // Perform the subtraction (assuming operands are integers)
+    int result = std::stoi(operand1) - std::stoi(operand2);
 
-      // Push the result back onto the stack
-      operand_stack.push(std::to_string(result));  
+    // Push the result back onto the stack
+    operand_stack.push(std::to_string(result));  
 
-      // Respond with OK
-      send_response(MessageType::OK);  
-    } catch (const OperationException &e) {
-      Message msg(MessageType::FAILED);
-      // Add the error message as an argument
-      msg.push_arg(e.what()); 
-      send_response(msg);
-    } catch (const std::exception &e) {
-      Message msg(MessageType::FAILED);
-      // Add the error message as an argument
-      msg.push_arg(e.what()); 
-      send_response(msg);
-    }
+    // Respond with OK
+    send_response(MessageType::OK);  
+  } catch (const OperationException &e) {
+    Message msg(MessageType::FAILED);
+    // Add the error message as an argument
+    msg.push_arg(e.what()); 
+    send_response(msg);
+  } catch (const std::exception &e) {
+    Message msg(MessageType::FAILED);
+    // Add the error message as an argument
+    msg.push_arg(e.what()); 
+    send_response(msg);
+  }
 }
 
 void ClientConnection::handle_mul(const Message &request) {
