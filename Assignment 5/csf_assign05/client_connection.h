@@ -95,6 +95,21 @@ private:
   // Helper function to help with SET command without transaction
   void normal_set(const std::string& table_name, const std::string& key, const std::string& value_to_set);
 
+  // Helper function to process connection from client and returns whether to continue conversation
+  bool process_message_from_client(const bool first_request);
+
+  // Helper functions to handle different errors in chat_with_client
+  void handle_invalid_message(std::string error_msg);
+  void handle_comm_exception(std::string error_msg);
+  void handle_operation_exception();
+  void handle_failed_transaction(std::string error_msg);
+  void handle_unexpected_exception(std::string error_msg);
+
+  // Helper function to rollback changes and unlock tables at the end of a transaction
+  void rollback_changes();
+
+
+
   // copy constructor and assignment operator are prohibited
   ClientConnection( const ClientConnection & );
   ClientConnection &operator=( const ClientConnection & );

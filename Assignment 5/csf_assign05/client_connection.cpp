@@ -35,76 +35,150 @@ std::string ClientConnection::receive_message(rio_t &rio) {
   if (n <= 0) {
     throw CommException("Error reading from client");
   }
-  buffer[n] = '\0';  // Null-terminate the response
+  // Null-terminate the response
+  buffer[n] = '\0';  
+
   return std::string(buffer);
 }
 
 void ClientConnection::chat_with_client() {
-  Message request;
-  Message response;
   bool first_request = true;
   bool in_conversation = true;
   
   while (in_conversation) {
     try {
-      // Step 1: Read a message from the client
-      std::string encoded_msg = receive_message(m_fdbuf); 
-      MessageSerialization::decode(encoded_msg, request);
-      
-      if(!first_request && request.get_message_type() == MessageType::LOGIN) { //Ensure only 1 starting LOGIN request
-        throw InvalidMessage("No duplicate LOGIN's allowed");
-      }
-
-      if (first_request && request.get_message_type() != MessageType::LOGIN) { //Must start with a LOGIN request
-        throw InvalidMessage("First message must be a LOGIN request");
-      }
+      // Process the message from the client and update in_conversation accordingly
+      in_conversation = process_message_from_client(first_request);
       first_request = false;
-      
-      // Step 2: Process the request, send response
-      process_request(request);
-      
-      if(request.get_message_type() == MessageType::BYE) {
-        in_conversation = false;
-      }
-
     //Request handler functions nested in process_request will send response to client
     } catch (const InvalidMessage &e) {
       // Invalid message, respond with ERROR and terminate the connection
-      std::cerr << "Invalid message received from client: " << e.what() << std::endl;
-      Message msg(MessageType::ERROR);
-      msg.push_arg(e.what()); // Add the error message as an argument
-      send_response(msg);
-      break;  // Exit the loop and end the connection
+      handle_invalid_message(e.what());
+
+      // Exit the loop and end the connection
+      break;  
     } 
     catch (const CommException &e) {
       // Communication error, respond with ERROR and terminate the connection
-      std::cerr << "Communication error with client: " << e.what() << std::endl;
-      Message msg(MessageType::ERROR);
-      msg.push_arg(e.what()); // Add the error message as an argument
-      send_response(msg);
-      break;  // Exit the loop and end the connection
-    } catch (const OperationException &e) {
+      handle_comm_exception(e.what());
 
+      // Exit the loop and end the connection
+      break;  
+    } catch (const OperationException &e) {
+      // Handle OperationException and don't end the connection
+      handle_operation_exception();
     } catch (const FailedTransaction &e) {
-      for (std::string name : m_table_names) {
-        Table* table = m_server->find_table(name);
-        if (table != nullptr) {
-          table->rollback_changes();
-          table->unlock();
-        }
-      }
-      in_transaction = false;
-      std::cerr << "Transaction failed: " << e.what() << std::endl;
-      Message msg(MessageType::ERROR);
-      msg.push_arg(e.what()); // Add the error message as an argument
-      send_response(msg);
+      // Handle FailedTransaction and don't end the connection
+      handle_failed_transaction(e.what());
+
     } catch (const std::exception &e) {
       // Handle other unexpected exceptions
-      std::cerr << "Unexpected error: " << e.what() << std::endl;
-      Message msg(MessageType::ERROR);
-      msg.push_arg(e.what()); // Add the error message as an argument
-      send_response(msg);
-      break;  // Exit the loop and end the connection
+      handle_unexpected_exception(e.what());
+
+      // Exit the loop and end the connection
+      break;  
+    }
+  }
+}
+
+bool ClientConnection::process_message_from_client(const bool first_request) {
+  Message request;
+
+  // Step 1: Read a message from the client
+  std::string encoded_msg = receive_message(m_fdbuf); 
+  MessageSerialization::decode(encoded_msg, request);
+  
+  if(!first_request && request.get_message_type() == MessageType::LOGIN) { 
+    //Ensure only 1 starting LOGIN request
+    throw InvalidMessage("No duplicate LOGIN's allowed");
+  }
+
+  if (first_request && request.get_message_type() != MessageType::LOGIN) { 
+    // Must start with a LOGIN request
+    throw InvalidMessage("First message must be a LOGIN request");
+  }
+
+  // Step 2: Process the request, send response
+  process_request(request);
+  
+  return request.get_message_type() != MessageType::BYE;
+}
+
+void ClientConnection::handle_invalid_message(std::string error_msg) {
+  // Handle case of ongoing transaction to safely rollback changes
+  if(in_transaction) {
+    // Roll back changes and end transaction state
+    rollback_changes();
+    in_transaction = false;
+  }
+
+  std::cerr << "Invalid message received from client: " << error_msg << std::endl;
+  Message msg(MessageType::ERROR);
+
+  // Add the error message as an argument
+  msg.push_arg(error_msg); 
+  send_response(msg);
+}
+
+void ClientConnection::handle_comm_exception(std::string error_msg) {
+  // Handle case of ongoing transaction to safely rollback changes
+  if(in_transaction) {
+    // Roll back changes and end transaction state
+    rollback_changes();
+    in_transaction = false;
+  }
+
+  std::cerr << "Communication error with client: " << error_msg << std::endl;
+  Message msg(MessageType::ERROR);
+
+  // Add the error message as an argument
+  msg.push_arg(error_msg); 
+  send_response(msg);
+}
+
+void ClientConnection::handle_operation_exception() {
+  // Handle case of ongoing transaction to safely rollback changes
+  if(in_transaction) {
+    // Roll back changes and end transaction state
+    rollback_changes();
+    in_transaction = false;
+  }
+}
+
+void ClientConnection::handle_failed_transaction(std::string error_msg) {
+  // Roll back changes and end transaction state
+  rollback_changes();
+  in_transaction = false;
+
+  std::cerr << "Transaction failed: " << error_msg << std::endl;
+  Message msg(MessageType::ERROR);
+  // Add the error message as an argument
+  msg.push_arg(error_msg); 
+  send_response(msg);
+}
+
+void ClientConnection::handle_unexpected_exception(std::string error_msg) {
+  if(in_transaction) {
+    // Roll back changes and end transaction state
+    rollback_changes();
+    in_transaction = false;
+  }
+
+  std::cerr << "Unexpected error: " << error_msg << std::endl;
+  Message msg(MessageType::ERROR);
+
+  // Add the error message as an argument
+  msg.push_arg(error_msg); 
+  send_response(msg);
+}
+
+void ClientConnection::rollback_changes() {
+  // For each table_name that was changed in transaction, rollback changes and unlock to prevent deadlock
+  for (std::string name : m_table_names) {
+    Table* table = m_server->find_table(name);
+    if (table != nullptr) {
+      table->rollback_changes();
+      table->unlock();
     }
   }
 }
@@ -212,6 +286,7 @@ void ClientConnection::handle_login(const Message &request) {
 }
 
 void ClientConnection::handle_create(const Message &request) {
+  // Ensure input is formatted properly
   if (request.get_num_args() != 1) {
     throw InvalidMessage("CREATE requires exactly 1 argument (table name)");
   }
