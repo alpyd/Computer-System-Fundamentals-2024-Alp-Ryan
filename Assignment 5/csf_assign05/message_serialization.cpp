@@ -69,60 +69,60 @@ namespace {
 	void parse_message_arguments(std::istringstream& iss, Message& msg, MessageType message_type) {
 		std::string arg1, arg2;
 
-		switch (message_type) {
-			case MessageType::LOGIN: //1 argument: username
-				iss >> arg1;
-				msg.push_arg(arg1);
-				break;
-
-			case MessageType::CREATE: //1 argument: table name
-				iss >> arg1;
-				msg.push_arg(arg1);
-				break;
-
-			case MessageType::PUSH: //1 argument: value
-				iss >> arg1;
-				msg.push_arg(arg1);
-				break;
-
-			case MessageType::POP: // No arguments expected for these types
-			case MessageType::TOP:
-			case MessageType::BEGIN:
-			case MessageType::COMMIT:
-			case MessageType::BYE:
-			case MessageType::OK:
+	switch (message_type) {
+		case MessageType::LOGIN: //1 argument: username
+			iss >> arg1;
+			msg.push_arg(arg1);
 			break;
 
-			case MessageType::SET: //2 arguments: table, key
-				iss >> arg1 >> arg2;
-				msg.push_arg(arg1);
-				msg.push_arg(arg2);
-				break;
+		case MessageType::CREATE: //1 argument: table name
+			iss >> arg1;
+			msg.push_arg(arg1);
+			break;
 
-			case MessageType::GET: //2 arguments: table, key
-				iss >> arg1 >> arg2;
-				msg.push_arg(arg1);
-				msg.push_arg(arg2);
-				break;
+		case MessageType::PUSH: //1 argument: value
+			iss >> arg1;
+			msg.push_arg(arg1);
+			break;
 
-			case MessageType::ADD: //No arguments to parse, operations rely on operand stack 
-			case MessageType::SUB:
-			case MessageType::MUL:
-			case MessageType::DIV:
-				break;
+		case MessageType::POP: // No arguments expected for these types
+		case MessageType::TOP:
+		case MessageType::BEGIN:
+		case MessageType::COMMIT:
+		case MessageType::BYE:
+		case MessageType::OK:
+			break;
 
-			case MessageType::FAILED: //1 argument: quoted text
-			case MessageType::ERROR:
-				msg.push_arg(parse_quoted_text(iss));
-				break;
+		case MessageType::SET: //2 arguments: table, key
+			iss >> arg1 >> arg2;
+			msg.push_arg(arg1);
+			msg.push_arg(arg2);
+			break;
 
-			case MessageType::DATA: //1 argument: value
-				iss >> arg1;
-				msg.push_arg(arg1);
-				break;
+		case MessageType::GET: //2 arguments: table, key
+			iss >> arg1 >> arg2;
+			msg.push_arg(arg1);
+			msg.push_arg(arg2);
+			break;
 
-			default:
-				throw InvalidMessage("Unsupported message type for parsing.");
+		case MessageType::ADD: //No arguments to parse, operations rely on operand stack 
+		case MessageType::SUB:
+		case MessageType::MUL:
+		case MessageType::DIV:
+			break;
+
+		case MessageType::FAILED: //1 argument: quoted text
+		case MessageType::ERROR:
+			msg.push_arg(parse_quoted_text(iss));
+			break;
+
+		case MessageType::DATA: //1 argument: value
+			iss >> arg1;
+			msg.push_arg(arg1);
+			break;
+
+		default:
+			throw InvalidMessage("Unsupported message type for parsing.");
 		}
 		if (!(iss >> std::ws).eof()) { // Check for extraneous input
 			throw InvalidMessage("Too many arguments for the command.");
